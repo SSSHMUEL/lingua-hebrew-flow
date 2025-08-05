@@ -1,0 +1,96 @@
+import React from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { useAuth } from '@/components/AuthProvider';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from '@/hooks/use-toast';
+import { BookOpen, Home, Download, Heart, LogOut } from 'lucide-react';
+
+export const Navigation: React.FC = () => {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      toast({
+        title: "שגיאה",
+        description: "לא ניתן להתנתק",
+        variant: "destructive"
+      });
+    } else {
+      toast({
+        title: "הצלחה",
+        description: "התנתקת בהצלחה"
+      });
+      navigate('/');
+    }
+  };
+
+  return (
+    <nav className="bg-card border-b border-border">
+      <div className="container mx-auto px-4 py-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-6 rtl:space-x-reverse">
+            <Link to="/" className="text-xl font-bold text-primary flex items-center gap-2">
+              <BookOpen className="h-6 w-6" />
+              לינגואה
+            </Link>
+            
+            <div className="flex items-center space-x-4 rtl:space-x-reverse">
+              <Link to="/" className="flex items-center gap-2 text-foreground hover:text-primary transition-colors">
+                <Home className="h-4 w-4" />
+                בית
+              </Link>
+              
+              {user && (
+                <>
+                  <Link to="/learn" className="flex items-center gap-2 text-foreground hover:text-primary transition-colors">
+                    <BookOpen className="h-4 w-4" />
+                    למידה
+                  </Link>
+                  <Link to="/learned" className="flex items-center gap-2 text-foreground hover:text-primary transition-colors">
+                    <Heart className="h-4 w-4" />
+                    מילים נלמדות
+                  </Link>
+                </>
+              )}
+              
+              <Link to="/downloads" className="flex items-center gap-2 text-foreground hover:text-primary transition-colors">
+                <Download className="h-4 w-4" />
+                הורדות
+              </Link>
+            </div>
+          </div>
+
+          <div className="flex items-center space-x-3 rtl:space-x-reverse">
+            {user ? (
+              <div className="flex items-center space-x-3 rtl:space-x-reverse">
+                <span className="text-sm text-muted-foreground">
+                  שלום, {user.email}
+                </span>
+                <Button onClick={handleLogout} variant="outline" size="sm">
+                  <LogOut className="h-4 w-4 ml-2" />
+                  יציאה
+                </Button>
+              </div>
+            ) : (
+              <div className="flex items-center space-x-2 rtl:space-x-reverse">
+                <Link to="/auth">
+                  <Button variant="outline" size="sm">
+                    התחברות
+                  </Button>
+                </Link>
+                <Link to="/auth">
+                  <Button size="sm">
+                    הרשמה
+                  </Button>
+                </Link>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </nav>
+  );
+};

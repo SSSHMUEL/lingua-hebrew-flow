@@ -14,6 +14,38 @@ export type Database = {
   }
   public: {
     Tables: {
+      learned_words: {
+        Row: {
+          created_at: string
+          id: string
+          learned_at: string
+          user_id: string
+          vocabulary_word_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          learned_at?: string
+          user_id: string
+          vocabulary_word_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          learned_at?: string
+          user_id?: string
+          vocabulary_word_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "learned_words_vocabulary_word_id_fkey"
+            columns: ["vocabulary_word_id"]
+            isOneToOne: false
+            referencedRelation: "vocabulary_words"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       numbers: {
         Row: {
           created_at: string
@@ -65,6 +97,39 @@ export type Database = {
           id?: string
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      vocabulary_words: {
+        Row: {
+          category: string
+          created_at: string
+          english_word: string
+          example_sentence: string | null
+          hebrew_translation: string
+          id: string
+          pronunciation: string | null
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          english_word: string
+          example_sentence?: string | null
+          hebrew_translation: string
+          id?: string
+          pronunciation?: string | null
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          english_word?: string
+          example_sentence?: string | null
+          hebrew_translation?: string
+          id?: string
+          pronunciation?: string | null
+          updated_at?: string
         }
         Relationships: []
       }
