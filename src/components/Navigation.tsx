@@ -32,9 +32,11 @@ export const Navigation: React.FC = () => {
       <div className="container mx-auto px-4 py-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-6 rtl:space-x-reverse">
-            <Link to="/" className="text-xl font-bold text-primary flex items-center gap-2">
-              <BookOpen className="h-6 w-6" />
-              לינגואה
+            <Link to="/" className="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent flex items-center gap-2">
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center">
+                <span className="text-white font-bold text-lg">T</span>
+              </div>
+              TOLKFIX
             </Link>
             
             <div className="flex items-center space-x-4 rtl:space-x-reverse">

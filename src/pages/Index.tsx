@@ -69,13 +69,21 @@ const Index = () => {
     <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-secondary/5">
       <div className="container mx-auto px-4 py-8">
         {/* Hero Section */}
-        <div className="text-center mb-16">
-          <div className="max-w-4xl mx-auto">
-            <h1 className="text-5xl md:text-6xl font-bold text-primary mb-6">
-              ברוכים הבאים ללינגואה
+        <div className="text-center mb-16 relative">
+          <div className="max-w-4xl mx-auto relative z-10">
+            <div className="flex items-center justify-center mb-8">
+              <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-lg shadow-purple-500/25">
+                <span className="text-white font-bold text-3xl">T</span>
+              </div>
+            </div>
+            <h1 className="text-5xl md:text-7xl font-bold bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent mb-6">
+              TOLKFIX
             </h1>
-            <p className="text-xl md:text-2xl text-muted-foreground mb-8">
-              למדו אנגלית בצורה חכמה, מהנה ויעילה
+            <p className="text-xl md:text-2xl text-muted-foreground mb-4">
+              כלי חדשני לגילוי, הבנה ולמידה מחומרים מקוריים
+            </p>
+            <p className="text-lg md:text-xl text-muted-foreground/80 mb-8">
+              🚀 למד אנגלית מתכנים שאתה אוהב ✨ חוויה סוחפת ויעילה 🔥
             </p>
             
             {user ? (
@@ -139,7 +147,7 @@ const Index = () => {
 
         {/* Features Section */}
         <div className="mb-16">
-          <h2 className="text-3xl font-bold text-center mb-12">למה לינגואה?</h2>
+          <h2 className="text-3xl font-bold text-center mb-12">למה TOLKFIX?</h2>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             {features.map((feature, index) => (
               <Card key={index} className="text-center hover:shadow-lg transition-shadow">
@@ -196,19 +204,19 @@ const Index = () => {
         </div>
 
         {/* Stats Section */}
-        <div className="bg-card rounded-lg p-8 shadow-lg text-center mb-16">
+        <div className="bg-gradient-to-r from-card via-secondary/50 to-card rounded-2xl p-8 shadow-xl border border-border/50 text-center mb-16">
           <h2 className="text-2xl font-bold mb-8">הישגי הפלטפורמה</h2>
           <div className="grid md:grid-cols-3 gap-8">
             <div>
-              <div className="text-3xl font-bold text-primary mb-2">500+</div>
+              <div className="text-4xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent mb-2">150+</div>
               <p className="text-muted-foreground">מילים באוצר המילים</p>
             </div>
             <div>
-              <div className="text-3xl font-bold text-primary mb-2">10+</div>
+              <div className="text-4xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent mb-2">15+</div>
               <p className="text-muted-foreground">קטגוריות נושאיות</p>
             </div>
             <div>
-              <div className="text-3xl font-bold text-primary mb-2">100%</div>
+              <div className="text-4xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent mb-2">100%</div>
               <p className="text-muted-foreground">חינמי לתמיד</p>
             </div>
           </div>

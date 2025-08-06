@@ -108,11 +108,14 @@ export const Learn: React.FC = () => {
     if (!currentWord || !user) return;
 
     try {
+      const wordPair = `${currentWord.hebrew_translation} - ${currentWord.english_word.toUpperCase()}`;
+      
       const { error } = await supabase
         .from('learned_words')
         .insert({
           user_id: user.id,
-          vocabulary_word_id: currentWord.id
+          vocabulary_word_id: currentWord.id,
+          word_pair: wordPair
         });
 
       if (error) throw error;
@@ -211,8 +214,13 @@ export const Learn: React.FC = () => {
         <div className="max-w-4xl mx-auto">
           {/* Header */}
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-primary mb-2">לומדים אנגלית</h1>
-            <Badge variant="secondary" className="text-lg px-4 py-2">
+            <div className="flex items-center justify-center mb-4">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center">
+                <span className="text-white font-bold text-xl">T</span>
+              </div>
+            </div>
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent mb-2">TOLKFIX לומדים אנגלית</h1>
+            <Badge variant="secondary" className="text-lg px-4 py-2 bg-gradient-to-r from-secondary to-secondary/80">
               {currentCategory}
             </Badge>
           </div>
@@ -231,16 +239,16 @@ export const Learn: React.FC = () => {
           </div>
 
           {/* Main Learning Card */}
-          <Card className="mb-6 shadow-lg">
+          <Card className="mb-6 shadow-2xl border-0 bg-gradient-to-br from-card via-card to-secondary/20">
             <CardHeader className="text-center pb-4">
-              <CardTitle className="text-4xl font-bold text-primary mb-4">
+              <CardTitle className="text-4xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent mb-4">
                 {currentWord.english_word}
               </CardTitle>
               <Button 
                 onClick={speakWord}
                 variant="outline" 
                 size="lg"
-                className="mx-auto"
+                className="mx-auto border-primary/30 hover:border-primary hover:bg-primary/10 transition-all duration-300"
               >
                 <Volume2 className="h-5 w-5 ml-2" />
                 הקריאה
@@ -248,22 +256,27 @@ export const Learn: React.FC = () => {
             </CardHeader>
             
             <CardContent className="text-center space-y-6">
-              <div className="bg-secondary/20 rounded-lg p-6">
+              <div className="bg-gradient-to-br from-secondary/30 to-secondary/10 rounded-xl p-6 border border-secondary/40">
                 <h3 className="text-2xl font-semibold text-secondary-foreground mb-2">
                   תרגום לעברית
                 </h3>
-                <p className="text-3xl font-bold text-primary">
+                <p className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
                   {currentWord.hebrew_translation}
                 </p>
               </div>
 
-              <div className="bg-accent/20 rounded-lg p-6">
-                <h3 className="text-lg font-semibold text-accent-foreground mb-2">
-                  דוגמה במשפט
+              <div className="bg-gradient-to-br from-accent/20 to-accent/10 rounded-xl p-6 border border-accent/30">
+                <h3 className="text-lg font-semibold text-accent-foreground mb-3">
+                  דוגמה במשפט עם תרגום
                 </h3>
-                <p className="text-lg italic text-muted-foreground">
-                  "{currentWord.example_sentence}"
-                </p>
+                <div className="space-y-3">
+                  <p className="text-lg font-medium text-foreground">
+                    "{currentWord.example_sentence.split(' - ')[0]}"
+                  </p>
+                  <p className="text-lg italic text-muted-foreground border-t border-accent/20 pt-3">
+                    "{currentWord.example_sentence.split(' - ')[1] || currentWord.example_sentence}"
+                  </p>
+                </div>
               </div>
 
               <div className="flex justify-center gap-4 pt-4">
@@ -280,7 +293,7 @@ export const Learn: React.FC = () => {
                 <Button 
                   onClick={markAsLearned}
                   size="lg"
-                  className="bg-green-600 hover:bg-green-700 text-white px-8"
+                  className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-8 shadow-lg hover:shadow-xl transition-all duration-300"
                   disabled={learnedWords.has(currentWord.id)}
                 >
                   <CheckCircle className="h-5 w-5 ml-2" />

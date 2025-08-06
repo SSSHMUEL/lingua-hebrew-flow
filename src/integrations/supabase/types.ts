@@ -21,6 +21,7 @@ export type Database = {
           learned_at: string
           user_id: string
           vocabulary_word_id: string
+          word_pair: string | null
         }
         Insert: {
           created_at?: string
@@ -28,6 +29,7 @@ export type Database = {
           learned_at?: string
           user_id: string
           vocabulary_word_id: string
+          word_pair?: string | null
         }
         Update: {
           created_at?: string
@@ -35,6 +37,7 @@ export type Database = {
           learned_at?: string
           user_id?: string
           vocabulary_word_id?: string
+          word_pair?: string | null
         }
         Relationships: [
           {

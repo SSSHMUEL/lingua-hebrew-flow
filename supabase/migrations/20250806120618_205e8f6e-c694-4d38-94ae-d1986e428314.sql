@@ -1,0 +1,183 @@
+-- Clear existing vocabulary words
+DELETE FROM vocabulary_words;
+DELETE FROM learned_words;
+
+-- Insert comprehensive Hebrew-English vocabulary organized by categories
+
+-- שמות עצם (Nouns)
+INSERT INTO vocabulary_words (english_word, hebrew_translation, category, example_sentence) VALUES
+('home', 'בית', 'שמות עצם', 'I am going home - אני הולך הביתה'),
+('book', 'ספר', 'שמות עצם', 'I read a book - אני קורא ספר'),
+('computer', 'מחשב', 'שמות עצם', 'I use a computer - אני משתמש במחשב'),
+('chair', 'כיסא', 'שמות עצם', 'Please sit on the chair - אנא שב על הכיסא'),
+('table', 'שולחן', 'שמות עצם', 'The book is on the table - הספר על השולחן'),
+('car', 'מכונית', 'שמות עצם', 'I drive a car - אני נוהג במכונית'),
+('city', 'עיר', 'שמות עצם', 'I live in the city - אני גר בעיר'),
+('child', 'ילד', 'שמות עצם', 'The child is playing - הילד משחק'),
+('money', 'כסף', 'שמות עצם', 'I need money - אני צריך כסף'),
+('food', 'אוכל', 'שמות עצם', 'The food is delicious - האוכל טעים'),
+('house', 'בית', 'שמות עצם', 'We live in a big house - אנחנו גרים בבית גדול'),
+('apartment', 'דירה', 'שמות עצם', 'My apartment is small - הדירה שלי קטנה'),
+('room', 'חדר', 'שמות עצם', 'This is my room - זה החדר שלי'),
+('bed', 'מיטה', 'שמות עצם', 'I sleep in my bed - אני ישן במיטה שלי'),
+('kitchen', 'מטבח', 'שמות עצם', 'Mom is cooking in the kitchen - אמא מבשלת במטבח'),
+('bathroom', 'אמבטיה', 'שמות עצם', 'The bathroom is clean - האמבטיה נקייה'),
+('work', 'עבודה', 'שמות עצם', 'I go to work every day - אני הולך לעבודה כל יום'),
+('school', 'בית ספר', 'שמות עצם', 'Children go to school - ילדים הולכים לבית ספר'),
+('phone', 'טלפון', 'שמות עצם', 'My phone is ringing - הטלפון שלי מצלצל'),
+('pen', 'עט', 'שמות עצם', 'I write with a pen - אני כותב בעט'),
+
+-- פעלים (Verbs)
+('to go', 'ללכת', 'פעלים', 'I want to go home - אני רוצה ללכת הביתה'),
+('to come', 'לבוא', 'פעלים', 'Please come here - בוא לכאן בבקשה'),
+('to eat', 'לאכול', 'פעלים', 'I like to eat pizza - אני אוהב לאכול פיצה'),
+('to drink', 'לשתות', 'פעלים', 'I need to drink water - אני צריך לשתות מים'),
+('to sleep', 'לישון', 'פעלים', 'I go to sleep at 10 PM - אני הולך לישון ב-10 בערב'),
+('to read', 'לקרוא', 'פעלים', 'I love to read books - אני אוהב לקרוא ספרים'),
+('to write', 'לכתוב', 'פעלים', 'I can write in Hebrew - אני יכול לכתוב בעברית'),
+('to speak', 'לדבר', 'פעלים', 'We speak English - אנחנו מדברים אנגלית'),
+('to play', 'לשחק', 'פעלים', 'Children love to play - ילדים אוהבים לשחק'),
+('to learn', 'ללמוד', 'פעלים', 'I want to learn English - אני רוצה ללמוד אנגלית'),
+('to be', 'להיות', 'פעלים', 'I want to be a teacher - אני רוצה להיות מורה'),
+('to do', 'לעשות', 'פעלים', 'What do you want to do? - מה אתה רוצה לעשות?'),
+('to get', 'לקבל', 'פעלים', 'I need to get a job - אני צריך לקבל עבודה'),
+('to stand', 'לעמוד', 'פעלים', 'Please stand up - אנא קום'),
+('to sit', 'לשבת', 'פעלים', 'Let''s sit here - בוא נשב כאן'),
+('to think', 'לחשוב', 'פעלים', 'I need to think about it - אני צריך לחשוב על זה'),
+('to see', 'לראות', 'פעלים', 'I can see the mountain - אני יכול לראות את ההר'),
+('to hear', 'לשמוע', 'פעלים', 'Can you hear me? - אתה שומע אותי?'),
+('to know', 'לדעת', 'פעלים', 'I know the answer - אני יודע את התשובה'),
+('to want', 'לרצות', 'פעלים', 'What do you want? - מה אתה רוצה?'),
+
+-- תארים (Adjectives)
+('big', 'גדול', 'תארים', 'This is a big house - זה בית גדול'),
+('small', 'קטן', 'תארים', 'I have a small car - יש לי מכונית קטנה'),
+('new', 'חדש', 'תארים', 'I bought a new phone - קניתי טלפון חדש'),
+('old', 'ישן', 'תארים', 'This is an old book - זה ספר ישן'),
+('good', 'טוב', 'תארים', 'This food is good - האוכל הזה טוב'),
+('bad', 'רע', 'תארים', 'The weather is bad today - מזג האוויר רע היום'),
+('beautiful', 'יפה', 'תארים', 'She is very beautiful - היא מאוד יפה'),
+('ugly', 'מכוער', 'תארים', 'That building is ugly - הבניין הזה מכוער'),
+('hot', 'חם', 'תארים', 'The coffee is hot - הקפה חם'),
+('cold', 'קר', 'תארים', 'The water is cold - המים קרים'),
+('smart', 'חכם', 'תארים', 'He is a smart student - הוא תלמיד חכם'),
+('happy', 'שמח', 'תארים', 'I am happy today - אני שמח היום'),
+('sad', 'עצוב', 'תארים', 'Why are you sad? - למה אתה עצוב?'),
+('tired', 'עייף', 'תארים', 'I am very tired - אני מאוד עייף'),
+('hungry', 'רעב', 'תארים', 'Are you hungry? - אתה רעב?'),
+('clean', 'נקי', 'תארים', 'The room is clean - החדר נקי'),
+('dirty', 'מלוכלך', 'תארים', 'My clothes are dirty - הבגדים שלי מלוכלכים'),
+('fast', 'מהיר', 'תארים', 'This car is very fast - המכונית הזאת מאוד מהירה'),
+('slow', 'איטי', 'תארים', 'The turtle is slow - הצב איטי'),
+('easy', 'קל', 'תארים', 'This test is easy - המבחן הזה קל'),
+
+-- מילות יחס וקישור (Prepositions and Conjunctions)
+('on', 'על', 'מילות יחס וקישור', 'The book is on the table - הספר על השולחן'),
+('under', 'מתחת', 'מילות יחס וקישור', 'The cat is under the chair - החתול מתחת לכיסא'),
+('in', 'בתוך', 'מילות יחס וקישור', 'The keys are in the bag - המפתחות בתוך התיק'),
+('near', 'ליד', 'מילות יחס וקישור', 'I live near the school - אני גר ליד בית הספר'),
+('between', 'בין', 'מילות יחס וקישור', 'Sit between them - שב ביניהם'),
+('with', 'עם', 'מילות יחס וקישור', 'I am going with you - אני הולך איתך'),
+('without', 'בלי', 'מילות יחס וקישור', 'I can''t live without you - אני לא יכול לחיות בלעדייך'),
+('and', 'ו...', 'מילות יחס וקישור', 'I like coffee and tea - אני אוהב קפה ותה'),
+('or', 'או', 'מילות יחס וקישור', 'Do you want coffee or tea? - אתה רוצה קפה או תה?'),
+('but', 'אבל', 'מילות יחס וקישור', 'I want to go but I can''t - אני רוצה ללכת אבל אני לא יכול'),
+('to', 'אל', 'מילות יחס וקישור', 'I am going to work - אני הולך אל העבודה'),
+('above', 'מעל', 'מילות יחס וקישור', 'The plane is above the clouds - המטוס מעל העננים'),
+('because', 'בגלל', 'מילות יחס וקישור', 'I stayed home because of rain - נשארתי בבית בגלל הגשם'),
+('if', 'אם', 'מילות יחס וקישור', 'Call me if you need help - תתקשר אלי אם תצטרך עזרה'),
+('when', 'מתי', 'מילות יחס וקישור', 'When will you come? - מתי תבוא?'),
+
+-- משפחה (Family)
+('father', 'אבא', 'משפחה', 'My father is a doctor - אבא שלי הוא רופא'),
+('mother', 'אמא', 'משפחה', 'My mother is cooking - אמא שלי מבשלת'),
+('son', 'בן', 'משפחה', 'He is my son - הוא הבן שלי'),
+('daughter', 'בת', 'משפחה', 'She is my daughter - היא הבת שלי'),
+('brother', 'אח', 'משפחה', 'My brother is tall - אחי גבוה'),
+('sister', 'אחות', 'משפחה', 'My sister is smart - אחותי חכמה'),
+('grandfather', 'סבא', 'משפחה', 'My grandfather tells stories - הסבא שלי מספר סיפורים'),
+('grandmother', 'סבתא', 'משפחה', 'My grandmother makes cookies - הסבתא שלי מכינה עוגיות'),
+('uncle', 'דוד', 'משפחה', 'My uncle lives in America - הדוד שלי גר באמריקה'),
+('aunt', 'דודה', 'משפחה', 'My aunt is visiting us - הדודה שלי מבקרת אותנו'),
+('friend', 'חבר', 'משפחה', 'He is my best friend - הוא החבר הכי טוב שלי'),
+('husband', 'בעל', 'משפחה', 'Her husband is kind - הבעל שלה נחמד'),
+('wife', 'אישה', 'משפחה', 'His wife is beautiful - האישה שלו יפה'),
+('baby', 'תינוק', 'משפחה', 'The baby is sleeping - התינוק ישן'),
+
+-- ימים וזמן (Days and Time)
+('Sunday', 'יום ראשון', 'ימים וזמן', 'Sunday is the first day - יום ראשון הוא היום הראשון'),
+('Monday', 'יום שני', 'ימים וזמן', 'I work on Monday - אני עובד ביום שני'),
+('Tuesday', 'יום שלישי', 'ימים וזמן', 'Tuesday is a busy day - יום שלישי הוא יום עמוס'),
+('Wednesday', 'יום רביעי', 'ימים וזמן', 'Wednesday is in the middle - יום רביעי באמצע השבוע'),
+('Thursday', 'יום חמישי', 'ימים וזמן', 'Thursday is almost weekend - יום חמישי כמעט סוף שבוע'),
+('Friday', 'יום שישי', 'ימים וזמן', 'Friday is preparation day - יום שישי יום הכנות'),
+('Saturday', 'יום שבת', 'ימים וזמן', 'Saturday is rest day - יום שבת יום מנוחה'),
+('today', 'היום', 'ימים וזמן', 'Today is a good day - היום יום טוב'),
+('yesterday', 'אתמול', 'ימים וזמן', 'Yesterday was rainy - אתמול היה גשום'),
+('tomorrow', 'מחר', 'ימים וזמן', 'Tomorrow will be sunny - מחר יהיה שמשי'),
+('morning', 'בוקר', 'ימים וזמן', 'Good morning! - בוקר טוב!'),
+('afternoon', 'צהריים', 'ימים וזמן', 'I eat lunch in the afternoon - אני אוכל ארוחת צהריים בצהריים'),
+('evening', 'ערב', 'ימים וזמן', 'Good evening! - ערב טוב!'),
+('night', 'לילה', 'ימים וזמן', 'Good night! - לילה טוב!'),
+
+-- כלי תחבורה (Transportation)
+('bicycle', 'אופניים', 'כלי תחבורה', 'I ride my bicycle to work - אני רוכב על האופניים לעבודה'),
+('bus', 'אוטובוס', 'כלי תחבורה', 'The bus is coming - האוטובוס מגיע'),
+('train', 'רכבת', 'כלי תחבורה', 'The train is fast - הרכבת מהירה'),
+('airplane', 'מטוס', 'כלי תחבורה', 'The airplane flies high - המטוס טס גבוה'),
+('ship', 'אונייה', 'כלי תחבורה', 'The ship crosses the ocean - האונייה חוצה את האוקיינוס'),
+('motorcycle', 'אופנוע', 'כלי תחבורה', 'He rides a motorcycle - הוא רוכב על אופנוע'),
+('truck', 'משאית', 'כלי תחבורה', 'The truck carries goods - המשאית נושאת סחורה'),
+
+-- מקצועות (Professions)
+('doctor', 'רופא', 'מקצועות', 'The doctor helps patients - הרופא עוזר לחולים'),
+('teacher', 'מורה', 'מקצועות', 'The teacher explains the lesson - המורה מסביר את השיעור'),
+('engineer', 'מהנדס', 'מקצועות', 'The engineer builds bridges - המהנדס בונה גשרים'),
+('chef', 'טבח', 'מקצועות', 'The chef cooks delicious food - הטבח מבשל אוכל טעים'),
+('writer', 'סופר', 'מקצועות', 'The writer writes books - הסופר כותב ספרים'),
+('driver', 'נהג', 'מקצועות', 'The driver drives carefully - הנהג נוהג בזהירות'),
+('policeman', 'שוטר', 'מקצועות', 'The policeman protects us - השוטר מגן עלינו'),
+('firefighter', 'כבאי', 'מקצועות', 'The firefighter saves lives - הכבאי מציל חיים'),
+
+-- גוף האדם (Body Parts)
+('head', 'ראש', 'גוף האדם', 'I have a headache - כואב לי הראש'),
+('eyes', 'עיניים', 'גוף האדם', 'Your eyes are beautiful - העיניים שלך יפות'),
+('nose', 'אף', 'גוף האדם', 'I smell with my nose - אני מריח עם האף'),
+('mouth', 'פה', 'גוף האדם', 'Open your mouth - פתח את הפה'),
+('ears', 'אוזניים', 'גוף האדם', 'I hear with my ears - אני שומע עם האוזניים'),
+('hands', 'ידיים', 'גוף האדם', 'Wash your hands - רחץ את הידיים'),
+('legs', 'רגליים', 'גוף האדם', 'My legs are tired - הרגליים שלי עייפות'),
+('heart', 'לב', 'גוף האדם', 'My heart beats fast - הלב שלי פועם מהר'),
+
+-- אוכל ושתייה (Food and Drinks)
+('bread', 'לחם', 'אוכל ושתייה', 'I eat bread for breakfast - אני אוכל לחם לארוחת בוקר'),
+('milk', 'חלב', 'אוכל ושתייה', 'I drink milk every morning - אני שותה חלב כל בוקר'),
+('water', 'מים', 'אוכל ושתייה', 'Drink more water - שתה יותר מים'),
+('coffee', 'קפה', 'אוכל ושתייה', 'I love morning coffee - אני אוהב קפה בבוקר'),
+('tea', 'תה', 'אוכל ושתייה', 'Would you like some tea? - תרצה קצת תה?'),
+('egg', 'ביצה', 'אוכל ושתייה', 'I cook an egg for breakfast - אני מבשל ביצה לארוחת בוקר'),
+('meat', 'בשר', 'אוכל ושתייה', 'This meat is delicious - הבשר הזה טעים'),
+('chicken', 'עוף', 'אוכל ושתייה', 'We eat chicken on Friday - אנחנו אוכלים עוף ביום שישי'),
+('fish', 'דג', 'אוכל ושתייה', 'Fish is healthy food - דג הוא אוכל בריא'),
+('cheese', 'גבינה', 'אוכל ושתייה', 'I like cheese sandwich - אני אוהב כריך גבינה'),
+('apple', 'תפוח', 'אוכל ושתייה', 'An apple a day keeps doctor away - תפוח ביום מרחיק את הרופא'),
+('banana', 'בננה', 'אוכל ושתייה', 'Monkeys love bananas - קופים אוהבים בננות'),
+('orange', 'תפוז', 'אוכל ושתייה', 'Orange juice is healthy - מיץ תפוזים בריא'),
+('rice', 'אורז', 'אוכל ושתייה', 'Rice is popular in Asia - אורז פופולרי באסיה'),
+('sugar', 'סוכר', 'אוכל ושתייה', 'Too much sugar is bad - יותר מדי סוכר זה רע'),
+
+-- בעלי חיים (Animals)
+('dog', 'כלב', 'בעלי חיים', 'The dog is man''s best friend - הכלב הוא החבר הטוב ביותר של האדם'),
+('cat', 'חתול', 'בעלי חיים', 'The cat sleeps all day - החתול ישן כל היום'),
+('bird', 'ציפור', 'בעלי חיים', 'The bird sings beautifully - הציפור שרה יפה'),
+('horse', 'סוס', 'בעלי חיים', 'The horse runs fast - הסוס רץ מהר'),
+('cow', 'פרה', 'בעלי חיים', 'The cow gives milk - הפרה נותנת חלב'),
+('lion', 'אריה', 'בעלי חיים', 'The lion is the king of animals - האריה הוא מלך החיות'),
+('elephant', 'פיל', 'בעלי חיים', 'The elephant is very big - הפיל מאוד גדול'),
+('monkey', 'קוף', 'בעלי חיים', 'The monkey climbs trees - הקוף מטפס על עצים');
+
+-- Update learned_words table structure to store in Hebrew-English format
+ALTER TABLE learned_words ADD COLUMN word_pair TEXT;
+
+-- Update the constraint to make word_pair the main identifier
+CREATE INDEX idx_learned_words_word_pair ON learned_words(user_id, word_pair);
