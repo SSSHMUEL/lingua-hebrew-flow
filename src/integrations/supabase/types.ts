@@ -113,6 +113,7 @@ export type Database = {
           id: string
           pronunciation: string | null
           updated_at: string
+          word_pair: string | null
         }
         Insert: {
           category: string
@@ -123,6 +124,7 @@ export type Database = {
           id?: string
           pronunciation?: string | null
           updated_at?: string
+          word_pair?: string | null
         }
         Update: {
           category?: string
@@ -133,6 +135,7 @@ export type Database = {
           id?: string
           pronunciation?: string | null
           updated_at?: string
+          word_pair?: string | null
         }
         Relationships: []
       }

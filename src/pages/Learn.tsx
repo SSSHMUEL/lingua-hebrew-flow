@@ -16,6 +16,7 @@ interface VocabularyWord {
   category: string;
   example_sentence: string;
   pronunciation?: string;
+  word_pair: string; // Added word_pair field
 }
 
 export const Learn: React.FC = () => {
@@ -108,14 +109,12 @@ export const Learn: React.FC = () => {
     if (!currentWord || !user) return;
 
     try {
-      const wordPair = `${currentWord.hebrew_translation} - ${currentWord.english_word.toUpperCase()}`;
-      
       const { error } = await supabase
         .from('learned_words')
         .insert({
           user_id: user.id,
           vocabulary_word_id: currentWord.id,
-          word_pair: wordPair
+          word_pair: currentWord.word_pair // Using the word_pair from vocabulary_words
         });
 
       if (error) throw error;
