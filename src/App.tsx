@@ -11,6 +11,8 @@ import Learn from "./pages/Learn";
 import Learned from "./pages/Learned";
 import Downloads from "./pages/Downloads";
 import NotFound from "./pages/NotFound";
+import Flashcards from "./pages/Flashcards";
+import Quiz from "./pages/Quiz";
 
 const queryClient = new QueryClient();
 
@@ -27,6 +29,8 @@ const App = () => (
               <Route path="/" element={<Index />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/learn" element={<Learn />} />
+              <Route path="/flashcards" element={<Flashcards />} />
+              <Route path="/quiz" element={<Quiz />} />
               <Route path="/learned" element={<Learned />} />
               <Route path="/downloads" element={<Downloads />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

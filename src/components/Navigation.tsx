@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/components/AuthProvider';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
-import { BookOpen, Home, Download, Heart, LogOut } from 'lucide-react';
+import { BookOpen, Home, Download, Heart, LogOut, FlipHorizontal2, HelpCircle } from 'lucide-react';
 
 export const Navigation: React.FC = () => {
   const { user } = useAuth();
@@ -45,11 +45,19 @@ export const Navigation: React.FC = () => {
                 בית
               </Link>
               
-              {user && (
+{user && (
                 <>
                   <Link to="/learn" className="flex items-center gap-2 text-foreground hover:text-primary transition-colors">
                     <BookOpen className="h-4 w-4" />
                     למידה
+                  </Link>
+                  <Link to="/flashcards" className="flex items-center gap-2 text-foreground hover:text-primary transition-colors">
+                    <FlipHorizontal2 className="h-4 w-4" />
+                    כרטיסיות
+                  </Link>
+                  <Link to="/quiz" className="flex items-center gap-2 text-foreground hover:text-primary transition-colors">
+                    <HelpCircle className="h-4 w-4" />
+                    שאלון
                   </Link>
                   <Link to="/learned" className="flex items-center gap-2 text-foreground hover:text-primary transition-colors">
                     <Heart className="h-4 w-4" />
