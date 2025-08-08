@@ -1,3 +1,106 @@
-// Navigation.tsx
+import React from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { useAuth } from '@/components/AuthProvider';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from '@/hooks/use-toast';
+import { BookOpen, Home, Download, Heart, LogOut, FlipHorizontal2, HelpCircle } from 'lucide-react';
 
-// This is a placeholder comment to represent the file content. Replace this with the actual content of your Navigation.tsx file, where all occurrences of TOLKFIX are replaced with tolk fix.
+export const Navigation: React.FC = () => {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      toast({
+        title: "שגיאה",
+        description: "לא ניתן להתנתק",
+        variant: "destructive"
+      });
+    } else {
+      toast({
+        title: "הצלחה",
+        description: "התנתקת בהצלחה"
+      });
+      navigate('/');
+    }
+  };
+
+  return (
+    <nav className="bg-card border-b border-border">
+      <div className="container mx-auto px-4 py-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-6 rtl:space-x-reverse">
+            <Link to="/" className="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent flex items-center gap-2">
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center">
+                <span className="text-white font-bold text-lg">T</span>
+              </div>
+              TOLKFIX
+            </Link>
+            
+            <div className="flex items-center space-x-4 rtl:space-x-reverse">
+              <Link to="/" className="flex items-center gap-2 text-foreground hover:text-primary transition-colors">
+                <Home className="h-4 w-4" />
+                בית
+              </Link>
+              
+{user && (
+                <>
+                  <Link to="/learn" className="flex items-center gap-2 text-foreground hover:text-primary transition-colors">
+                    <BookOpen className="h-4 w-4" />
+                    למידה
+                  </Link>
+                  <Link to="/flashcards" className="flex items-center gap-2 text-foreground hover:text-primary transition-colors">
+                    <FlipHorizontal2 className="h-4 w-4" />
+                    כרטיסיות
+                  </Link>
+                  <Link to="/quiz" className="flex items-center gap-2 text-foreground hover:text-primary transition-colors">
+                    <HelpCircle className="h-4 w-4" />
+                    שאלון
+                  </Link>
+                  <Link to="/learned" className="flex items-center gap-2 text-foreground hover:text-primary transition-colors">
+                    <Heart className="h-4 w-4" />
+                    מילים נלמדות
+                  </Link>
+                </>
+              )}
+              
+              <Link to="/downloads" className="flex items-center gap-2 text-foreground hover:text-primary transition-colors">
+                <Download className="h-4 w-4" />
+                הורדות
+              </Link>
+            </div>
+          </div>
+
+          <div className="flex items-center space-x-3 rtl:space-x-reverse">
+            {user ? (
+              <div className="flex items-center space-x-3 rtl:space-x-reverse">
+                <span className="text-sm text-muted-foreground">
+                  שלום, {user.email}
+                </span>
+                <Button onClick={handleLogout} variant="outline" size="sm">
+                  <LogOut className="h-4 w-4 ml-2" />
+                  יציאה
+                </Button>
+              </div>
+            ) : (
+              <div className="flex items-center space-x-2 rtl:space-x-reverse">
+                <Link to="/auth">
+                  <Button variant="outline" size="sm">
+                    התחברות
+                  </Button>
+                </Link>
+                <Link to="/auth">
+                  <Button size="sm">
+                    הרשמה
+                  </Button>
+                </Link>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </nav>
+  );
+};
