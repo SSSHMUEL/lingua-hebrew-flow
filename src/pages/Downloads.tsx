@@ -3,45 +3,39 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Smartphone, Monitor, Chrome, Download, Star, Zap, Shield } from 'lucide-react';
-
 export const Downloads: React.FC = () => {
-  const downloadOptions = [
-    {
-      id: 'android',
-      title: 'אפליקציית אנדרואיד',
-      description: 'למדו בדרכים עם האפליקציה החכמה שלנו לאנדרואיד',
-      icon: Smartphone,
-      features: ['למידה במצב לא מקוון', 'התראות חכמות', 'סנכרון ענן'],
-      color: 'bg-green-500'
-    },
-    {
-      id: 'windows',
-      title: 'תוכנת ווינדוס',
-      description: 'חוויית למידה מלאה במחשב האישי שלכם',
-      icon: Monitor,
-      features: ['ממשק מתקדם', 'דוחות התקדמות', 'תרגילים אינטראקטיביים'],
-      color: 'bg-blue-500'
-    },
-    {
-      id: 'chrome',
-      title: 'הרחבת כרום',
-      description: 'למדו תוך כדי גלישה באינטרנט',
-      icon: Chrome,
-      features: ['תרגום מיידי', 'למידה בזמן גלישה', 'חסכון זמן'],
-      color: 'bg-orange-500'
-    }
-  ];
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-secondary/5">
+  const downloadOptions = [{
+    id: 'android',
+    title: 'אפליקציית אנדרואיד',
+    description: 'למדו בדרכים עם האפליקציה החכמה שלנו לאנדרואיד',
+    icon: Smartphone,
+    features: ['למידה במצב לא מקוון', 'התראות חכמות', 'סנכרון ענן'],
+    color: 'bg-green-500'
+  }, {
+    id: 'windows',
+    title: 'תוכנת ווינדוס',
+    description: 'חוויית למידה מלאה במחשב האישי שלכם',
+    icon: Monitor,
+    features: ['ממשק מתקדם', 'דוחות התקדמות', 'תרגילים אינטראקטיביים'],
+    color: 'bg-blue-500'
+  }, {
+    id: 'chrome',
+    title: 'הרחבת כרום',
+    description: 'למדו תוך כדי גלישה באינטרנט',
+    icon: Chrome,
+    features: ['תרגום מיידי', 'למידה בזמן גלישה', 'חסכון זמן'],
+    color: 'bg-orange-500'
+  }];
+  return <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-secondary/5">
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-6xl mx-auto">
           {/* Header */}
           <div className="text-center mb-12">
             <h1 className="text-4xl font-bold text-primary mb-4">הורדות</h1>
             <p className="text-xl text-muted-foreground mb-6">
-              קחו את לימוד האנגלית אתכם לכל מקום!
-            </p>
+קחו את לימוד האנגלית אתכם לכל מקום!
+  התוסף שלנו כבר ממש כאן תישארו מעודכנים
+          </p>
             <Badge variant="secondary" className="text-lg px-6 py-2">
               <Star className="h-4 w-4 ml-2" />
               בקרוב
@@ -75,16 +69,13 @@ export const Downloads: React.FC = () => {
                 <Download className="h-8 w-8 text-primary" />
               </div>
               <h3 className="text-lg font-semibold mb-2">נגיש בכל מקום</h3>
-              <p className="text-muted-foreground">
-                למדו מהבית, מהעבודה או בדרכים
-              </p>
+              <p className="text-muted-foreground">למדו מהבית, מהעבודה או בדרכים בכל גלישה באינטרנט שלגם תיצאו יותר חכמים</p>
             </div>
           </div>
 
           {/* Download Options */}
           <div className="grid md:grid-cols-3 gap-8 mb-12">
-            {downloadOptions.map((option) => (
-              <Card key={option.id} className="hover:shadow-lg transition-shadow duration-300">
+            {downloadOptions.map(option => <Card key={option.id} className="hover:shadow-lg transition-shadow duration-300">
                 <CardHeader className="text-center pb-4">
                   <div className={`${option.color} rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-4`}>
                     <option.icon className="h-10 w-10 text-white" />
@@ -95,12 +86,10 @@ export const Downloads: React.FC = () => {
                 
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
-                    {option.features.map((feature, index) => (
-                      <div key={index} className="flex items-center text-sm">
+                    {option.features.map((feature, index) => <div key={index} className="flex items-center text-sm">
                         <div className="w-2 h-2 bg-primary rounded-full ml-3 flex-shrink-0"></div>
                         <span>{feature}</span>
-                      </div>
-                    ))}
+                      </div>)}
                   </div>
                   
                   <Button className="w-full" size="lg" disabled>
@@ -108,8 +97,7 @@ export const Downloads: React.FC = () => {
                     להורדה בקרוב
                   </Button>
                 </CardContent>
-              </Card>
-            ))}
+              </Card>)}
           </div>
 
           {/* Coming Soon Notice */}
@@ -145,8 +133,6 @@ export const Downloads: React.FC = () => {
           </div>
         </div>
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default Downloads;
