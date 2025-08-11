@@ -170,11 +170,11 @@ const Quiz: React.FC = () => {
             {selected && (
               <div className="mt-6 p-4 rounded-lg border bg-card">
                 {correct ? (
-                  <div className="flex items-center gap-2 text-green-600">
+                  <div className="flex items-center gap-2 text-green-600 animate-pulse">
                     <CheckCircle2 className="h-5 w-5" /> תשובה נכונה!
                   </div>
                 ) : (
-                  <div className="flex items-center gap-2 text-red-600">
+                  <div className="flex items-center gap-2 text-red-600 animate-pulse">
                     <XCircle className="h-5 w-5" /> תשובה שגויה. הנכון: {current.hebrew_translation}
                   </div>
                 )}

@@ -28,7 +28,7 @@ export const Navigation: React.FC = () => {
   };
 
   return (
-    <nav className="bg-card border-b border-border">
+    <nav className="sticky top-0 z-50 bg-card/80 border-b border-border backdrop-blur supports-[backdrop-filter]:bg-card/60">
       <div className="container mx-auto px-4 py-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-6 rtl:space-x-reverse">
@@ -36,7 +36,7 @@ export const Navigation: React.FC = () => {
               <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center">
                 <span className="text-white font-bold text-lg">T</span>
               </div>
-              TOLKFIX
+              TALK FIX
             </Link>
             
             <div className="flex items-center space-x-4 rtl:space-x-reverse">
@@ -44,28 +44,18 @@ export const Navigation: React.FC = () => {
                 <Home className="h-4 w-4" />
                 בית
               </Link>
-              
-{user && (
-                <>
-                  <Link to="/learn" className="flex items-center gap-2 text-foreground hover:text-primary transition-colors">
-                    <BookOpen className="h-4 w-4" />
-                    למידה
-                  </Link>
-                  <Link to="/flashcards" className="flex items-center gap-2 text-foreground hover:text-primary transition-colors">
-                    <FlipHorizontal2 className="h-4 w-4" />
-                    כרטיסיות
-                  </Link>
-                  <Link to="/quiz" className="flex items-center gap-2 text-foreground hover:text-primary transition-colors">
-                    <HelpCircle className="h-4 w-4" />
-                    שאלון
-                  </Link>
-                  <Link to="/learned" className="flex items-center gap-2 text-foreground hover:text-primary transition-colors">
-                    <Heart className="h-4 w-4" />
-                    מילים נלמדות
-                  </Link>
-                </>
-              )}
-              
+              <Link to="/learn" className="flex items-center gap-2 text-foreground hover:text-primary transition-colors">
+                <BookOpen className="h-4 w-4" />
+                מסלול לימוד
+              </Link>
+              <Link to="/practice" className="flex items-center gap-2 text-foreground hover:text-primary transition-colors">
+                <FlipHorizontal2 className="h-4 w-4" />
+                תרגול
+              </Link>
+              <Link to="/profile" className="flex items-center gap-2 text-foreground hover:text-primary transition-colors">
+                <HelpCircle className="h-4 w-4" />
+                פרופיל
+              </Link>
               <Link to="/downloads" className="flex items-center gap-2 text-foreground hover:text-primary transition-colors">
                 <Download className="h-4 w-4" />
                 הורדות

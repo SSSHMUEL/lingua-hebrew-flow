@@ -218,10 +218,17 @@ export const Learn: React.FC = () => {
                 <span className="text-white font-bold text-xl">T</span>
               </div>
             </div>
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent mb-2">TOLKFIX לומדים אנגלית</h1>
+            <h1 className="text-3xl font-bold text-center mb-2">שיעור: {currentCategory}</h1>
             <Badge variant="secondary" className="text-lg px-4 py-2 bg-gradient-to-r from-secondary to-secondary/80">
               {currentCategory}
             </Badge>
+          </div>
+
+          {/* Media Placeholder */}
+          <div className="mb-6">
+            <div className="rounded-xl border border-muted bg-secondary/30 p-6 text-center text-muted-foreground">
+              מקום לסרטון או קובץ שמע
+            </div>
           </div>
 
           {/* Progress */}

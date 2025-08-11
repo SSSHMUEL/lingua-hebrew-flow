@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
 import { useAuth } from '@/components/AuthProvider';
 import { supabase } from '@/integrations/supabase/client';
 import { BookOpen, Users, Globe, Zap, Target, Award, ArrowLeft, Heart, TrendingUp } from 'lucide-react';
@@ -93,12 +94,15 @@ const Index = () => {
                       {userStats.totalWords}
                     </Badge>
                   </div>
-                  {userStats.totalWords > 0 && <div className="flex items-center justify-between">
-                      <span className="text-muted-foreground">התקדמות:</span>
-                      <Badge variant="default" className="text-lg px-3 py-1">
-                        <TrendingUp className="h-4 w-4 ml-1" />
-                        {Math.round(userStats.learnedWords / userStats.totalWords * 100)}%
-                      </Badge>
+                  {userStats.totalWords > 0 && <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-muted-foreground">התקדמות:</span>
+                        <Badge variant="default" className="text-lg px-3 py-1">
+                          <TrendingUp className="h-4 w-4 ml-1" />
+                          {Math.round(userStats.learnedWords / userStats.totalWords * 100)}%
+                        </Badge>
+                      </div>
+                      <Progress value={userStats.totalWords > 0 ? (userStats.learnedWords / userStats.totalWords) * 100 : 0} className="h-3" />
                     </div>}
                 </div>
                 <div className="flex gap-3 mt-6">
@@ -129,9 +133,42 @@ const Index = () => {
           </div>
         </div>
 
+        {/* Recommended Next + Daily Practice */}
+        <div className="mb-16">
+          <div className="grid md:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>השיעור הבא המומלץ</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground mb-4">המשיכו בדיוק מהמקום שהפסקתם בשיעורים.</p>
+                <Link to="/learn">
+                  <Button size="lg">התחל שיעור</Button>
+                </Link>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>תרגילים יומיים</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  <Link to="/flashcards" className="story-link block">
+                    כרטיסיות אוצר מילים
+                  </Link>
+                  <Link to="/quiz" className="story-link block">
+                    שאלון רב-ברירה
+                  </Link>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+
         {/* Features Section */}
         <div className="mb-16">
-          <h2 className="text-3xl font-bold text-center mb-12">למה TOLKFIX?</h2>
+          <h2 className="text-3xl font-bold text-center mb-12">למה TALK FIX?</h2>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             {features.map((feature, index) => <Card key={index} className="text-center hover:shadow-lg transition-shadow">
                 <CardHeader>
