@@ -75,9 +75,7 @@ const Index = () => {
             <p className="text-xl md:text-2xl text-muted-foreground mb-4">
               כלי חדשני לגילוי, הבנה ולמידה מחומרים מקוריים
             </p>
-            <p className="text-lg md:text-xl text-muted-foreground/80 mb-8">
-              🚀 למד אנגלית מתכנים שאתה אוהב ✨ חוויה סוחפת ויעילה 🔥
-            </p>
+            <p className="text-lg md:text-xl text-muted-foreground/80 mb-8"> למד אנגלית מתכנים שאתה אוהב  חוויה סוחפת ויעילה </p>
             
             {user ? <div className="bg-card rounded-lg p-6 shadow-lg mb-8 max-w-md mx-auto">
                 <h3 className="text-lg font-semibold mb-4">שלום, {user.email}!</h3>
