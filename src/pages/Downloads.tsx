@@ -3,10 +3,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Download, Shield, Zap, Globe, Smartphone, Monitor, ExternalLink } from 'lucide-react';
-
 const Downloads = () => {
-  return (
-    <div className="min-h-screen" style={{ background: 'var(--gradient-hero)' }}>
+  return <div className="min-h-screen" style={{
+    background: 'var(--gradient-hero)'
+  }}>
       <div className="container mx-auto px-4 py-12">
         {/* Header */}
         <div className="text-center mb-16">
@@ -20,13 +20,15 @@ const Downloads = () => {
 
         {/* Chrome Extension - Main Feature */}
         <div className="max-w-md mx-auto mb-12">
-          <Card className="backdrop-blur-sm border-white/20 shadow-2xl" style={{ background: 'var(--gradient-card)' }}>
+          <Card className="backdrop-blur-sm border-white/20 shadow-2xl" style={{
+          background: 'var(--gradient-card)'
+        }}>
             <CardHeader className="text-center">
               <div className="w-16 h-16 bg-accent rounded-full flex items-center justify-center mx-auto mb-4">
                 <Globe className="h-8 w-8 text-accent-foreground" />
               </div>
               <CardTitle className="text-2xl">הרחבת כרום</CardTitle>
-              <CardDescription className="text-base">למחד חוך כדי גלישה באינטרנט</CardDescription>
+              <CardDescription className="text-base">למד תוך כדי גלישה באינטרנט</CardDescription>
             </CardHeader>
             <CardContent>
               <ul className="space-y-3 mb-6 text-sm">
@@ -43,12 +45,7 @@ const Downloads = () => {
                   סמכון זמין
                 </li>
               </ul>
-              <a 
-                href="https://drive.google.com/drive/folders/1KkX9jZlRrbMqRF119UsSYuTAqRbOJZG7?usp=sharing" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="w-full"
-              >
+              <a href="https://drive.google.com/drive/folders/1KkX9jZlRrbMqRF119UsSYuTAqRbOJZG7?usp=sharing" target="_blank" rel="noopener noreferrer" className="w-full">
                 <Button className="w-full bg-accent hover:bg-accent/90 text-accent-foreground">
                   <Download className="ml-2 h-4 w-4" />
                   להורדה בקרוב
@@ -63,7 +60,9 @@ const Downloads = () => {
         <div className="max-w-4xl mx-auto mb-16">
           <h2 className="text-3xl font-bold text-center text-foreground mb-8">איך התוסף עובד?</h2>
           <div className="grid md:grid-cols-2 gap-8">
-            <Card className="backdrop-blur-sm border-white/10" style={{ background: 'var(--gradient-glass)' }}>
+            <Card className="backdrop-blur-sm border-white/10" style={{
+            background: 'var(--gradient-glass)'
+          }}>
               <CardContent className="p-6">
                 <h3 className="text-lg font-semibold mb-3">🌐 באתרי אינטרנט</h3>
                 <p className="text-muted-foreground">
@@ -73,7 +72,9 @@ const Downloads = () => {
               </CardContent>
             </Card>
 
-            <Card className="backdrop-blur-sm border-white/10" style={{ background: 'var(--gradient-glass)' }}>
+            <Card className="backdrop-blur-sm border-white/10" style={{
+            background: 'var(--gradient-glass)'
+          }}>
               <CardContent className="p-6">
                 <h3 className="text-lg font-semibold mb-3">📺 בכתוביות וידאו</h3>
                 <p className="text-muted-foreground">
@@ -89,7 +90,9 @@ const Downloads = () => {
         <div className="max-w-4xl mx-auto mb-12">
           <h2 className="text-2xl font-bold text-center text-foreground mb-8">בקרוב...</h2>
           <div className="grid md:grid-cols-2 gap-6">
-            <Card className="backdrop-blur-sm border-white/10" style={{ background: 'var(--gradient-glass)' }}>
+            <Card className="backdrop-blur-sm border-white/10" style={{
+            background: 'var(--gradient-glass)'
+          }}>
               <CardHeader className="text-center">
                 <div className="w-12 h-12 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-4">
                   <Smartphone className="h-6 w-6 text-primary" />
@@ -106,7 +109,9 @@ const Downloads = () => {
               </CardContent>
             </Card>
 
-            <Card className="backdrop-blur-sm border-white/10" style={{ background: 'var(--gradient-glass)' }}>
+            <Card className="backdrop-blur-sm border-white/10" style={{
+            background: 'var(--gradient-glass)'
+          }}>
               <CardHeader className="text-center">
                 <div className="w-12 h-12 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-4">
                   <Monitor className="h-6 w-6 text-primary" />
@@ -160,7 +165,9 @@ const Downloads = () => {
             </Badge>
           </div>
           
-          <div className="backdrop-blur-sm border-white/20 rounded-xl p-6" style={{ background: 'var(--gradient-glass)' }}>
+          <div className="backdrop-blur-sm border-white/20 rounded-xl p-6" style={{
+          background: 'var(--gradient-glass)'
+        }}>
             <h3 className="text-lg font-semibold mb-2 text-foreground">בקרוב: עוד הרבה קטגוריות מילים</h3>
             <p className="text-muted-foreground mb-4">
               אנחנו מוסיפים כל הזמן קטגוריות מילים חדשות - עסקים, טכנולוגיה, רפואה ועוד
@@ -168,8 +175,6 @@ const Downloads = () => {
           </div>
         </div>
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default Downloads;
