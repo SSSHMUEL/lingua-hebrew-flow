@@ -28,13 +28,13 @@ export const Navigation: React.FC = () => {
   };
 
   return (
-    <nav className="sticky top-0 z-50 bg-card/80 border-b border-border backdrop-blur supports-[backdrop-filter]:bg-card/60">
-      <div className="container mx-auto px-4 py-3">
+    <nav className="sticky top-0 z-50 bg-card/40 border-b border-border backdrop-blur-md supports-[backdrop-filter]:bg-card/20">
+      <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-6 rtl:space-x-reverse">
-            <Link to="/" className="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center">
-                <span className="text-white font-bold text-lg">T</span>
+            <Link to="/" className="text-2xl font-bold text-primary flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-lg">
+                <span className="text-background font-bold text-xl">T</span>
               </div>
               TALK FIX
             </Link>

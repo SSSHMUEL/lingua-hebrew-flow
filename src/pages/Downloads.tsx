@@ -1,138 +1,175 @@
 import React from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Smartphone, Monitor, Chrome, Download, Star, Zap, Shield } from 'lucide-react';
-export const Downloads: React.FC = () => {
-  const downloadOptions = [{
-    id: 'android',
-    title: 'אפליקציית אנדרואיד',
-    description: 'למדו בדרכים עם האפליקציה החכמה שלנו לאנדרואיד',
-    icon: Smartphone,
-    features: ['למידה במצב לא מקוון', 'התראות חכמות', 'סנכרון ענן'],
-    color: 'bg-green-500'
-  }, {
-    id: 'windows',
-    title: 'תוכנת ווינדוס',
-    description: 'חוויית למידה מלאה במחשב האישי שלכם',
-    icon: Monitor,
-    features: ['ממשק מתקדם', 'דוחות התקדמות', 'תרגילים אינטראקטיביים'],
-    color: 'bg-blue-500'
-  }, {
-    id: 'chrome',
-    title: 'הרחבת כרום',
-    description: 'למדו תוך כדי גלישה באינטרנט',
-    icon: Chrome,
-    features: ['תרגום מיידי', 'למידה בזמן גלישה', 'חסכון זמן'],
-    color: 'bg-orange-500'
-  }];
-  return <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-secondary/5">
-      <div className="container mx-auto px-4 py-8">
-        <div className="max-w-6xl mx-auto">
-          {/* Header */}
-          <div className="text-center mb-12">
-            <h1 className="text-4xl font-bold text-primary mb-4">הורדות</h1>
-            <p className="text-xl text-muted-foreground mb-6">
-קחו את לימוד האנגלית אתכם לכל מקום!
-  התוסף שלנו כבר ממש כאן תישארו מעודכנים
+import { Download, Shield, Zap, Globe, Smartphone, Monitor, ExternalLink } from 'lucide-react';
+
+const Downloads = () => {
+  return (
+    <div className="min-h-screen" style={{ background: 'var(--gradient-hero)' }}>
+      <div className="container mx-auto px-4 py-12">
+        {/* Header */}
+        <div className="text-center mb-16">
+          <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-6">
+            הורדות
+          </h1>
+          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+            בחר את הפלטפורמה המועדפת עליך והתחל ללמוד היום
           </p>
-            <Badge variant="secondary" className="text-lg px-6 py-2">
-              <Star className="h-4 w-4 ml-2" />
-              בקרוב
+        </div>
+
+        {/* Chrome Extension - Main Feature */}
+        <div className="max-w-md mx-auto mb-12">
+          <Card className="backdrop-blur-sm border-white/20 shadow-2xl" style={{ background: 'var(--gradient-card)' }}>
+            <CardHeader className="text-center">
+              <div className="w-16 h-16 bg-accent rounded-full flex items-center justify-center mx-auto mb-4">
+                <Globe className="h-8 w-8 text-accent-foreground" />
+              </div>
+              <CardTitle className="text-2xl">הרחבת כרום</CardTitle>
+              <CardDescription className="text-base">למחד חוך כדי גלישה באינטרנט</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ul className="space-y-3 mb-6 text-sm">
+                <li className="flex items-center">
+                  <div className="w-2 h-2 bg-primary rounded-full ml-3"></div>
+                  תרגום מיידי
+                </li>
+                <li className="flex items-center">
+                  <div className="w-2 h-2 bg-primary rounded-full ml-3"></div>
+                  למידה בחמן גלישה
+                </li>
+                <li className="flex items-center">
+                  <div className="w-2 h-2 bg-primary rounded-full ml-3"></div>
+                  סמכון זמין
+                </li>
+              </ul>
+              <a 
+                href="https://drive.google.com/drive/folders/1KkX9jZlRrbMqRF119UsSYuTAqRbOJZG7?usp=sharing" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="w-full"
+              >
+                <Button className="w-full bg-accent hover:bg-accent/90 text-accent-foreground">
+                  <Download className="ml-2 h-4 w-4" />
+                  להורדה בקרוב
+                  <ExternalLink className="mr-2 h-4 w-4" />
+                </Button>
+              </a>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* How the Extension Works */}
+        <div className="max-w-4xl mx-auto mb-16">
+          <h2 className="text-3xl font-bold text-center text-foreground mb-8">איך התוסף עובד?</h2>
+          <div className="grid md:grid-cols-2 gap-8">
+            <Card className="backdrop-blur-sm border-white/10" style={{ background: 'var(--gradient-glass)' }}>
+              <CardContent className="p-6">
+                <h3 className="text-lg font-semibold mb-3">🌐 באתרי אינטרנט</h3>
+                <p className="text-muted-foreground">
+                  התוסף מחליף אוטומטיות את המילים שלמדת באתר באנגלית בכל אתר שאתה מבקר. 
+                  כך אתה מתרגל את המילים החדשות בהקשרים אמיתיים ומגוונים.
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card className="backdrop-blur-sm border-white/10" style={{ background: 'var(--gradient-glass)' }}>
+              <CardContent className="p-6">
+                <h3 className="text-lg font-semibold mb-3">📺 בכתוביות וידאו</h3>
+                <p className="text-muted-foreground">
+                  גם בצפייה בסרטונים וסרטים, התוסף יחליף את המילים שלמדת בכתוביות, 
+                  מה שהופך כל צפייה להזדמנות תרגול נוספת.
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+
+        {/* Coming Soon Applications */}
+        <div className="max-w-4xl mx-auto mb-12">
+          <h2 className="text-2xl font-bold text-center text-foreground mb-8">בקרוב...</h2>
+          <div className="grid md:grid-cols-2 gap-6">
+            <Card className="backdrop-blur-sm border-white/10" style={{ background: 'var(--gradient-glass)' }}>
+              <CardHeader className="text-center">
+                <div className="w-12 h-12 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Smartphone className="h-6 w-6 text-primary" />
+                </div>
+                <CardTitle>אפליקציית אנדרואיד</CardTitle>
+                <CardDescription>למידה נוחה בנייד</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-2 text-sm text-muted-foreground">
+                  <li>• למידה אופליין</li>
+                  <li>• התראות חכמות</li>
+                  <li>• סנכרון עם הרשת</li>
+                </ul>
+              </CardContent>
+            </Card>
+
+            <Card className="backdrop-blur-sm border-white/10" style={{ background: 'var(--gradient-glass)' }}>
+              <CardHeader className="text-center">
+                <div className="w-12 h-12 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Monitor className="h-6 w-6 text-primary" />
+                </div>
+                <CardTitle>תוכנת ווינדוס</CardTitle>
+                <CardDescription>חוויית למידה מלאה</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-2 text-sm text-muted-foreground">
+                  <li>• ממשק מתקדם</li>
+                  <li>• עבודה מהירה</li>
+                  <li>• תכונות מתקדמות</li>
+                </ul>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+
+        {/* Features highlight */}
+        <div className="max-w-4xl mx-auto mb-12">
+          <div className="grid md:grid-cols-3 gap-6 text-center">
+            <div className="flex flex-col items-center p-6">
+              <Zap className="h-8 w-8 text-primary mb-3" />
+              <h3 className="font-semibold text-foreground">למידה מהירה</h3>
+              <p className="text-sm text-muted-foreground">תוצאות מהירות ויעילות מירבית</p>
+            </div>
+            <div className="flex flex-col items-center p-6">
+              <Shield className="h-8 w-8 text-primary mb-3" />
+              <h3 className="font-semibold text-foreground">בטוח</h3>
+              <p className="text-sm text-muted-foreground">הגנה מלאה על פרטיות המידע שלך</p>
+            </div>
+            <div className="flex flex-col items-center p-6">
+              <Globe className="h-8 w-8 text-primary mb-3" />
+              <h3 className="font-semibold text-foreground">נגיש בכל מקום</h3>
+              <p className="text-sm text-muted-foreground">תרגול מתמיד בכל גלישה באינטרנט</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Additional Features and Categories */}
+        <div className="text-center">
+          <div className="flex justify-center gap-3 mb-8 flex-wrap">
+            <Badge className="bg-primary/20 text-primary border-primary/30">
+              📚 אוצר מילים מרחיב
+            </Badge>
+            <Badge className="bg-accent/20 text-accent border-accent/30">
+              🎯 קטגוריות מתמחות
+            </Badge>
+            <Badge className="bg-primary/20 text-primary border-primary/30">
+              📱 תמיכה בכל הפלטפורמות
             </Badge>
           </div>
-
-          {/* Features Overview */}
-          <div className="grid md:grid-cols-3 gap-6 mb-12">
-            <div className="text-center p-6">
-              <div className="bg-primary/10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-                <Zap className="h-8 w-8 text-primary" />
-              </div>
-              <h3 className="text-lg font-semibold mb-2">למידה מהירה</h3>
-              <p className="text-muted-foreground">
-                אלגוריתמים חכמים לשיפור מהיר של האנגלית
-              </p>
-            </div>
-            
-            <div className="text-center p-6">
-              <div className="bg-primary/10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-                <Shield className="h-8 w-8 text-primary" />
-              </div>
-              <h3 className="text-lg font-semibold mb-2">בטוח ומאובטח</h3>
-              <p className="text-muted-foreground">
-                המידע שלכם מוגן ומסונכרן בצורה בטוחה
-              </p>
-            </div>
-            
-            <div className="text-center p-6">
-              <div className="bg-primary/10 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-                <Download className="h-8 w-8 text-primary" />
-              </div>
-              <h3 className="text-lg font-semibold mb-2">נגיש בכל מקום</h3>
-              <p className="text-muted-foreground">למדו מהבית, מהעבודה או בדרכים בכל גלישה באינטרנט שלגם תיצאו יותר חכמים</p>
-            </div>
-          </div>
-
-          {/* Download Options */}
-          <div className="grid md:grid-cols-3 gap-8 mb-12">
-            {downloadOptions.map(option => <Card key={option.id} className="hover:shadow-lg transition-shadow duration-300">
-                <CardHeader className="text-center pb-4">
-                  <div className={`${option.color} rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-4`}>
-                    <option.icon className="h-10 w-10 text-white" />
-                  </div>
-                  <CardTitle className="text-xl mb-2">{option.title}</CardTitle>
-                  <p className="text-muted-foreground">{option.description}</p>
-                </CardHeader>
-                
-                <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    {option.features.map((feature, index) => <div key={index} className="flex items-center text-sm">
-                        <div className="w-2 h-2 bg-primary rounded-full ml-3 flex-shrink-0"></div>
-                        <span>{feature}</span>
-                      </div>)}
-                  </div>
-                  
-                  <Button className="w-full" size="lg" disabled>
-                    <Download className="h-5 w-5 ml-2" />
-                    להורדה בקרוב
-                  </Button>
-                </CardContent>
-              </Card>)}
-          </div>
-
-          {/* Coming Soon Notice */}
-          <div className="text-center bg-secondary/20 rounded-lg p-8">
-            <h2 className="text-2xl font-bold mb-4">בקרוב אצלכם</h2>
-            <p className="text-lg text-muted-foreground mb-6">
-              אנחנו עובדים קשה על יצירת האפליקציות והתוכנות שיאפשרו לכם ללמוד אנגלית בכל מקום ובכל זמן.
-              הירשמו לאתר כדי להיות הראשונים לקבל עדכונים!
+          
+          <div className="backdrop-blur-sm border-white/20 rounded-xl p-6" style={{ background: 'var(--gradient-glass)' }}>
+            <h3 className="text-lg font-semibold mb-2 text-foreground">בקרוב: עוד הרבה קטגוריות מילים</h3>
+            <p className="text-muted-foreground mb-4">
+              אנחנו מוסיפים כל הזמן קטגוריות מילים חדשות - עסקים, טכנולוגיה, רפואה ועוד
             </p>
-            
-            <div className="flex flex-wrap justify-center gap-4">
-              <Badge variant="outline" className="text-base px-4 py-2">
-                אפליקציית iOS - בפיתוח
-              </Badge>
-              <Badge variant="outline" className="text-base px-4 py-2">
-                אפליקציית מק - בתכנון
-              </Badge>
-              <Badge variant="outline" className="text-base px-4 py-2">
-                הרחבת פיירפוקס - בבדיקות
-              </Badge>
-            </div>
-          </div>
-
-          {/* Newsletter Signup */}
-          <div className="mt-12 text-center">
-            <h3 className="text-xl font-semibold mb-4">רוצים להיות הראשונים לדעת?</h3>
-            <p className="text-muted-foreground mb-6">
-              הירשמו לאתר ותקבלו הודעה ברגע שהאפליקציות יהיו זמינות להורדה
-            </p>
-            <Button size="lg" onClick={() => window.location.href = '/auth'}>
-              הירשמו עכשיו
-            </Button>
           </div>
         </div>
       </div>
-    </div>;
+    </div>
+  );
 };
+
 export default Downloads;

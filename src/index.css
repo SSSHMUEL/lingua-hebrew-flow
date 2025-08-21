@@ -4,54 +4,56 @@
 @tailwind components;
 @tailwind utilities;
 
-/* TOLKFIX Design System - Modern purple theme inspired by Language Reactor
+/* TALK FIX Design System - Dark gradient theme
 All colors MUST be HSL.
 */
 
 @layer base {
   :root {
-    /* Calm, clean light theme with a single blue accent */
-    --background: 0 0% 100%;
-    --foreground: 222 47% 11%;
+    /* Dark gradient theme inspired by modern learning platforms */
+    --background: 220 40% 8%;
+    --foreground: 210 20% 98%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
+    --card: 220 35% 12%;
+    --card-foreground: 210 20% 98%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
+    --popover: 220 35% 12%;
+    --popover-foreground: 210 20% 98%;
 
-    /* Primary accent: blue */
-    --primary: 210 90% 55%;
-    --primary-foreground: 0 0% 100%;
+    /* Bright blue primary */
+    --primary: 210 90% 65%;
+    --primary-foreground: 220 40% 8%;
 
-    /* Subtle secondary surface */
-    --secondary: 210 25% 96%;
-    --secondary-foreground: 222 47% 17%;
+    /* Glass morphism secondary */
+    --secondary: 220 30% 15%;
+    --secondary-foreground: 210 20% 90%;
 
-    --muted: 210 20% 96%;
-    --muted-foreground: 215 16% 47%;
+    --muted: 220 25% 20%;
+    --muted-foreground: 215 20% 65%;
 
-    /* Keep a single accent tone aligned with primary */
-    --accent: 210 90% 55%;
-    --accent-foreground: 0 0% 100%;
+    /* Orange accent for highlights */
+    --accent: 25 95% 53%;
+    --accent-foreground: 220 40% 8%;
 
-    --destructive: 0 70% 50%;
-    --destructive-foreground: 0 0% 100%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 220 40% 8%;
 
-    --border: 214 32% 91%;
-    --input: 214 32% 91%;
-    --ring: 210 90% 55%;
+    --border: 220 30% 20%;
+    --input: 220 30% 18%;
+    --ring: 210 90% 65%;
 
-    --radius: 0.75rem;
+    --radius: 1rem;
 
-    /* Blue gradients */
-    --gradient-primary: linear-gradient(135deg, hsl(210 90% 55%), hsl(210 85% 65%));
-    --gradient-hero: linear-gradient(135deg, hsl(210 92% 58%) 0%, hsl(210 85% 65%) 50%, hsl(210 80% 72%) 100%);
-    --gradient-card: linear-gradient(145deg, hsl(0 0% 100%) 0%, hsl(210 25% 98%) 100%);
+    /* Dark gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(220 50% 12%) 0%, hsl(220 40% 8%) 50%, hsl(230 45% 15%) 100%);
+    --gradient-hero: linear-gradient(135deg, hsl(230 45% 15%) 0%, hsl(220 40% 12%) 30%, hsl(210 35% 18%) 70%, hsl(220 40% 8%) 100%);
+    --gradient-card: linear-gradient(145deg, hsl(220 35% 12% / 0.8) 0%, hsl(220 30% 15% / 0.9) 100%);
+    --gradient-glass: linear-gradient(145deg, hsl(220 35% 15% / 0.3) 0%, hsl(220 30% 18% / 0.2) 100%);
     
-    /* Subtle blue-tinted shadows */
-    --shadow-purple: 0 10px 30px -10px hsl(210 90% 55% / 0.25);
-    --shadow-glow: 0 0 40px hsl(210 85% 65% / 0.35);
+    /* Glowing shadows */
+    --shadow-primary: 0 10px 30px -10px hsl(210 90% 65% / 0.3);
+    --shadow-glow: 0 0 40px hsl(210 85% 70% / 0.2);
+    --shadow-card: 0 8px 32px hsl(220 40% 5% / 0.4);
 
     /* Sidebar */
     --sidebar-background: 0 0% 100%;
