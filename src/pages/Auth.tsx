@@ -18,6 +18,10 @@ export const Auth: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
+  
+  // Check URL parameters for tab selection
+  const urlParams = new URLSearchParams(window.location.search);
+  const initialTab = urlParams.get('tab') === 'signup' ? 'signup' : 'signin';
   useEffect(() => {
     if (user) {
       navigate('/');
@@ -85,7 +89,7 @@ export const Auth: React.FC = () => {
         </div>
 
         <Card className="shadow-lg">
-          <Tabs defaultValue="signin" className="w-full">
+          <Tabs defaultValue={initialTab} className="w-full">
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="signin">התחברות</TabsTrigger>
               <TabsTrigger value="signup">הרשמה</TabsTrigger>

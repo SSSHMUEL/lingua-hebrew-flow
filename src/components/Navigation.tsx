@@ -56,6 +56,10 @@ export const Navigation: React.FC = () => {
                 <HelpCircle className="h-4 w-4" />
                 פרופיל
               </Link>
+              <Link to="/about" className="flex items-center gap-2 text-foreground hover:text-primary transition-colors">
+                <Heart className="h-4 w-4" />
+                אודות
+              </Link>
               <Link to="/downloads" className="flex items-center gap-2 text-foreground hover:text-primary transition-colors">
                 <Download className="h-4 w-4" />
                 הורדות
@@ -67,7 +71,7 @@ export const Navigation: React.FC = () => {
             {user ? (
               <div className="flex items-center space-x-3 rtl:space-x-reverse">
                 <span className="text-sm text-muted-foreground">
-                  שלום, {user.email}
+                  שלום, {user.user_metadata?.display_name || user.email}
                 </span>
                 <Button onClick={handleLogout} variant="outline" size="sm">
                   <LogOut className="h-4 w-4 ml-2" />
@@ -81,7 +85,7 @@ export const Navigation: React.FC = () => {
                     התחברות
                   </Button>
                 </Link>
-                <Link to="/auth">
+                <Link to="/auth?tab=signup">
                   <Button size="sm">
                     הרשמה
                   </Button>

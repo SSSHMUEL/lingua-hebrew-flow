@@ -48,7 +48,7 @@ const Downloads = () => {
               <a href="https://drive.google.com/drive/folders/1KkX9jZlRrbMqRF119UsSYuTAqRbOJZG7?usp=sharing" target="_blank" rel="noopener noreferrer" className="w-full">
                 <Button className="w-full bg-accent hover:bg-accent/90 text-accent-foreground">
                   <Download className="ml-2 h-4 w-4" />
-                  להורדה בקרוב
+                  הורדה עכשיו
                   <ExternalLink className="mr-2 h-4 w-4" />
                 </Button>
               </a>
