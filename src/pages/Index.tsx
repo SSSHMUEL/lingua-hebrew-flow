@@ -7,33 +7,36 @@ import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/components/AuthProvider';
 import { supabase } from '@/integrations/supabase/client';
 import { BookOpen, Target, Trophy, Clock, ArrowRight, Globe, Sparkles, Star, Heart, TrendingUp } from 'lucide-react';
-
 const Index = () => {
-  const { user } = useAuth();
+  const {
+    user
+  } = useAuth();
   const [userStats, setUserStats] = useState({
     learnedWords: 0,
     totalWords: 0
   });
-
   useEffect(() => {
     if (user) {
       loadUserStats();
     }
   }, [user]);
-
   const loadUserStats = async () => {
     try {
       // Get user's learned words count
-      const { count: learnedCount } = await supabase
-        .from('learned_words')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', user!.id);
+      const {
+        count: learnedCount
+      } = await supabase.from('learned_words').select('*', {
+        count: 'exact',
+        head: true
+      }).eq('user_id', user!.id);
 
       // Get total words count
-      const { count: totalCount } = await supabase
-        .from('vocabulary_words')
-        .select('*', { count: 'exact', head: true });
-
+      const {
+        count: totalCount
+      } = await supabase.from('vocabulary_words').select('*', {
+        count: 'exact',
+        head: true
+      });
       setUserStats({
         learnedWords: learnedCount || 0,
         totalWords: totalCount || 0
@@ -42,11 +45,10 @@ const Index = () => {
       console.error('Error loading user stats:', error);
     }
   };
-
-  const userProgress = userStats.totalWords > 0 ? Math.round((userStats.learnedWords / userStats.totalWords) * 100) : 0;
-
-  return (
-    <div className="min-h-screen" style={{ background: 'var(--gradient-hero)' }}>
+  const userProgress = userStats.totalWords > 0 ? Math.round(userStats.learnedWords / userStats.totalWords * 100) : 0;
+  return <div className="min-h-screen" style={{
+    background: 'var(--gradient-hero)'
+  }}>
       <div className="container mx-auto px-4 py-12">
         {/* Hero Section */}
         <div className="text-center mb-16">
@@ -70,7 +72,9 @@ const Index = () => {
         <div className="max-w-4xl mx-auto mb-16">
           <h2 className="text-3xl font-bold text-center text-foreground mb-8">איך זה עובד?</h2>
           <div className="grid md:grid-cols-3 gap-8">
-            <Card className="backdrop-blur-sm border-white/10" style={{ background: 'var(--gradient-glass)' }}>
+            <Card className="backdrop-blur-sm border-white/10" style={{
+            background: 'var(--gradient-glass)'
+          }}>
               <CardContent className="p-6 text-center">
                 <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center mx-auto mb-4">
                   <BookOpen className="h-6 w-6 text-primary-foreground" />
@@ -80,7 +84,9 @@ const Index = () => {
               </CardContent>
             </Card>
 
-            <Card className="backdrop-blur-sm border-white/10" style={{ background: 'var(--gradient-glass)' }}>
+            <Card className="backdrop-blur-sm border-white/10" style={{
+            background: 'var(--gradient-glass)'
+          }}>
               <CardContent className="p-6 text-center">
                 <div className="w-12 h-12 bg-accent rounded-full flex items-center justify-center mx-auto mb-4">
                   <Globe className="h-6 w-6 text-accent-foreground" />
@@ -90,7 +96,9 @@ const Index = () => {
               </CardContent>
             </Card>
 
-            <Card className="backdrop-blur-sm border-white/10" style={{ background: 'var(--gradient-glass)' }}>
+            <Card className="backdrop-blur-sm border-white/10" style={{
+            background: 'var(--gradient-glass)'
+          }}>
               <CardContent className="p-6 text-center">
                 <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center mx-auto mb-4">
                   <Star className="h-6 w-6 text-primary-foreground" />
@@ -103,9 +111,10 @@ const Index = () => {
         </div>
 
         {/* Progress Dashboard or Login */}
-        {user ? (
-          <div className="max-w-2xl mx-auto mb-12">
-            <Card className="backdrop-blur-sm border-white/20 shadow-2xl" style={{ background: 'var(--gradient-card)' }}>
+        {user ? <div className="max-w-2xl mx-auto mb-12">
+            <Card className="backdrop-blur-sm border-white/20 shadow-2xl" style={{
+          background: 'var(--gradient-card)'
+        }}>
               <CardHeader className="text-center pb-4">
                 <div className="inline-flex items-center gap-2 bg-accent/20 text-accent px-3 py-1 rounded-full text-sm mb-2">
                   <Trophy className="h-3 w-3" />
@@ -141,18 +150,16 @@ const Index = () => {
                       Points 15+📈
                     </div>
                     <Link to="/downloads">
-                      <Button className="bg-primary hover:bg-primary/90">
-                        צפה בסרטון הדגמה ▶
-                      </Button>
+                      
                     </Link>
                   </div>
                 </div>
               </CardContent>
             </Card>
-          </div>
-        ) : (
-          <div className="max-w-2xl mx-auto mb-12">
-            <Card className="backdrop-blur-sm border-white/20 shadow-2xl" style={{ background: 'var(--gradient-card)' }}>
+          </div> : <div className="max-w-2xl mx-auto mb-12">
+            <Card className="backdrop-blur-sm border-white/20 shadow-2xl" style={{
+          background: 'var(--gradient-card)'
+        }}>
               <CardHeader className="text-center pb-4">
                 <div className="inline-flex items-center gap-2 bg-accent/20 text-accent px-3 py-1 rounded-full text-sm mb-2">
                   <Trophy className="h-3 w-3" />
@@ -186,13 +193,14 @@ const Index = () => {
                 </div>
               </CardContent>
             </Card>
-          </div>
-        )}
+          </div>}
 
         {/* Recommended Next Lesson and Daily Exercises */}
         <div className="max-w-4xl mx-auto mb-16">
           <div className="grid md:grid-cols-2 gap-6">
-            <Card className="backdrop-blur-sm border-white/10" style={{ background: 'var(--gradient-glass)' }}>
+            <Card className="backdrop-blur-sm border-white/10" style={{
+            background: 'var(--gradient-glass)'
+          }}>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Target className="h-5 w-5 text-primary" />
@@ -210,7 +218,9 @@ const Index = () => {
               </CardContent>
             </Card>
 
-            <Card className="backdrop-blur-sm border-white/10" style={{ background: 'var(--gradient-glass)' }}>
+            <Card className="backdrop-blur-sm border-white/10" style={{
+            background: 'var(--gradient-glass)'
+          }}>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Clock className="h-5 w-5 text-accent" />
@@ -271,8 +281,6 @@ const Index = () => {
           9 מסמך בטכנולוגיות לתהמים מקצועיים
         </div>
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default Index;
