@@ -18,6 +18,7 @@ export const Auth: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
+  const [resetEmail, setResetEmail] = useState('');
   
   // Check URL parameters for tab selection
   const urlParams = new URLSearchParams(window.location.search);
@@ -81,6 +82,39 @@ export const Auth: React.FC = () => {
       navigate('/');
     }
   };
+  
+  const handlePasswordReset = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!resetEmail) {
+      toast({
+        title: "שגיאה",
+        description: "אנא הכנס כתובת אימייל",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    setLoading(true);
+    const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
+      redirectTo: `${window.location.origin}/auth?reset=true`
+    });
+    
+    setLoading(false);
+    
+    if (error) {
+      toast({
+        title: "שגיאה",
+        description: error.message,
+        variant: "destructive"
+      });
+    } else {
+      toast({
+        title: "נשלח בהצלחה!",
+        description: "בדוק את האימייל שלך לקישור איפוס הסיסמה"
+      });
+      setResetEmail('');
+    }
+  };
   return <div className="min-h-screen bg-gradient-to-br from-primary/10 via-background to-secondary/10 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
@@ -90,9 +124,10 @@ export const Auth: React.FC = () => {
 
         <Card className="shadow-lg">
           <Tabs defaultValue={initialTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
+            <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="signin">התחברות</TabsTrigger>
               <TabsTrigger value="signup">הרשמה</TabsTrigger>
+              <TabsTrigger value="reset">איפוס סיסמה</TabsTrigger>
             </TabsList>
 
             <TabsContent value="signin">
@@ -163,6 +198,40 @@ export const Auth: React.FC = () => {
 
                   <Button type="submit" className="w-full" disabled={loading}>
                     {loading ? 'נרשם...' : 'הירשם'}
+                    <ArrowRight className="h-4 w-4 mr-2" />
+                  </Button>
+                </form>
+              </CardContent>
+            </TabsContent>
+
+            <TabsContent value="reset">
+              <CardHeader>
+                <CardTitle className="text-right">איפוס סיסמה</CardTitle>
+                <CardDescription className="text-right">
+                  הכנס את כתובת האימייל שלך כדי לקבל קישור לאיפוס סיסמה
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={handlePasswordReset} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="reset-email" className="text-right block">
+                      <Mail className="inline h-4 w-4 ml-2" />
+                      כתובת אימייל
+                    </Label>
+                    <Input 
+                      id="reset-email" 
+                      type="email" 
+                      value={resetEmail} 
+                      onChange={(e) => setResetEmail(e.target.value)} 
+                      placeholder="your.email@example.com" 
+                      required 
+                      className="text-right" 
+                      dir="ltr" 
+                    />
+                  </div>
+
+                  <Button type="submit" className="w-full" disabled={loading}>
+                    {loading ? 'שולח...' : 'שלח קישור איפוס'}
                     <ArrowRight className="h-4 w-4 mr-2" />
                   </Button>
                 </form>

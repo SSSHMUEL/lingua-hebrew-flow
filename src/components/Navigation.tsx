@@ -52,12 +52,16 @@ export const Navigation: React.FC = () => {
                 <FlipHorizontal2 className="h-4 w-4" />
                 תרגול
               </Link>
+              <Link to="/learned" className="flex items-center gap-2 text-foreground hover:text-primary transition-colors">
+                <Heart className="h-4 w-4" />
+                מילים נלמדות
+              </Link>
               <Link to="/profile" className="flex items-center gap-2 text-foreground hover:text-primary transition-colors">
                 <HelpCircle className="h-4 w-4" />
                 פרופיל
               </Link>
               <Link to="/about" className="flex items-center gap-2 text-foreground hover:text-primary transition-colors">
-                <Heart className="h-4 w-4" />
+                <BookOpen className="h-4 w-4" />
                 אודות
               </Link>
               <Link to="/downloads" className="flex items-center gap-2 text-foreground hover:text-primary transition-colors">

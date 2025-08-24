@@ -7,6 +7,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/components/AuthProvider';
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from '@/hooks/use-toast';
 import { Settings, BookOpen, Target } from 'lucide-react';
 
 const Profile: React.FC = () => {
@@ -76,6 +77,39 @@ const Profile: React.FC = () => {
       
     } catch (error) {
       console.error('Error saving preferences:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!user) return;
+    
+    const confirmed = window.confirm(
+      'האם אתה בטוח שברצונך למחוק את החשבון? פעולה זו בלתי הפיכה ותמחק את כל הנתונים שלך.'
+    );
+    
+    if (!confirmed) return;
+    
+    setLoading(true);
+    try {
+      // Delete user's data
+      await supabase.from('learned_words').delete().eq('user_id', user.id);
+      await supabase.from('profiles').delete().eq('user_id', user.id);
+      
+      // Delete the user account
+      const { error } = await supabase.auth.admin.deleteUser(user.id);
+      
+      if (error) throw error;
+      
+      navigate('/');
+    } catch (error) {
+      console.error('Error deleting account:', error);
+      toast({
+        title: "שגיאה",
+        description: "לא ניתן למחוק את החשבון. נסה שוב מאוחר יותר.",
+        variant: "destructive"
+      });
     } finally {
       setLoading(false);
     }
@@ -181,6 +215,37 @@ const Profile: React.FC = () => {
               >
                 {loading ? 'שומר...' : 'שמור העדפות'}
               </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Danger Zone */}
+        <Card className="shadow-lg mt-6 border-destructive">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-destructive">
+              <Settings className="h-5 w-5" />
+              אזור מסוכן
+            </CardTitle>
+            <p className="text-sm text-muted-foreground">
+              פעולות אלו הן בלתי הפיכות. נא להיזהר.
+            </p>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="p-4 rounded-lg border border-destructive/20 bg-destructive/5">
+                <h3 className="font-medium text-destructive mb-2">מחיקת חשבון</h3>
+                <p className="text-sm text-muted-foreground mb-4">
+                  מחיקת החשבון תמחק לצמיתות את כל הנתונים שלך, כולל ההתקדמות והמילים הנלמדות.
+                </p>
+                <Button 
+                  variant="destructive" 
+                  size="sm"
+                  onClick={handleDeleteAccount}
+                  disabled={loading}
+                >
+                  {loading ? 'מוחק...' : 'מחק חשבון'}
+                </Button>
+              </div>
             </div>
           </CardContent>
         </Card>
