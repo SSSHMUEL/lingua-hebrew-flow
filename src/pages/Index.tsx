@@ -49,29 +49,29 @@ const Index = () => {
   return <div className="min-h-screen" style={{
     background: 'var(--gradient-hero)'
   }}>
-      <div className="container mx-auto px-4 py-12">
+      <div className="container mx-auto px-4 py-8 md:py-12">
         {/* Hero Section */}
-        <div className="text-center mb-16">
-          <div className="inline-flex items-center gap-2 bg-primary/20 text-primary px-4 py-2 rounded-full mb-6 backdrop-blur-sm">
-            <Sparkles className="h-4 w-4" />
+        <div className="text-center mb-12 md:mb-16">
+          <div className="inline-flex items-center gap-2 bg-primary/20 text-primary px-3 py-1.5 md:px-4 md:py-2 rounded-full mb-4 md:mb-6 backdrop-blur-sm text-sm md:text-base">
+            <Sparkles className="h-3 w-3 md:h-4 md:w-4" />
             פלטפורמת הלימוד המתקדמת בישראל
           </div>
-          <h1 className="text-5xl md:text-7xl font-bold text-foreground mb-6">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-bold text-foreground mb-4 md:mb-6 px-2">
             למד אנגלית
             <br />
             <span className="bg-gradient-to-l from-primary to-accent bg-clip-text text-transparent">
               ברמה מקצועית
             </span>
           </h1>
-          <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+          <p className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed px-4">
             הצטרף לאלפי מקצוענים שכבר שדרגו את הקריירה שלהם עם השיטה שלנו. למוד מילים באתר והן יופיעו באנגלית בכל אתר אחר ובסרטונים - לתרגול מתמיד ויעיל
           </p>
         </div>
 
         {/* How It Works Section */}
-        <div className="max-w-4xl mx-auto mb-16">
-          <h2 className="text-3xl font-bold text-center text-foreground mb-8">איך זה עובד?</h2>
-          <div className="grid md:grid-cols-3 gap-8">
+        <div className="max-w-4xl mx-auto mb-12 md:mb-16 px-4">
+          <h2 className="text-2xl sm:text-3xl font-bold text-center text-foreground mb-6 md:mb-8">איך זה עובד?</h2>
+          <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-8">
             <Card className="backdrop-blur-sm border-white/10" style={{
             background: 'var(--gradient-glass)'
           }}>
@@ -111,7 +111,7 @@ const Index = () => {
         </div>
 
         {/* Progress Dashboard or Login */}
-        {user ? <div className="max-w-2xl mx-auto mb-12">
+        {user ? <div className="max-w-2xl mx-auto mb-8 md:mb-12 px-4">
             <Card className="backdrop-blur-sm border-white/20 shadow-2xl" style={{
           background: 'var(--gradient-card)'
         }}>
@@ -133,7 +133,7 @@ const Index = () => {
                     <Progress value={userProgress} className="h-4" />
                   </div>
                   
-                  <div className="grid grid-cols-2 gap-6">
+                  <div className="grid grid-cols-2 gap-3 md:gap-6">
                     <div className="text-center p-4 rounded-xl bg-card/30">
                       <div className="text-3xl font-bold text-foreground">{userStats.learnedWords}</div>
                       <div className="text-sm text-muted-foreground">מילים נלמדו</div>
@@ -156,7 +156,7 @@ const Index = () => {
                 </div>
               </CardContent>
             </Card>
-          </div> : <div className="max-w-2xl mx-auto mb-12">
+          </div> : <div className="max-w-2xl mx-auto mb-8 md:mb-12 px-4">
             <Card className="backdrop-blur-sm border-white/20 shadow-2xl" style={{
           background: 'var(--gradient-card)'
         }}>
@@ -196,8 +196,8 @@ const Index = () => {
           </div>}
 
         {/* Recommended Next Lesson and Daily Exercises */}
-        <div className="max-w-4xl mx-auto mb-16">
-          <div className="grid md:grid-cols-2 gap-6">
+        <div className="max-w-4xl mx-auto mb-12 md:mb-16 px-4">
+          <div className="grid sm:grid-cols-2 gap-4 md:gap-6">
             <Card className="backdrop-blur-sm border-white/10" style={{
             background: 'var(--gradient-glass)'
           }}>
@@ -246,8 +246,8 @@ const Index = () => {
         </div>
 
         {/* Stats Section */}
-        <div className="max-w-4xl mx-auto mb-12">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
+        <div className="max-w-4xl mx-auto mb-8 md:mb-12 px-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 md:gap-6 text-center">
             <div className="p-6">
               <div className="text-4xl font-bold text-primary mb-2">95%</div>
               <div className="text-sm text-muted-foreground">שיפור מוכח</div>
@@ -264,14 +264,14 @@ const Index = () => {
         </div>
 
         {/* Action Buttons */}
-        <div className="flex justify-center gap-4 mb-8">
-          <Link to="/learn">
-            <Button size="lg" className="px-8 py-3 text-lg bg-primary hover:bg-primary/90">
+        <div className="flex flex-col sm:flex-row justify-center gap-3 md:gap-4 mb-6 md:mb-8 px-4">
+          <Link to="/learn" className="w-full sm:w-auto">
+            <Button size="lg" className="w-full sm:w-auto px-6 md:px-8 py-3 text-base md:text-lg bg-primary hover:bg-primary/90">
               התחל את המסע שלך
             </Button>
           </Link>
-          <Link to="/downloads">
-            <Button size="lg" variant="outline" className="px-8 py-3 text-lg border-white/20 bg-white/5 backdrop-blur-sm hover:bg-white/10">
+          <Link to="/downloads" className="w-full sm:w-auto">
+            <Button size="lg" variant="outline" className="w-full sm:w-auto px-6 md:px-8 py-3 text-base md:text-lg border-white/20 bg-white/5 backdrop-blur-sm hover:bg-white/10">
               הורד את התוסף 🌐
             </Button>
           </Link>

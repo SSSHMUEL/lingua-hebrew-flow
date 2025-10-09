@@ -17,12 +17,14 @@ export const AISubtitles: React.FC = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [videoFile, setVideoFile] = useState<File | null>(null);
+  const [subtitleFile, setSubtitleFile] = useState<File | null>(null);
   const [videoUrl, setVideoUrl] = useState<string>('');
   const [subtitles, setSubtitles] = useState<Subtitle[]>([]);
   const [currentSubtitle, setCurrentSubtitle] = useState<string>('');
   const [isPlaying, setIsPlaying] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const subtitleInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!user) {
@@ -89,6 +91,95 @@ export const AISubtitles: React.FC = () => {
       setVideoUrl(url);
       setSubtitles([]);
       setCurrentSubtitle('');
+    }
+  };
+
+  const handleSubtitleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (!file.name.endsWith('.srt') && !file.name.endsWith('.vtt')) {
+        toast({
+          title: 'שגיאה',
+          description: 'אנא בחר קובץ כתוביות (SRT או VTT)',
+          variant: 'destructive',
+        });
+        return;
+      }
+
+      setSubtitleFile(file);
+      
+      // Parse subtitle file
+      const text = await file.text();
+      const parsedSubs = parseSubtitleFile(text);
+      
+      if (parsedSubs.length > 0) {
+        // Replace learned words in subtitles
+        const processedSubs = await replaceLearnedWords(parsedSubs);
+        setSubtitles(processedSubs);
+        
+        toast({
+          title: 'הצלחה',
+          description: 'הכתוביות נטענו בהצלחה!',
+        });
+      }
+    }
+  };
+
+  const parseSubtitleFile = (text: string): Subtitle[] => {
+    const subtitles: Subtitle[] = [];
+    const blocks = text.trim().split('\n\n');
+    
+    for (const block of blocks) {
+      const lines = block.split('\n');
+      if (lines.length >= 3) {
+        const timeLine = lines[1];
+        const match = timeLine.match(/(\d{2}:\d{2}:\d{2})/);
+        if (match) {
+          const timestamp = match[1];
+          const text = lines.slice(2).join(' ');
+          subtitles.push({ timestamp, text });
+        }
+      }
+    }
+    
+    return subtitles;
+  };
+
+  const replaceLearnedWords = async (subs: Subtitle[]): Promise<Subtitle[]> => {
+    if (!user) return subs;
+
+    try {
+      const { data: learnedWords } = await supabase
+        .from('learned_words')
+        .select(`
+          vocabulary_words (
+            english_word,
+            hebrew_translation
+          )
+        `)
+        .eq('user_id', user.id);
+
+      if (!learnedWords || learnedWords.length === 0) return subs;
+
+      const wordMap = new Map<string, string>();
+      learnedWords.forEach((lw: any) => {
+        const word = lw.vocabulary_words;
+        if (word?.hebrew_translation && word?.english_word) {
+          wordMap.set(word.hebrew_translation, word.english_word);
+        }
+      });
+
+      return subs.map(sub => {
+        let text = sub.text;
+        wordMap.forEach((english, hebrew) => {
+          const regex = new RegExp(hebrew, 'g');
+          text = text.replace(regex, english);
+        });
+        return { ...sub, text };
+      });
+    } catch (error) {
+      console.error('Error replacing learned words:', error);
+      return subs;
     }
   };
 
@@ -195,6 +286,13 @@ export const AISubtitles: React.FC = () => {
                 onChange={handleFileChange}
                 className="hidden"
               />
+              <input
+                ref={subtitleInputRef}
+                type="file"
+                accept=".srt,.vtt"
+                onChange={handleSubtitleFileChange}
+                className="hidden"
+              />
               
               <Button
                 onClick={() => fileInputRef.current?.click()}
@@ -207,23 +305,37 @@ export const AISubtitles: React.FC = () => {
               </Button>
 
               {videoFile && (
-                <Button
-                  onClick={handleGenerateSubtitles}
-                  className="w-full h-12 text-lg"
-                  disabled={loading}
-                >
-                  {loading ? (
-                    <>
-                      <Loader2 className="h-5 w-5 ml-2 animate-spin" />
-                      מייצר כתוביות...
-                    </>
-                  ) : (
-                    <>
-                      <Sparkles className="h-5 w-5 ml-2" />
-                      צור כתוביות
-                    </>
-                  )}
-                </Button>
+                <div className="space-y-3">
+                  <Button
+                    onClick={handleGenerateSubtitles}
+                    className="w-full h-12 text-lg"
+                    disabled={loading}
+                  >
+                    {loading ? (
+                      <>
+                        <Loader2 className="h-5 w-5 ml-2 animate-spin" />
+                        מייצר כתוביות עם AI...
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="h-5 w-5 ml-2" />
+                        צור כתוביות עם AI
+                      </>
+                    )}
+                  </Button>
+                  
+                  <div className="text-center text-sm text-muted-foreground">או</div>
+                  
+                  <Button
+                    onClick={() => subtitleInputRef.current?.click()}
+                    variant="outline"
+                    className="w-full h-12 text-lg"
+                    disabled={loading}
+                  >
+                    <Upload className="h-5 w-5 ml-2" />
+                    העלה קובץ כתוביות (SRT/VTT)
+                  </Button>
+                </div>
               )}
             </CardContent>
           </Card>
@@ -308,7 +420,11 @@ export const AISubtitles: React.FC = () => {
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-primary">•</span>
-                  <span>הבינה המלאכותית תייצר כתוביות בעברית</span>
+                  <span><strong>אופציה 1:</strong> צור כתוביות עם AI - הבינה המלאכותית תייצר כתוביות בעברית</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-primary">•</span>
+                  <span><strong>אופציה 2:</strong> העלה קובץ כתוביות קיים (SRT/VTT)</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-primary">•</span>
