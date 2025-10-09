@@ -11,6 +11,7 @@ import Learn from "./pages/Learn";
 import Learned from "./pages/Learned";
 import Downloads from "./pages/Downloads";
 import About from "./pages/About";
+import AISubtitles from "./pages/AISubtitles";
 import NotFound from "./pages/NotFound";
 import Flashcards from "./pages/Flashcards";
 import Quiz from "./pages/Quiz";
@@ -37,6 +38,7 @@ const App = () => (
               <Route path="/learned" element={<Learned />} />
               <Route path="/downloads" element={<Downloads />} />
               <Route path="/about" element={<About />} />
+              <Route path="/ai-subtitles" element={<AISubtitles />} />
               <Route path="/practice" element={<Practice />} />
               <Route path="/profile" element={<Profile />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
