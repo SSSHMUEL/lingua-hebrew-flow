@@ -189,67 +189,60 @@ export const AISubtitles: React.FC = () => {
     setLoading(true);
     
     try {
-      // Extract audio from video
-      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-      const arrayBuffer = await videoFile.arrayBuffer();
+      // Upload video to Supabase Storage
+      const fileName = `${user.id}/${Date.now()}-${videoFile.name}`;
       
-      // For now, we'll send the video directly as Groq can handle video files
-      const reader = new FileReader();
-      reader.readAsDataURL(videoFile);
-      
-      reader.onload = async () => {
-        const base64Audio = (reader.result as string).split(',')[1];
-        
-        try {
-          const { data, error } = await supabase.functions.invoke('transcribeVideo', {
-            body: {
-              audioBase64: base64Audio,
-              userId: user.id,
-            },
-          });
-
-          if (error) throw error;
-
-          if (data.error) {
-            throw new Error(data.error);
-          }
-
-          // Process subtitles with learned words replacement
-          const processedSubs = await replaceLearnedWords(data.subtitles);
-          setSubtitles(processedSubs);
-          
-          toast({
-            title: 'הצלחה',
-            description: `הכתוביות נוצרו בהצלחה! נשארו לך ${data.remainingUsage} תמלולים היום`,
-          });
-        } catch (error: any) {
-          console.error('Error generating subtitles:', error);
-          toast({
-            title: 'שגיאה',
-            description: error.message || 'לא ניתן ליצור כתוביות',
-            variant: 'destructive',
-          });
-        } finally {
-          setLoading(false);
-        }
-      };
-
-      reader.onerror = () => {
-        setLoading(false);
-        toast({
-          title: 'שגיאה',
-          description: 'לא ניתן לקרוא את הקובץ',
-          variant: 'destructive',
+      const { error: uploadError } = await supabase.storage
+        .from('video-uploads')
+        .upload(fileName, videoFile, {
+          cacheControl: '3600',
+          upsert: false
         });
-      };
-    } catch (error) {
-      setLoading(false);
-      console.error('Error:', error);
+
+      if (uploadError) {
+        console.error('Upload error:', uploadError);
+        throw new Error('לא ניתן להעלות את הקובץ');
+      }
+
+      console.log('Video uploaded successfully:', fileName);
+
+      // Call Edge Function with the file path
+      const { data, error } = await supabase.functions.invoke('transcribeVideo', {
+        body: {
+          videoPath: fileName,
+          userId: user.id,
+        },
+      });
+
+      if (error) throw error;
+
+      if (data.error) {
+        throw new Error(data.error);
+      }
+
+      // Process subtitles with learned words replacement
+      const processedSubs = await replaceLearnedWords(data.subtitles);
+      setSubtitles(processedSubs);
+      
+      toast({
+        title: 'הצלחה',
+        description: `הכתוביות נוצרו בהצלחה! נשארו לך ${data.remainingUsage} תמלולים היום`,
+      });
+
+      // Clean up the uploaded file
+      await supabase.storage
+        .from('video-uploads')
+        .remove([fileName]);
+
+    } catch (error: any) {
+      console.error('Error generating subtitles:', error);
       toast({
         title: 'שגיאה',
-        description: 'אירעה שגיאה',
+        description: error.message || 'לא ניתן ליצור כתוביות',
         variant: 'destructive',
       });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -307,7 +300,9 @@ export const AISubtitles: React.FC = () => {
                 disabled={loading}
               >
                 <Upload className="h-6 w-6 ml-2" />
-                {videoFile ? videoFile.name : 'בחר קובץ וידאו'}
+                <span className="truncate max-w-[300px]">
+                  {videoFile ? videoFile.name : 'בחר קובץ וידאו'}
+                </span>
               </Button>
 
               {videoFile && (
@@ -357,29 +352,15 @@ export const AISubtitles: React.FC = () => {
                     className="w-full rounded-lg"
                     onPlay={() => setIsPlaying(true)}
                     onPause={() => setIsPlaying(false)}
+                    controls
+                    controlsList="nodownload"
                   />
                   
                   {currentSubtitle && (
-                    <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black/80 text-white px-4 py-2 rounded-lg text-center max-w-[90%]">
+                    <div className="absolute bottom-16 left-1/2 transform -translate-x-1/2 bg-black/90 text-white px-4 py-2 rounded-lg text-center max-w-[90%] pointer-events-none">
                       <p className="text-lg font-medium">{currentSubtitle}</p>
                     </div>
                   )}
-
-                  <div className="flex justify-center gap-4 mt-4">
-                    <Button onClick={togglePlayPause} size="lg">
-                      {isPlaying ? (
-                        <>
-                          <Pause className="h-5 w-5 ml-2" />
-                          השהה
-                        </>
-                      ) : (
-                        <>
-                          <Play className="h-5 w-5 ml-2" />
-                          הפעל
-                        </>
-                      )}
-                    </Button>
-                  </div>
                 </div>
               </CardContent>
             </Card>

@@ -15,11 +15,13 @@ serve(async (req) => {
   }
 
   try {
-    const { audioBase64, userId } = await req.json();
+    const { videoPath, userId } = await req.json();
     
-    if (!audioBase64 || !userId) {
+    if (!videoPath || !userId) {
       throw new Error('Missing required parameters');
     }
+
+    console.log('Received video path:', videoPath);
 
     const GROQ_API_KEY = Deno.env.get('GROQ_API_KEY');
     if (!GROQ_API_KEY) {
@@ -75,13 +77,31 @@ serve(async (req) => {
 
     console.log('Learned words:', learnedEnglishWords);
 
-    // Convert base64 to binary
-    const binaryAudio = Uint8Array.from(atob(audioBase64), c => c.charCodeAt(0));
+    // Create signed URL for the video file in Storage
+    const { data: signedUrlData, error: signedUrlError } = await supabaseClient
+      .storage
+      .from('video-uploads')
+      .createSignedUrl(videoPath, 3600); // 1 hour expiry
+
+    if (signedUrlError || !signedUrlData) {
+      console.error('Error creating signed URL:', signedUrlError);
+      throw new Error('Failed to access video file');
+    }
+
+    console.log('Created signed URL for video');
+
+    // Download the video file from signed URL
+    const videoResponse = await fetch(signedUrlData.signedUrl);
+    if (!videoResponse.ok) {
+      throw new Error('Failed to download video file');
+    }
+
+    const videoBlob = await videoResponse.blob();
+    console.log('Downloaded video file, size:', videoBlob.size);
     
     // Prepare form data for Groq API
     const formData = new FormData();
-    const blob = new Blob([binaryAudio], { type: 'audio/webm' });
-    formData.append('file', blob, 'audio.webm');
+    formData.append('file', videoBlob, 'video.mp4');
     formData.append('model', 'whisper-large-v3-turbo');
     formData.append('language', 'he');
     formData.append('response_format', 'verbose_json');
