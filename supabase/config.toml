@@ -56,3 +56,6 @@ port = 54321
 
 [functions.generate-subtitles]
 verify_jwt = true
+
+[functions.transcribeVideo]
+verify_jwt = true

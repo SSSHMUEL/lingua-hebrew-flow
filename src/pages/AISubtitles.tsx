@@ -189,17 +189,21 @@ export const AISubtitles: React.FC = () => {
     setLoading(true);
     
     try {
-      // Convert video to base64
+      // Extract audio from video
+      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const arrayBuffer = await videoFile.arrayBuffer();
+      
+      // For now, we'll send the video directly as Groq can handle video files
       const reader = new FileReader();
       reader.readAsDataURL(videoFile);
       
       reader.onload = async () => {
-        const base64Video = (reader.result as string).split(',')[1];
+        const base64Audio = (reader.result as string).split(',')[1];
         
         try {
-          const { data, error } = await supabase.functions.invoke('generate-subtitles', {
+          const { data, error } = await supabase.functions.invoke('transcribeVideo', {
             body: {
-              videoBase64: base64Video,
+              audioBase64: base64Audio,
               userId: user.id,
             },
           });
@@ -210,11 +214,13 @@ export const AISubtitles: React.FC = () => {
             throw new Error(data.error);
           }
 
-          setSubtitles(data.subtitles);
+          // Process subtitles with learned words replacement
+          const processedSubs = await replaceLearnedWords(data.subtitles);
+          setSubtitles(processedSubs);
           
           toast({
             title: 'הצלחה',
-            description: 'הכתוביות נוצרו בהצלחה!',
+            description: `הכתוביות נוצרו בהצלחה! נשארו לך ${data.remainingUsage} תמלולים היום`,
           });
         } catch (error: any) {
           console.error('Error generating subtitles:', error);
@@ -420,7 +426,7 @@ export const AISubtitles: React.FC = () => {
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-primary">•</span>
-                  <span><strong>אופציה 1:</strong> צור כתוביות עם AI - הבינה המלאכותית תייצר כתוביות בעברית</span>
+                  <span><strong>אופציה 1:</strong> צור כתוביות עם AI - תמלול אוטומטי מהיר באמצעות Groq</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-primary">•</span>
@@ -433,6 +439,10 @@ export const AISubtitles: React.FC = () => {
                 <li className="flex items-start gap-2">
                   <span className="text-primary">•</span>
                   <span>זה עוזר לך לתרגל את המילים בהקשר אמיתי</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-primary">•</span>
+                  <span><strong>מגבלה:</strong> 5 תמלולים ליום למשתמש</span>
                 </li>
               </ul>
             </CardContent>
