@@ -18,11 +18,15 @@ class LocalWordsStore(context: Context) {
         val wordMap = mutableMapOf<String, String>()
 
         if (wordPairsJson != null) {
-            val jsonObject = JSONObject(wordPairsJson)
-            val keys = jsonObject.keys()
-            while (keys.hasNext()) {
-                val key = keys.next()
-                wordMap[key] = jsonObject.getString(key)
+            try {
+                val jsonObject = JSONObject(wordPairsJson)
+                val keys = jsonObject.keys()
+                while (keys.hasNext()) {
+                    val key = keys.next()
+                    wordMap[key] = jsonObject.getString(key)
+                }
+            } catch (e: Exception) {
+                // Handle JSON parsing error, if necessary
             }
         }
 

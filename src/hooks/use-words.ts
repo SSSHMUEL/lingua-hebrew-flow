@@ -1,35 +1,58 @@
-// src/hooks/use-words.ts (גרסת בדיקה זמנית)
+    // src/hooks/use-words.ts
 
-import { useEffect } from 'react';
-import TlkFixWords from '@/plugins/TlkFixWords';
+    import { useEffect } from 'react';
+    // ודא שהנתיב הזה נכון לקובץ הגדרות ה-Supabase שלך
+    import { supabase } from '@/integrations/supabase/client';
+    // מייבא את ה"גשר" שיצרנו בשלב הקודם
+    import TlkFixWords from '@/plugins/TlkFixWords';
 
-const sendDummyWordsToNative = async (userId: string) => {
-    console.log("✅ [Web Debug] 1. מתחיל תהליך שליחת מילים קבועות עבור משתמש:", userId);
+    /**
+     * פונקציה זו שולפת, מעבדת ושולחת את המילים לקוד ה-Native
+     */
+    const processAndSaveWords = async (userId: string) => {
+        if (!userId) return;
 
-    const dummyWordPairs = {
-        "בדיקה": "Success",
-        "עובד": "It Works"
+        // שלב 1: שליפת הנתונים המסוננים מ-Supabase לפי המשתמש
+        const { data: learnedWords, error } = await supabase
+            .from('learned_words')
+            .select('word_pair')
+            .eq('user_id', userId);
+
+        if (error || !learnedWords) {
+            console.error("שגיאה בשליפת המילים מ-Supabase:", error);
+            return;
+        }
+
+        // שלב 2: עיבוד הנתונים לפורמט שהאנדרואיד מצפה לו
+        const wordPairsMap: { [hebrew: string]: string } = {};
+        learnedWords.forEach(row => {
+            const parts = row.word_pair.split(' - ');
+            if (parts.length === 2) {
+                wordPairsMap[parts[0].trim()] = parts[1].trim();
+            }
+        });
+
+        // שלב 3: שליחת המידע המעובד לאנדרואיד דרך הפלאגין
+        try {
+            // חייבים להמיר את אובייקט ה-JS למחרוזת טקסט (JSON)
+            await TlkFixWords.saveUserWords({
+                wordPairs: JSON.stringify(wordPairsMap)
+            });
+            console.log("✅ הצלחה: המילים נשלחו לאחסון ה-Native!");
+        } catch (e) {
+            console.error("❌ שגיאה: הקריאה לפלאגין נכשלה:", e);
+        }
     };
 
-    console.log("✅ [Web Debug] 2. המילים הקבועות מוכנות:", dummyWordPairs);
-
-    try {
-        await TlkFixWords.saveUserWords({
-            wordPairs: JSON.stringify(dummyWordPairs)
-        });
-        console.log("✅✅✅ [Web Debug] 3. הצלחה! המילים נשלחו לאחסון ה-Native!");
-    } catch (e) {
-        console.error("❌❌❌ [Web Debug] 3a. שגיאה! הקריאה לפלאגין נכשלה:", e);
-    }
-};
-
-export const useUserWordsSync = (userId: string | undefined) => {
-    useEffect(() => {
-        console.log("✅ [Web Debug] 0. ה-Hook useUserWordsSync הופעל. ה-ID של המשתמש הוא:", userId);
-        if (userId) {
-            sendDummyWordsToNative(userId);
-        } else {
-             console.log("✅ [Web Debug] 0a. עדיין אין ID של משתמש.");
-        }
-    }, [userId]);
-};
+    /**
+     * זהו ה-Hook שיפעיל את כל התהליך אוטומטית
+     */
+    export const useUserWordsSync = (userId: string | undefined) => {
+        // הקוד ירוץ אוטומטית כשה-userId יהיה זמין
+        useEffect(() => {
+            if (userId) {
+                processAndSaveWords(userId);
+            }
+        }, [userId]);
+    };
+    

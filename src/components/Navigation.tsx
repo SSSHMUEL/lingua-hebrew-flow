@@ -1,3 +1,5 @@
+// src/components/Navigation.tsx (הגרסה המתוקנת והמלאה)
+
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -7,10 +9,17 @@ import { toast } from '@/hooks/use-toast';
 import { BookOpen, Home, Download, Heart, LogOut, FlipHorizontal2, HelpCircle, Menu, X, Sparkles } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 
+// ================== הוספה 1: ייבוא ה-Hook שלנו ==================
+import { useUserWordsSync } from '@/hooks/use-words';
+
 export const Navigation: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
+
+  // ================== הוספה 2: הפעלת ה-Hook ==================
+  // השורה הזו מפעילה את סנכרון המילים ברקע ברגע ש-user.id קיים.
+  useUserWordsSync(user?.id);
 
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();

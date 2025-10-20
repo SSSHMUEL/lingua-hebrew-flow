@@ -1,9 +1,14 @@
-import { registerPlugin } from '@capacitor/core';
+    // src/plugins/TlkFixWords.ts
 
-export interface TlkFixWordsPlugin {
-  saveUserWords(options: { wordPairs: string }): Promise<void>;
-}
+    import { registerPlugin } from '@capacitor/core';
 
-const TlkFixWords = registerPlugin<TlkFixWordsPlugin>('TlkFixWords');
+    // מגדיר לקוד ה-Web שקיימת פונקציה בשם saveUserWords באנדרואיד
+    export interface TlkFixWordsPlugin {
+      saveUserWords(options: { wordPairs: string }): Promise<void>;
+    }
 
-export default TlkFixWords;
+    // רושם את ה-Plugin תחת השם 'TlkFixWords'
+    const TlkFixWords = registerPlugin<TlkFixWordsPlugin>('TlkFixWords');
+
+    export default TlkFixWords;
+    
