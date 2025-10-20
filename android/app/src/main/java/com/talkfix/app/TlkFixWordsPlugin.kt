@@ -1,5 +1,6 @@
 package com.talkfix.app
 
+import android.content.Intent
 import android.util.Log
 import com.getcapacitor.JSObject
 import com.getcapacitor.Plugin
@@ -16,6 +17,18 @@ class TlkFixWordsPlugin : Plugin() {
     override fun load() {
         super.load()
         localWordsStore = LocalWordsStore(context)
+        Log.d(TAG, "TlkFixWordsPlugin loaded")
+    }
+
+    @PluginMethod
+    fun getUserWords(call: PluginCall) {
+        val wordsMap = localWordsStore.getWords()
+        val result = JSObject()
+        for ((key, value) in wordsMap) {
+            result.put(key, value)
+        }
+        Log.d(TAG, "Returning user words to web: $result")
+        call.resolve(result)
     }
 
     @PluginMethod
@@ -24,9 +37,12 @@ class TlkFixWordsPlugin : Plugin() {
         if (wordPairs != null) {
             Log.d(TAG, "Received word pairs from web: $wordPairs")
             localWordsStore.saveWords(wordPairs)
-            // Update Accessibility Service with new data
-            // This part requires a mechanism to pass data to the running service, e.g., using a BroadcastReceiver or EventBus.
-            // For simplicity, we'll assume the service reloads the data upon new events.
+
+            // Send a broadcast to notify the accessibility service to update its words
+            val intent = Intent("com.talkfix.app.UPDATE_WORDS")
+            context.sendBroadcast(intent)
+            Log.d(TAG, "Sent UPDATE_WORDS broadcast.")
+
             call.resolve()
         } else {
             Log.e(TAG, "saveUserWords called with no word pairs provided")

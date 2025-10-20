@@ -1,6 +1,5 @@
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
-apply plugin: 'kotlin-kapt' // 1. ADD THIS LINE
 
 android {
     namespace "com.talkfix.app"
@@ -28,12 +27,13 @@ android {
         main.java.srcDirs += 'src/main/java'
     }
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_17
-        targetCompatibility JavaVersion.VERSION_17
+        sourceCompatibility JavaVersion.VERSION_21
+        targetCompatibility JavaVersion.VERSION_21
     }
-    kotlinOptions {
-        jvmTarget = '17'
-    }
+}
+
+kotlin {
+    jvmToolchain(21)
 }
 
 repositories {
@@ -53,7 +53,6 @@ dependencies {
     androidTestImplementation "androidx.test.ext:junit:$androidxJunitVersion"
     androidTestImplementation "androidx.test.espresso:espresso-core:$androidxEspressoCoreVersion"
     implementation project(':capacitor-cordova-android-plugins')
-    kapt "com.getcapacitor:capacitor-android-processor:5.7.4" // 2. ADD THIS LINE
 }
 
 apply from: 'capacitor.build.gradle'
