@@ -50,6 +50,16 @@ const Profile: React.FC = () => {
         .select('*', { count: 'exact', head: true });
       setLearned(learnedCount || 0);
       setTotal(totalCount || 0);
+      
+      // Load user's topic preferences
+      const { data: preferences } = await supabase
+        .from('user_topic_preferences' as any)
+        .select('topic_id')
+        .eq('user_id', user.id);
+      
+      if (preferences) {
+        setSelectedTopics(preferences.map((p: any) => p.topic_id));
+      }
     })();
   }, [user, navigate]);
 
@@ -68,15 +78,37 @@ const Profile: React.FC = () => {
     
     setLoading(true);
     try {
-      // Here you would save to a user preferences table
-      // For now, we'll just show a success message
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // First, delete all existing preferences
+      await supabase
+        .from('user_topic_preferences' as any)
+        .delete()
+        .eq('user_id', user.id);
       
-      // You can add logic here to save selectedTopics to the database
-      console.log('Selected topics:', selectedTopics);
+      // Then insert the new selected topics
+      if (selectedTopics.length > 0) {
+        const preferences = selectedTopics.map(topicId => ({
+          user_id: user.id,
+          topic_id: topicId
+        }));
+        
+        const { error } = await supabase
+          .from('user_topic_preferences' as any)
+          .insert(preferences);
+        
+        if (error) throw error;
+      }
       
+      toast({
+        title: "הצלחה!",
+        description: "העדפות הנושאים נשמרו בהצלחה",
+      });
     } catch (error) {
       console.error('Error saving preferences:', error);
+      toast({
+        title: "שגיאה",
+        description: "לא ניתן לשמור את ההעדפות. נסה שוב.",
+        variant: "destructive"
+      });
     } finally {
       setLoading(false);
     }

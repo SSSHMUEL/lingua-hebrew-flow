@@ -264,14 +264,14 @@ const Index = () => {
         </div>
 
         {/* Action Buttons */}
-        <div className="flex flex-col sm:flex-row justify-center gap-3 md:gap-4 mb-6 md:mb-8 px-4">
-          <Link to="/learn" className="w-full sm:w-auto">
-            <Button size="lg" className="w-full sm:w-auto px-6 md:px-8 py-3 text-base md:text-lg bg-primary hover:bg-primary/90">
+        <div className="flex flex-col justify-center gap-3 md:gap-4 mb-6 md:mb-8 px-4 max-w-md mx-auto">
+          <Link to="/learn" className="w-full">
+            <Button size="lg" className="w-full px-6 md:px-8 py-3 text-base md:text-lg bg-primary hover:bg-primary/90">
               התחל את המסע שלך
             </Button>
           </Link>
-          <Link to="/downloads" className="w-full sm:w-auto">
-            <Button size="lg" variant="outline" className="w-full sm:w-auto px-6 md:px-8 py-3 text-base md:text-lg border-white/20 bg-white/5 backdrop-blur-sm hover:bg-white/10">
+          <Link to="/downloads" className="w-full">
+            <Button size="lg" variant="outline" className="w-full px-6 md:px-8 py-3 text-base md:text-lg border-white/20 bg-white/5 backdrop-blur-sm hover:bg-white/10">
               הורד את התוסף 🌐
             </Button>
           </Link>
