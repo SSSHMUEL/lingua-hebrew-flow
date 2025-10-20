@@ -1,68 +1,59 @@
 // src/hooks/use-words.ts
 
 import { useEffect } from 'react';
-// נניח שזה הנתיב לקליינט ה-Supabase שלך. שנה בהתאם למבנה הפרויקט שלך.
-import { supabase } from '../lib/supabase';
-// נניח שזה הנתיב לפלאגין של Capacitor שיצרנו. שנה בהתאם.
-import TlkFixWords from '../plugins/TlkFixWords';
+// ודא שהנתיב הזה נכון
+import { supabase } from '@/lib/supabase';
+// ================== התיקון נמצא כאן ==================
+// שיניתי את הנתיב כך שישתמש ב-@ שמצביע לתיקיית src
+import TlkFixWords from '@/plugins/TlkFixWords';
 
-/**
- * פונקציה זו שולפת, מעבדת ושולחת את המילים לקוד ה-Native
- */
 const processAndSaveWords = async (userId: string) => {
-    // אם אין ID של משתמש, אל תעשה כלום
-    if (!userId) return;
+    console.log('[TlkFix Debug] 1. מתחיל את תהליך שליפת ושליחת המילים עבור משתמש:', userId);
 
-    // שלב 1: שליפת הנתונים המסוננים מ-Supabase
-    // אנחנו מבקשים רק את עמודת `word_pair` מהטבלה `learned_words`
-    // ומשתמשים ב-eq כדי לסנן רק את השורות ששייכות למשתמש שלנו.
+    if (!userId) {
+        console.log('[TlkFix Debug] 1a. התהליך נעצר כי אין ID של משתמש.');
+        return;
+    }
+
+    console.log('[TlkFix Debug] 2. שולף מילים מ-Supabase...');
     const { data: learnedWords, error } = await supabase
         .from('learned_words')
         .select('word_pair')
         .eq('user_id', userId);
 
     if (error || !learnedWords) {
-        console.error("Supabase Error fetching learned words:", error);
+        console.error("[TlkFix Debug] 2a. שגיאה בשליפת המילים מ-Supabase:", error);
         return;
     }
 
-    // שלב 2: עיבוד הנתונים לפורמט שהאנדרואיד מצפה לו
-    // { "מילה בעברית": "word in english" }
+    console.log('[TlkFix Debug] 3. נשלפו בהצלחה', learnedWords.length, 'מילים מ-Supabase. מעבד את הנתונים...');
     const wordPairsMap: { [hebrew: string]: string } = {};
     learnedWords.forEach(row => {
-        // מפרק את המחרוזת "עברית - English" לפי המקף
         const parts = row.word_pair.split(' - ');
         if (parts.length === 2) {
-            // החלק הראשון הוא המפתח (עברית), השני הוא הערך (אנגלית)
             wordPairsMap[parts[0].trim()] = parts[1].trim();
         }
     });
+    console.log('[TlkFix Debug] 4. המילים עובדו למפה הבאה:', wordPairsMap);
 
-    // שלב 3: שליחת המידע המעובד לאנדרואיד דרך הפלאגין
+    console.log('[TlkFix Debug] 5. מנסה לשלוח את המילים לאנדרואיד דרך הפלאגין...');
     try {
-        // חייבים להמיר את אובייקט ה-JS למחרוזת טקסט (JSON)
         await TlkFixWords.saveUserWords({
             wordPairs: JSON.stringify(wordPairsMap)
         });
-        console.log("SUCCESS: Words sent to Native storage for user:", userId);
+        console.log("✅ [TlkFix Debug] 6. הצלחה! המילים נשלחו לאחסון ה-Native!");
     } catch (e) {
-        console.error("ERROR: Failed to call TlkFixWords plugin:", e);
+        console.error("❌ [TlkFix Debug] 6a. שגיאה! הקריאה לפלאגין נכשלה:", e);
     }
 };
 
-/**
- * זהו ה-Hook שיפעיל את כל התהליך אוטומטית
- * @param userId - ה-ID של המשתמש המחובר (יכול להיות undefined אם אף אחד לא מחובר)
- */
 export const useUserWordsSync = (userId: string | undefined) => {
-    // useEffect מריץ את הקוד שבתוכו כשהקומפוננטה נטענת,
-    // או כשהערך של userId משתנה (כלומר, כשהמשתמש מתחבר/מתנתק).
     useEffect(() => {
+        console.log('[TlkFix Debug] 0. ה-Hook useUserWordsSync הופעל. ה-ID של המשתמש הוא:', userId);
         if (userId) {
-            console.log("User detected, syncing words to native storage...");
             processAndSaveWords(userId);
+        } else {
+             console.log('[TlkFix Debug] 0a. עדיין אין ID של משתמש.');
         }
     }, [userId]);
-
-    // ל-Hook הזה אין ערך החזרה, הוא רק מבצע פעולת רקע.
 };
