@@ -1,58 +1,35 @@
-// src/hooks/use-words.ts
+// src/hooks/use-words.ts (גרסת בדיקה זמנית)
 
 import { useEffect } from 'react';
-// ================== התיקון הסופי והאמיתי נמצא כאן ==================
-// זהו הנתיב הנכון לקליינט של Supabase, כפי שלמדנו מהקובץ AuthProvider.tsx
-import { supabase } from '@/integrations/supabase/client';
 import TlkFixWords from '@/plugins/TlkFixWords';
 
-const processAndSaveWords = async (userId: string) => {
-    console.log('[TlkFix Debug] 1. מתחיל את תהליך שליפת ושליחת המילים עבור משתמש:', userId);
+const sendDummyWordsToNative = async (userId: string) => {
+    console.log("✅ [Web Debug] 1. מתחיל תהליך שליחת מילים קבועות עבור משתמש:", userId);
 
-    if (!userId) {
-        console.log('[TlkFix Debug] 1a. התהליך נעצר כי אין ID של משתמש.');
-        return;
-    }
+    const dummyWordPairs = {
+        "בדיקה": "Success",
+        "עובד": "It Works"
+    };
 
-    console.log('[TlkFix Debug] 2. שולף מילים מ-Supabase...');
-    const { data: learnedWords, error } = await supabase
-        .from('learned_words')
-        .select('word_pair')
-        .eq('user_id', userId);
+    console.log("✅ [Web Debug] 2. המילים הקבועות מוכנות:", dummyWordPairs);
 
-    if (error || !learnedWords) {
-        console.error("[TlkFix Debug] 2a. שגיאה בשליפת המילים מ-Supabase:", error);
-        return;
-    }
-
-    console.log('[TlkFix Debug] 3. נשלפו בהצלחה', learnedWords.length, 'מילים מ-Supabase. מעבד את הנתונים...');
-    const wordPairsMap: { [hebrew: string]: string } = {};
-    learnedWords.forEach(row => {
-        const parts = row.word_pair.split(' - ');
-        if (parts.length === 2) {
-            wordPairsMap[parts[0].trim()] = parts[1].trim();
-        }
-    });
-    console.log('[TlkFix Debug] 4. המילים עובדו למפה הבאה:', wordPairsMap);
-
-    console.log('[TlkFix Debug] 5. מנסה לשלוח את המילים לאנדרואיד דרך הפלאגין...');
     try {
         await TlkFixWords.saveUserWords({
-            wordPairs: JSON.stringify(wordPairsMap)
+            wordPairs: JSON.stringify(dummyWordPairs)
         });
-        console.log("✅ [TlkFix Debug] 6. הצלחה! המילים נשלחו לאחסון ה-Native!");
+        console.log("✅✅✅ [Web Debug] 3. הצלחה! המילים נשלחו לאחסון ה-Native!");
     } catch (e) {
-        console.error("❌ [TlkFix Debug] 6a. שגיאה! הקריאה לפלאגין נכשלה:", e);
+        console.error("❌❌❌ [Web Debug] 3a. שגיאה! הקריאה לפלאגין נכשלה:", e);
     }
 };
 
 export const useUserWordsSync = (userId: string | undefined) => {
     useEffect(() => {
-        console.log('[TlkFix Debug] 0. ה-Hook useUserWordsSync הופעל. ה-ID של המשתמש הוא:', userId);
+        console.log("✅ [Web Debug] 0. ה-Hook useUserWordsSync הופעל. ה-ID של המשתמש הוא:", userId);
         if (userId) {
-            processAndSaveWords(userId);
+            sendDummyWordsToNative(userId);
         } else {
-             console.log('[TlkFix Debug] 0a. עדיין אין ID של משתמש.');
+             console.log("✅ [Web Debug] 0a. עדיין אין ID של משתמש.");
         }
     }, [userId]);
 };
