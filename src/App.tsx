@@ -18,11 +18,18 @@ import Quiz from "./pages/Quiz";
 import Practice from "./pages/Practice";
 import Profile from "./pages/Profile";
 
+// ================== התוספת שלנו - שלב 1: ייבוא ==================
+import { UserWordsSynchronizer } from "@/components/UserWordsSynchronizer";
+
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
+      {/* ================== התוספת שלנו - שלב 2: הפעלה ================== */}
+      {/* הקומפוננטה הזו תפעל ברקע ותסנכרן את המילים לאנדרואיד */}
+      <UserWordsSynchronizer />
+
       <TooltipProvider>
         <Toaster />
         <Sonner />
