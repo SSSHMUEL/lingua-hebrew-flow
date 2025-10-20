@@ -2,8 +2,8 @@
 
 import { useEffect } from 'react';
 // ================== התיקון נמצא כאן ==================
-// הוספתי את סיומת הקובץ .ts כדי לכוון לקובץ המדויק
-import { supabase } from '@/lib/supabase';
+// שיניתי את הנתיב כך שיצביע לקובץ utils.ts הנכון
+import { supabase } from '@/lib/utils';
 import TlkFixWords from '@/plugins/TlkFixWords';
 
 const processAndSaveWords = async (userId: string) => {
