@@ -1,9 +1,9 @@
 // src/hooks/use-words.ts
 
 import { useEffect } from 'react';
-// ================== התיקון נמצא כאן ==================
-// שיניתי את הנתיב כך שיצביע לקובץ utils.ts הנכון
-import { supabase } from '@/lib/utils';
+// ================== התיקון הסופי והאמיתי נמצא כאן ==================
+// זהו הנתיב הנכון לקליינט של Supabase, כפי שלמדנו מהקובץ AuthProvider.tsx
+import { supabase } from '@/integrations/supabase/client';
 import TlkFixWords from '@/plugins/TlkFixWords';
 
 const processAndSaveWords = async (userId: string) => {
