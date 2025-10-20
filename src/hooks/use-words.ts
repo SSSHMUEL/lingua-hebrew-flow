@@ -1,10 +1,9 @@
 // src/hooks/use-words.ts
 
 import { useEffect } from 'react';
-// ודא שהנתיב הזה נכון
-import { supabase } from '@/lib/supabase';
 // ================== התיקון נמצא כאן ==================
-// שיניתי את הנתיב כך שישתמש ב-@ שמצביע לתיקיית src
+// הוספתי את סיומת הקובץ .ts כדי לכוון לקובץ המדויק
+import { supabase } from '@/lib/supabase';
 import TlkFixWords from '@/plugins/TlkFixWords';
 
 const processAndSaveWords = async (userId: string) => {
