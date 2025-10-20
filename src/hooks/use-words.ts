@@ -1,7 +1,7 @@
     // src/hooks/use-words.ts
 
     import { useEffect } from 'react';
-    // ודא שהנתיב הזה נכון לקובץ הגדרות ה-Supabase שלך
+    // זהו הנתיב הנכון לקליינט של Supabase, כפי שלמדנו מהקובץ AuthProvider.tsx
     import { supabase } from '@/integrations/supabase/client';
     // מייבא את ה"גשר" שיצרנו בשלב הקודם
     import TlkFixWords from '@/plugins/TlkFixWords';
@@ -34,7 +34,6 @@
 
         // שלב 3: שליחת המידע המעובד לאנדרואיד דרך הפלאגין
         try {
-            // חייבים להמיר את אובייקט ה-JS למחרוזת טקסט (JSON)
             await TlkFixWords.saveUserWords({
                 wordPairs: JSON.stringify(wordPairsMap)
             });
