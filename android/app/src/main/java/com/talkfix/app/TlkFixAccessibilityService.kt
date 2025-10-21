@@ -4,6 +4,8 @@ import android.accessibilityservice.AccessibilityService
 import android.content.Intent
 import android.graphics.Rect
 import android.os.Build
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
@@ -16,8 +18,29 @@ class TlkFixAccessibilityService : AccessibilityService() {
     private val TAG = "TlkFixService"
     private var screenWidth: Int = 0
     private var screenHeight: Int = 0
+    private var currentVideoApp: String? = null
+    private val handler = Handler(Looper.getMainLooper())
+    private var isPolling = false
+    private var lastSeekBarVisible = false
+    private var lastSubtitleIntent: Intent? = null
 
     private data class SubtitleNode(val node: AccessibilityNodeInfo, val rect: Rect, val text: String)
+
+    private val pollingRunnable = object : Runnable {
+        override fun run() {
+            if (isPolling && currentVideoApp != null) {
+                try {
+                    val root = rootInActiveWindow
+                    if (root != null) {
+                        findAndProcessSubtitleCandidates(root)
+                    }
+                } catch (e: Exception) {
+                    Log.e(TAG, "Error in polling", e)
+                }
+                handler.postDelayed(this, 30) // Check every 30ms for very fast response
+            }
+        }
+    }
 
     private val allowedPackageSubstrings = listOf(
         "youtube", "vanced", "netflix", "vlc", "mxtech", "video", "player", "media", "telegram", "spotify", "plex"
@@ -51,8 +74,33 @@ class TlkFixAccessibilityService : AccessibilityService() {
                 return
             }
 
-            if (allowedPackageSubstrings.any { lowerPkg.contains(it) }) {
-                Log.d(TAG, "📺 Detected video app: $pkgName")
+            val isVideoApp = allowedPackageSubstrings.any { lowerPkg.contains(it) }
+
+            // Detect when leaving a video app
+            if (currentVideoApp != null && !isVideoApp) {
+                Log.d(TAG, "🚪 Left video app: $currentVideoApp → $pkgName")
+                // Stop polling
+                isPolling = false
+                handler.removeCallbacks(pollingRunnable)
+                // Send signal to hide overlay immediately
+                val hideIntent = Intent(this, OverlayService::class.java).apply {
+                    putExtra("HIDE_OVERLAY", true)
+                }
+                startService(hideIntent)
+                currentVideoApp = null
+                return
+            }
+
+            if (isVideoApp) {
+                if (currentVideoApp != pkgName) {
+                    Log.d(TAG, "📺 Detected video app: $pkgName")
+                    currentVideoApp = pkgName
+                    // Start polling for faster subtitle detection
+                    if (!isPolling) {
+                        isPolling = true
+                        handler.post(pollingRunnable)
+                    }
+                }
                 val root = rootInActiveWindow ?: event.source ?: return
                 findAndProcessSubtitleCandidates(root)
             }
@@ -63,12 +111,25 @@ class TlkFixAccessibilityService : AccessibilityService() {
 
     private fun findAndProcessSubtitleCandidates(root: AccessibilityNodeInfo) {
         val subtitleNodes = mutableListOf<SubtitleNode>()
+        var seekBarVisible = false
         val queue = ArrayDeque<AccessibilityNodeInfo>()
         queue.add(root)
 
         while (queue.isNotEmpty()) {
             val node = queue.removeFirst()
             try {
+                // Check if this is a seek bar or progress bar in the bottom of screen
+                val className = node.className?.toString() ?: ""
+                if ((className.contains("SeekBar") || className.contains("ProgressBar")) && node.isVisibleToUser) {
+                    val rect = Rect()
+                    node.getBoundsInScreen(rect)
+                    // Check if it's in the bottom half and has reasonable size
+                    if (rect.top > screenHeight / 2 && rect.width() > screenWidth / 3) {
+                        seekBarVisible = true
+                        Log.d(TAG, "📊 Seek bar detected at rect=$rect")
+                    }
+                }
+
                 if (node.isVisibleToUser && !node.text.isNullOrBlank()) {
                     val rect = Rect()
                     node.getBoundsInScreen(rect)
@@ -85,8 +146,31 @@ class TlkFixAccessibilityService : AccessibilityService() {
             }
         }
 
+        // If seek bar is visible, hide our overlay
+        if (seekBarVisible) {
+            if (!lastSeekBarVisible) {
+                Log.d(TAG, "🎚️ Seek bar visible - hiding our captions temporarily")
+                val hideIntent = Intent(this, OverlayService::class.java).apply {
+                    putExtra("TEMP_HIDE", true)
+                }
+                startService(hideIntent)
+                lastSeekBarVisible = true
+            }
+            return
+        }
+
+        // Seek bar just disappeared - restore last subtitle immediately
+        if (lastSeekBarVisible) {
+            Log.d(TAG, "✅ Seek bar disappeared - restoring captions")
+            lastSeekBarVisible = false
+            lastSubtitleIntent?.let {
+                startService(it)
+            }
+        }
+
         if (subtitleNodes.isEmpty()) {
-            Log.d(TAG, "❌ No subtitle nodes found")
+            Log.d(TAG, "❌ No subtitle nodes found (keeping current overlay visible)")
+            // Don't hide overlay - just keep the current subtitle visible
             return
         }
 
@@ -94,6 +178,7 @@ class TlkFixAccessibilityService : AccessibilityService() {
         val subtitleBlocks = groupNodesIntoBlocks(subtitleNodes)
         Log.d(TAG, "📦 Grouped into ${subtitleBlocks.size} blocks")
 
+        // Process all subtitle blocks
         subtitleBlocks.forEach { block ->
             processSubtitleBlock(block)
         }
@@ -132,22 +217,37 @@ class TlkFixAccessibilityService : AccessibilityService() {
         val originalText = block.joinToString(separator = "\n") { it.text }
         if (originalText.isBlank()) return
 
-        // WORD REPLACEMENT LOGIC REMOVED.
-        // We will now send the original text directly to the overlay.
-        val modifiedText = originalText
-
         val combinedRect = Rect()
         block.first().rect.let { combinedRect.set(it.left, it.top, it.right, it.bottom) }
         block.forEach { node -> combinedRect.union(node.rect) }
 
-        Log.d(TAG, "🚀 Sending to OverlayService: text='$modifiedText' rect=$combinedRect")
+        // Check if video is in fullscreen mode
+        // Accept subtitles that span at least 10% of screen width to catch short subtitles
+        // and are positioned in the bottom 60% of the screen
+        val widthPercentage = (combinedRect.width().toFloat() / screenWidth.toFloat()) * 100
+        val verticalPosition = (combinedRect.top.toFloat() / screenHeight.toFloat()) * 100
+
+        Log.d(TAG, "🔍 Checking subtitle: width=${widthPercentage.toInt()}% pos=${verticalPosition.toInt()}% text='$originalText'")
+
+        if (widthPercentage < 10) {
+            Log.d(TAG, "⏭️ Skipping non-fullscreen subtitle (width: ${widthPercentage.toInt()}% of screen, pos: ${verticalPosition.toInt()}%)")
+            return
+        }
+
+        if (verticalPosition < 40) {
+            Log.d(TAG, "⏭️ Skipping top element (width: ${widthPercentage.toInt()}%, vertical pos: ${verticalPosition.toInt()}%)")
+            return
+        }
+
+        Log.d(TAG, "✅ Fullscreen detected (width: ${widthPercentage.toInt()}% of screen, pos: ${verticalPosition.toInt()}%)")
+        Log.d(TAG, "🚀 Sending to OverlayService: text='$originalText' rect=$combinedRect")
 
         val intent = Intent(this, OverlayService::class.java).apply {
-            putExtra("text", modifiedText)
+            putExtra("text", originalText)
             putExtra("rect", combinedRect)
-            // No isFullscreen flag, we just show what we find.
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         }
+        lastSubtitleIntent = intent // Save for restoration after seek bar disappears
         startService(intent)
     }
 
@@ -155,6 +255,8 @@ class TlkFixAccessibilityService : AccessibilityService() {
 
     override fun onDestroy() {
         super.onDestroy()
+        isPolling = false
+        handler.removeCallbacks(pollingRunnable)
         stopService(Intent(this, OverlayService::class.java))
     }
 }
