@@ -41,7 +41,7 @@ class OverlayService : Service() {
     private var lastHideTime: Long = 0
     private var lastShowTime: Long = 0
     private val hideDelayMs = 0L // No delay - immediate response
-    private val overlayXOffsetPx: Int by lazy { dpToPx(20f) } // shift left
+    private val overlayXOffsetPx: Int by lazy { dpToPx(20f) } // shift 20dp to the left
 
     override fun onBind(intent: Intent?): IBinder? = null
 
@@ -91,10 +91,11 @@ class OverlayService : Service() {
             return START_STICKY
         }
 
-        // Hide overlay with debounce - DISABLED to prevent subtitles from disappearing
+        // Hide overlay when leaving video app
         if (intent.hasExtra("HIDE_OVERLAY")) {
-            // Don't hide overlay automatically - let it stay visible
-            Log.d(TAG, "🔇 Ignoring hide request - keeping overlay visible")
+            Log.d(TAG, "🚪 User left video app - hiding overlay")
+            overlayContainer?.visibility = View.GONE
+            lastDisplayedText = ""
             return START_STICKY
         }
 

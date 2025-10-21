@@ -47,7 +47,7 @@ class TlkFixAccessibilityService : AccessibilityService() {
     )
 
     private val blockedPackageSubstrings = listOf(
-        "com.google.android.apps.nexuslauncher", "com.android.systemui", "com.samsung.android.app.spage"
+        "launcher", "systemui", "spage", "inputmethod", "keyboard"
     )
 
     override fun onServiceConnected() {
@@ -70,24 +70,22 @@ class TlkFixAccessibilityService : AccessibilityService() {
             val pkgName = event.packageName?.toString() ?: return
             val lowerPkg = pkgName.lowercase()
 
-            if (blockedPackageSubstrings.any { lowerPkg.contains(it) }) {
+            // Check if this is a blocked package (launcher, system UI, etc.)
+            val isBlocked = blockedPackageSubstrings.any { lowerPkg.contains(it) }
+
+            // If we're in a video app and now we see a blocked package or non-video app, exit
+            if (currentVideoApp != null && isBlocked) {
+                Log.d(TAG, "🚪 Left video app to blocked app: $currentVideoApp → $pkgName")
+                stopVideoMode()
                 return
             }
 
             val isVideoApp = allowedPackageSubstrings.any { lowerPkg.contains(it) }
 
-            // Detect when leaving a video app
+            // Detect when leaving a video app to any other app
             if (currentVideoApp != null && !isVideoApp) {
                 Log.d(TAG, "🚪 Left video app: $currentVideoApp → $pkgName")
-                // Stop polling
-                isPolling = false
-                handler.removeCallbacks(pollingRunnable)
-                // Send signal to hide overlay immediately
-                val hideIntent = Intent(this, OverlayService::class.java).apply {
-                    putExtra("HIDE_OVERLAY", true)
-                }
-                startService(hideIntent)
-                currentVideoApp = null
+                stopVideoMode()
                 return
             }
 
@@ -107,6 +105,18 @@ class TlkFixAccessibilityService : AccessibilityService() {
         } catch (e: Exception) {
             Log.e(TAG, "Error in onAccessibilityEvent", e)
         }
+    }
+
+    private fun stopVideoMode() {
+        isPolling = false
+        handler.removeCallbacks(pollingRunnable)
+        val hideIntent = Intent(this, OverlayService::class.java).apply {
+            putExtra("HIDE_OVERLAY", true)
+        }
+        startService(hideIntent)
+        currentVideoApp = null
+        lastSubtitleIntent = null
+        lastSeekBarVisible = false
     }
 
     private fun findAndProcessSubtitleCandidates(root: AccessibilityNodeInfo) {
@@ -216,6 +226,20 @@ class TlkFixAccessibilityService : AccessibilityService() {
 
         val originalText = block.joinToString(separator = "\n") { it.text }
         if (originalText.isBlank()) return
+
+        // Filter out non-subtitle text patterns
+        val textLower = originalText.lowercase()
+        val nonSubtitlePatterns = listOf(
+            "באוקטובר", "בנובמבר", "בדצמבר", "בינואר", "בפברואר", "במרץ", "באפריל", "במאי", "ביוני", "ביולי", "באוגוסט", "בספטמבר",
+            "יום א", "יום ב", "יום ג", "יום ד", "יום ה", "יום ו", "שבת",
+            "subscribers", "subscribe", "views", "ago", "likes", "comments",
+            "צפיות", "לפני", "עריכה", "תגובות", "מנויים", "הירשם"
+        )
+
+        if (nonSubtitlePatterns.any { textLower.contains(it) }) {
+            Log.d(TAG, "⏭️ Skipping non-subtitle text (date/UI element): '$originalText'")
+            return
+        }
 
         val combinedRect = Rect()
         block.first().rect.let { combinedRect.set(it.left, it.top, it.right, it.bottom) }
