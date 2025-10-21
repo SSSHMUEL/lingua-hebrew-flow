@@ -7,6 +7,7 @@ import android.os.Build
 import android.util.Log
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
+import kotlin.math.abs
 
 class TlkFixAccessibilityService : AccessibilityService() {
 
@@ -16,44 +17,14 @@ class TlkFixAccessibilityService : AccessibilityService() {
     private var screenWidth: Int = 0
     private var screenHeight: Int = 0
 
-    // Exact package whitelist for popular video apps (matches package name)
-    private val allowedPackageExact = setOf(
-        "com.google.android.youtube",
-        "com.netflix.mediaclient",
-        "org.videolan.vlc",
-        "com.mxtech.videoplayer.ad",
-        "com.mxtech.videoplayer.pro",
-        "org.xbmc.kodi",
-        "com.plexapp.android",
-        "com.amazon.avod",
-        "com.huawei.hws.mediaplayer",
-        // Add NewPipe exact package
-        "org.schabi.newpipe",
-        // Telegram official package
-        "org.telegram.messenger",
-        // YouTube Vanced common package (may vary)
-        "com.vanced.android.youtube",
-        // Spotify official package
-        "com.spotify.music"
+    private data class SubtitleNode(val node: AccessibilityNodeInfo, val rect: Rect, val text: String)
+
+    private val allowedPackageSubstrings = listOf(
+        "youtube", "vanced", "netflix", "vlc", "mxtech", "video", "player", "media", "telegram", "spotify", "plex"
     )
 
-    // Substring fallback for other less common players and variants (includes Telegram and modded YouTubes)
-    private val allowedPackageSubstrings = listOf(
-        "youtube",
-        "vanced",
-        "ytvanced",
-        "netflix",
-        "vlc",
-        "mxtech",
-        "vimeo",
-        "exoplayer",
-        "video",
-        "player",
-        "media",
-        "telegram",
-        "newpipe",
-        "microg",
-        "spotify"
+    private val blockedPackageSubstrings = listOf(
+        "com.google.android.apps.nexuslauncher", "com.android.systemui", "com.samsung.android.app.spage"
     )
 
     override fun onServiceConnected() {
@@ -62,217 +33,128 @@ class TlkFixAccessibilityService : AccessibilityService() {
         val displayMetrics = resources.displayMetrics
         screenWidth = displayMetrics.widthPixels
         screenHeight = displayMetrics.heightPixels
-
-        // Initial load
         reloadWords()
-
         Log.d(TAG, "Service connected. Screen: ${screenWidth}x${screenHeight}")
     }
 
     private fun reloadWords() {
+        // We still load the words, but won't use them for now.
         wordMap = localWordsStore.getWords()
-        Log.d(TAG, "Reloaded words from storage: ${wordMap.size} words found.")
     }
 
     override fun onAccessibilityEvent(event: AccessibilityEvent) {
         try {
-            // Reload words each event to pick up latest changes without needing broadcasts
-            reloadWords()
+            val pkgName = event.packageName?.toString() ?: return
+            val lowerPkg = pkgName.lowercase()
 
-            // Determine root to inspect
-            val root = rootInActiveWindow ?: event.source ?: return
-
-            // Gather heuristics first
-            val hasSeekBar = hasVideoSeekBar(root)
-            val hasSubtitleLike = hasSubtitleNode(root)
-
-            val pkgName = (event.packageName ?: root.packageName)?.toString()
-            val lowerPkg = pkgName?.lowercase() ?: ""
-            val pkgExact = allowedPackageExact.contains(pkgName)
-            val pkgLikelyVideo = allowedPackageSubstrings.any { lowerPkg.contains(it) }
-
-            // Decide: allow only if exact whitelist, or detected subtitle node, or (seekbar present and package looks like a video player)
-            val proceed = pkgExact || hasSubtitleLike || (hasSeekBar && pkgLikelyVideo)
-
-            Log.d(TAG, "Event from pkg=$pkgName pkgExact=$pkgExact pkgLikelyVideo=$pkgLikelyVideo seekbar=$hasSeekBar subtitleLike=$hasSubtitleLike proceed=$proceed type=${event.eventType}")
-
-            if (!proceed) return
-
-            if (event.eventType == AccessibilityEvent.TYPE_VIEW_TEXT_CHANGED ||
-                event.eventType == AccessibilityEvent.TYPE_WINDOW_CONTENT_CHANGED ||
-                event.eventType == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
-
-                val replacements = scanAndProcessCandidates(root)
-                if (replacements == 0) {
-                    Log.d(TAG, "No replacements performed for this event (type=${event.eventType}).")
-                }
+            if (blockedPackageSubstrings.any { lowerPkg.contains(it) }) {
+                return
             }
 
+            if (allowedPackageSubstrings.any { lowerPkg.contains(it) }) {
+                Log.d(TAG, "📺 Detected video app: $pkgName")
+                val root = rootInActiveWindow ?: event.source ?: return
+                findAndProcessSubtitleCandidates(root)
+            }
         } catch (e: Exception) {
-            Log.e(TAG, "Error handling accessibility event", e)
+            Log.e(TAG, "Error in onAccessibilityEvent", e)
         }
     }
 
-    private fun isPackageAllowed(pkg: String?): Boolean {
-        // kept for backward compatibility but not used in main flow
-        if (pkg.isNullOrBlank()) return false
-        val lower = pkg.lowercase()
-        if (allowedPackageExact.contains(pkg)) return true
-        allowedPackageSubstrings.forEach { sub ->
-            if (lower.contains(sub)) return true
-        }
-        return false
-    }
-
-    private fun hasVideoSeekBar(root: AccessibilityNodeInfo): Boolean {
+    private fun findAndProcessSubtitleCandidates(root: AccessibilityNodeInfo) {
+        val subtitleNodes = mutableListOf<SubtitleNode>()
         val queue = ArrayDeque<AccessibilityNodeInfo>()
         queue.add(root)
-        try {
-            while (queue.isNotEmpty()) {
-                val node = queue.removeFirst()
-                try {
-                    val className = node.className?.toString() ?: ""
-                    if (className.contains("SeekBar") || className.contains("seekbar", true)) {
-                        val bounds = Rect()
-                        node.getBoundsInScreen(bounds)
-                        if (bounds.width() > screenWidth * 0.6) {
-                            return true
-                        }
-                    }
-                    for (i in 0 until node.childCount) {
-                        node.getChild(i)?.let { queue.add(it) }
-                    }
-                } catch (_: Exception) {
-                    // ignore and continue
-                }
-            }
-        } finally {
-            // No explicit recycle() calls; AccessibilityNodeInfo.recycle() is deprecated.
-        }
-        return false
-    }
 
-    private fun hasSubtitleNode(root: AccessibilityNodeInfo): Boolean {
-        val queue = ArrayDeque<AccessibilityNodeInfo>()
-        queue.add(root)
-        try {
-            while (queue.isNotEmpty()) {
-                val node = queue.removeFirst()
-                try {
-                    val className = node.className?.toString() ?: ""
-                    val text = node.text?.toString() ?: node.contentDescription?.toString() ?: ""
-                    if (className.contains("Subtitle", true) || className.contains("Caption", true) || className.contains("video", true)) {
-                        if (text.isNotBlank()) return true
-                    }
-                    if (className.contains("TextView", true) && text.length in 1..100) {
-                        val bounds = Rect()
-                        node.getBoundsInScreen(bounds)
-                        val bottomThreshold = (screenHeight * 0.7).toInt()
-                        if (bounds.bottom >= bottomThreshold) return true
-                    }
-                    for (i in 0 until node.childCount) {
-                        node.getChild(i)?.let { queue.add(it) }
-                    }
-                } catch (_: Exception) {
-                }
-            }
-        } finally {
-            // No explicit recycle() calls; AccessibilityNodeInfo.recycle() is deprecated.
-        }
-        return false
-    }
-
-    private fun scanAndProcessCandidates(root: AccessibilityNodeInfo): Int {
-        val queue = ArrayDeque<AccessibilityNodeInfo>()
-        queue.add(root)
-        var replacements = 0
-
-        try {
-            while (queue.isNotEmpty()) {
-                val node = queue.removeFirst()
-                try {
-                    if (node.isVisibleToUser) {
-                        val rect = Rect()
-                        node.getBoundsInScreen(rect)
-                        val textStr = node.text?.toString() ?: node.contentDescription?.toString() ?: ""
-
-                        if (textStr.isNotBlank()) {
-                            val bottomThreshold = (screenHeight * 0.6).toInt()
-                            val className = node.className?.toString() ?: ""
-                            val looksLikeSubtitle = className.contains("Subtitle", true) ||
-                                    className.contains("TextView", true) ||
-                                    className.contains("Caption", true)
-
-                            Log.d(TAG, "Candidate text='$textStr' bounds=$rect class=$className desc=${node.contentDescription}")
-
-                            if ((rect.bottom >= bottomThreshold && textStr.length <= 800) || looksLikeSubtitle) {
-                                val didReplace = processNode(node)
-                                if (didReplace) replacements++
-                            }
-                        }
-                    }
-
-                    for (i in 0 until node.childCount) {
-                        node.getChild(i)?.let { child ->
-                            queue.add(child)
-                        }
-                    }
-                } catch (inner: Exception) {
-                    Log.w(TAG, "Skipping node during traversal due to: ${inner.message}")
-                }
-            }
-        } finally {
-            // No explicit recycle() calls; AccessibilityNodeInfo.recycle() is deprecated.
-        }
-
-        return replacements
-    }
-
-    private fun processNode(nodeInfo: AccessibilityNodeInfo): Boolean {
-        val originalText = nodeInfo.text?.toString() ?: nodeInfo.contentDescription?.toString() ?: ""
-        if (originalText.isBlank()) return false
-
-        var modifiedText = originalText
-        var replacementOccurred = false
-
-        wordMap.forEach { (hebrew, english) ->
+        while (queue.isNotEmpty()) {
+            val node = queue.removeFirst()
             try {
-                if (modifiedText.contains(hebrew)) {
-                    modifiedText = modifiedText.replace(hebrew, english)
-                    replacementOccurred = true
+                if (node.isVisibleToUser && !node.text.isNullOrBlank()) {
+                    val rect = Rect()
+                    node.getBoundsInScreen(rect)
+                    if (rect.top > screenHeight / 2) {
+                        subtitleNodes.add(SubtitleNode(node, rect, node.text.toString()))
+                        Log.d(TAG, "📝 Found subtitle candidate: '${node.text}' at rect=$rect")
+                    }
+                }
+                for (i in 0 until node.childCount) {
+                    node.getChild(i)?.let { queue.add(it) }
                 }
             } catch (e: Exception) {
-                Log.w(TAG, "Error replacing word '$hebrew' in text", e)
+                // Ignore
             }
         }
 
-        if (replacementOccurred) {
-            Log.d(TAG, "Replacing '$originalText' with '$modifiedText'")
-            val rect = Rect()
-            nodeInfo.getBoundsInScreen(rect)
-
-            val intent = Intent(this, OverlayService::class.java).apply {
-                putExtra("text", modifiedText)
-                putExtra("rect", rect)
-                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            }
-
-            try {
-                startService(intent)
-            } catch (e: Exception) {
-                Log.e(TAG, "Failed to start OverlayService", e)
-            }
-
-            return true
+        if (subtitleNodes.isEmpty()) {
+            Log.d(TAG, "❌ No subtitle nodes found")
+            return
         }
 
-        return false
+        Log.d(TAG, "✅ Found ${subtitleNodes.size} subtitle nodes total")
+        val subtitleBlocks = groupNodesIntoBlocks(subtitleNodes)
+        Log.d(TAG, "📦 Grouped into ${subtitleBlocks.size} blocks")
+
+        subtitleBlocks.forEach { block ->
+            processSubtitleBlock(block)
+        }
+    }
+
+    private fun groupNodesIntoBlocks(nodes: List<SubtitleNode>): List<List<SubtitleNode>> {
+        if (nodes.isEmpty()) return emptyList()
+        val sortedNodes = nodes.sortedWith(compareBy({ it.rect.top }, { it.rect.left }))
+        val blocks = mutableListOf<MutableList<SubtitleNode>>()
+        var currentBlock: MutableList<SubtitleNode>? = null
+        for (node in sortedNodes) {
+            if (currentBlock == null) {
+                currentBlock = mutableListOf(node)
+                blocks.add(currentBlock)
+            } else {
+                val lastNodeInBlock = currentBlock.last()
+                val verticalDistance = node.rect.top - lastNodeInBlock.rect.bottom
+                val verticalThreshold = lastNodeInBlock.rect.height() * 1.5
+                val horizontalAlignmentDiff = abs(node.rect.centerX() - lastNodeInBlock.rect.centerX())
+                val horizontalThreshold = lastNodeInBlock.rect.width() * 0.75
+
+                if (verticalDistance >= 0 && verticalDistance < verticalThreshold && horizontalAlignmentDiff < horizontalThreshold) {
+                    currentBlock.add(node)
+                } else {
+                    currentBlock = mutableListOf(node)
+                    blocks.add(currentBlock)
+                }
+            }
+        }
+        return blocks
+    }
+
+    private fun processSubtitleBlock(block: List<SubtitleNode>) {
+        if (block.isEmpty()) return
+
+        val originalText = block.joinToString(separator = "\n") { it.text }
+        if (originalText.isBlank()) return
+
+        // WORD REPLACEMENT LOGIC REMOVED.
+        // We will now send the original text directly to the overlay.
+        val modifiedText = originalText
+
+        val combinedRect = Rect()
+        block.first().rect.let { combinedRect.set(it.left, it.top, it.right, it.bottom) }
+        block.forEach { node -> combinedRect.union(node.rect) }
+
+        Log.d(TAG, "🚀 Sending to OverlayService: text='$modifiedText' rect=$combinedRect")
+
+        val intent = Intent(this, OverlayService::class.java).apply {
+            putExtra("text", modifiedText)
+            putExtra("rect", combinedRect)
+            // No isFullscreen flag, we just show what we find.
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        }
+        startService(intent)
     }
 
     override fun onInterrupt() {}
 
     override fun onDestroy() {
         super.onDestroy()
-        Log.d(TAG, "Service destroyed.")
+        stopService(Intent(this, OverlayService::class.java))
     }
 }
