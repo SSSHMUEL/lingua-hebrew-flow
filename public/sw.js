@@ -7,7 +7,10 @@ const urlsToCache = [
   '/',
   '/index.html',
   // נניח שזה קובץ ה-CSS הראשי, החלף אם השם שונה
-  '/index.css', 
+  '/index.css',
+  // קבצי אייקון ו-manifest
+  '/favicon.ico',
+  '/manifest.json',
   // נכסים נוספים כמו פונטים ותמונות קריטיות
   // "/images/logo.png", 
 ];
