@@ -1,11 +1,17 @@
 {
-  "name": "TALK FIX - לומדים אנגלית בקלות",
-  "short_name": "TALK FIX",
-  "start_url": "/index.html",
+  "name": "TalkFix - לומדים אנגלית בקלות",
+  "short_name": "TalkFix",
+  "start_url": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#000000",
+  "background_color": "#1a1a2e",
+  "theme_color": "#4F46E5",
   "icons": [
+    {
+      "src": "/logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
     {
       "src": "/icon-192.png",
       "sizes": "192x192",
