@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">TlkFix</string>
+    <string name="title_activity_main">TlkFix</string>
+
+    <string name="package_name" translatable="false">com.talkfix.lingua</string>
+    <string name="custom_url_scheme" translatable="false">com.talkfix.lingua</string>
+    <string name="accessibility_service_description">שירות זה עוזר לתרגם כתוביות ביוטיוב.</string>
+
+    <string name="settings">הגדרות</string>
+    <string name="app_whitelist">אפליקציות וידאו</string>
+    <string name="grant_overlay">אפשר את \u0027הצג מעל אפליקציות אחרות\u0027</string>
+    <string name="open_accessibility">פתח את הגדרות הנגישות</string>
+
+    <string name="show_captions">הצג כתוביות (Overlay)</string>
+    <string name="replace_words">החלפת מילים</string>
+    <string name="font_size">גודל גופן</string>
+    <string name="x_offset">הזזה אופקית (dp)</string>
+    <string name="hide_on_seekbar">הסתר כאשר פס ההתקדמות נראה</string>
+    <string name="choose_apps">בחר אפליקציות וידאו</string>
+    <string name="save">שמור</string>
+
+    <string name="permissions_status">הצגה מעל: %1$s\nנגישות: %2$s</string>
+    <string name="enabled">פעיל</string>
+    <string name="disabled">כבוי</string>
+
+    <string name="permission_dialog_title">דרישת הרשאה</string>
+    <string name="permission_dialog_message">כדי להציג כתוביות מתוקנות מעל אפליקציות אחרות, אנא אפשר את ההרשאה \u0027הצג מעל אפליקציות אחרות\u0027.</string>
+    <string name="permission_button_settings">הגדרות</string>
+    <string name="permission_button_close">סגור</string>
+
+    <string name="settings_button_desc">פתח הגדרות</string>
+    <string name="shift_captions_left_label">הזז את הכתוביות שמאלה (px)</string>
+    <string name="shift_set_to">ההזזה הוגדרה ל־%1$d פיקסלים</string>
+</resources>

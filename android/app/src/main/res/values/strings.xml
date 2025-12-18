@@ -1,7 +1,41 @@
 <resources>
-    <string name="app_name">lingua-hebrew-flow</string>
-    <string name="title_activity_main">lingua-hebrew-flow</string>
-    <string name="package_name">com.talkfix.lingua</string>
-    <string name="custom_url_scheme">com.talkfix.lingua</string>
-    <string name="accessibility_service_description">This service helps translate subtitles in YouTube.</string>
+    <string name="app_name">Talkfix</string>
+    <string name="title_activity_main">Talkfix</string>
+    <string name="package_name" translatable="false">com.talkfix.lingua</string>
+    <string name="custom_url_scheme" translatable="false">com.talkfix.lingua</string>
+    <!-- Clear, user-facing description required by accessibility lint/policy.
+         Explains purpose, consent, and that text is processed locally. -->
+    <string name="accessibility_service_description">Talkfix reads on-screen subtitle text to display corrected captions in an overlay; it requires Accessibility permission and will only access visible text for this feature. Text is processed locally on your device and is not transmitted without your consent. Enable this service only if you agree to allow reading of on-screen content for caption correction.</string>
+
+    <string name="settings">Settings</string>
+    <string name="app_whitelist">Video apps</string>
+    <string name="grant_overlay">Grant \'Display over apps\'</string>
+    <string name="open_accessibility">Open Accessibility settings</string>
+
+    <string name="show_captions">Show captions (Overlay)</string>
+    <string name="replace_words">Replace words</string>
+    <string name="font_size">Font size</string>
+    <string name="x_offset">Horizontal offset (dp)</string>
+    <string name="hide_on_seekbar">Hide when seekbar visible</string>
+    <string name="choose_apps">Choose video apps</string>
+    <string name="save">Save</string>
+
+    <string name="permissions_status">Overlay: %1$s\nAccessibility: %2$s</string>
+    <string name="enabled">Enabled</string>
+    <string name="disabled">Disabled</string>
+
+    <string name="permission_dialog_title">Permission required</string>
+    <string name="permission_dialog_message">To show corrected captions over other apps please enable the \'Display over other apps\' permission.</string>
+    <string name="permission_button_settings">Settings</string>
+    <string name="permission_button_close">Close</string>
+
+    <!-- Onboarding strings -->
+    <string name="onboarding_title">ברוכים הבאים ל‑Talkfix</string>
+    <string name="onboarding_message">האם ברצונך שהאפליקציה תציג כתוביות מתוקנות על גבי הווידאו? כדי שזה יעבוד יש לאשר את ההרשאות: הצגה מעל אפליקציות והפעלת שירות הנגישות. ניתן לשנות זאת מאוחר יותר בהגדרות.</string>
+    <string name="enable_now">הפעל כעת</string>
+    <string name="not_now">לא עכשיו</string>
+
+    <string name="settings_button_desc">Open settings</string>
+    <string name="shift_captions_left_label">Shift captions left (px)</string>
+    <string name="shift_set_to">Shift set to %1$dpx</string>
 </resources>

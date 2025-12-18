@@ -38,10 +38,10 @@ class OverlayService : Service() {
     private var currentOverlayY: Int = -1
     private var currentOverlayWidth: Int = -1
     private var currentOverlayHeight: Int = -1
-    private var lastHideTime: Long = 0
     private var lastShowTime: Long = 0
-    private val hideDelayMs = 0L // No delay - immediate response
-    private val overlayXOffsetPx: Int by lazy { dpToPx(20f) } // shift 20dp to the left
+
+    // Settings manager
+    private lateinit var settingsManager: SettingsManager
 
     override fun onBind(intent: Intent?): IBinder? = null
 
@@ -50,22 +50,30 @@ class OverlayService : Service() {
         windowManager = getSystemService(WINDOW_SERVICE) as WindowManager
         localWordsStore = LocalWordsStore(this)
         wordMap = localWordsStore.getWords()
+        settingsManager = SettingsManager(this)
     }
 
     // Build solid black background with square corners (no transparency, no rounding)
-    private fun buildCaptionBackground(cornerRadiusPx: Int): GradientDrawable {
+    private fun buildCaptionBackground(): GradientDrawable {
         return GradientDrawable().apply {
             shape = GradientDrawable.RECTANGLE
             setColor(0xFF000000.toInt()) // solid black
-            cornerRadius = 0f // square corners
+            // Use square corners (no rounding)
+            cornerRadius = 0f
         }
     }
 
-    @SuppressLint("ClickableViewAccessibility")
+    @SuppressLint("ClickableViewAccessibility", "RtlHardcoded")
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         if (intent == null) {
             stopSelf()
             return START_NOT_STICKY
+        }
+
+        // If overlay is disabled in settings, do nothing
+        if (this::settingsManager.isInitialized && !settingsManager.isOverlayEnabled()) {
+            Log.d(TAG, "Overlay disabled in settings - ignoring start command")
+            return START_STICKY
         }
 
         // Check if we have overlay permission
@@ -99,6 +107,31 @@ class OverlayService : Service() {
             return START_STICKY
         }
 
+        // Reposition existing overlay according to current settings (no text required)
+        if (intent.hasExtra("REPOSITION")) {
+            Log.d(TAG, "🔧 Reposition request received")
+            if (overlayContainer != null && lastRect != null) {
+                try {
+                    val screenHeight = resources.displayMetrics.heightPixels
+                    val screenWidth = resources.displayMetrics.widthPixels
+                    val params = overlayContainer!!.layoutParams as WindowManager.LayoutParams
+                    val xOffsetPx = dpToPx(settingsManager.getXOffsetDp().toFloat())
+                    val extraLeftShiftPx = settingsManager.getExtraLeftShiftPx()
+                    val newX = (lastRect!!.left - xOffsetPx - extraLeftShiftPx).coerceIn(0, max(0, screenWidth - lastRect!!.width()))
+                    val newY = lastRect!!.top.coerceIn(0, max(0, screenHeight - lastRect!!.height()))
+                    params.x = newX
+                    params.y = newY
+                    try { windowManager.updateViewLayout(overlayContainer, params) } catch (e: Exception) { Log.e(TAG, "Error updating overlay layout", e) }
+                    currentOverlayX = newX
+                    currentOverlayY = newY
+                    Log.d(TAG, "Overlay repositioned: x=$newX y=$newY")
+                } catch (e: Exception) {
+                    Log.e(TAG, "Error handling REPOSITION", e)
+                }
+            }
+            return START_STICKY
+        }
+
         val text = intent.getStringExtra("text") ?: ""
         val rect = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             intent.getParcelableExtra("rect", Rect::class.java)
@@ -119,8 +152,8 @@ class OverlayService : Service() {
             return START_STICKY
         }
 
-        // Replace words for display - show immediately without comparing to last text
-        val modifiedText = replaceWords(text)
+        // Replace words for display only if enabled in settings
+        val modifiedText = if (this::settingsManager.isInitialized && settingsManager.isReplaceWordsEnabled()) replaceWords(text) else text
         lastDisplayedText = text
         lastRect = Rect(rect) // Copy the rect
 
@@ -147,17 +180,25 @@ class OverlayService : Service() {
                 WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
             else @Suppress("DEPRECATION") WindowManager.LayoutParams.TYPE_PHONE
 
+            val xOffsetPx = dpToPx(settingsManager.getXOffsetDp().toFloat())
+            // Read extra left shift (pixels) from settings so we can adjust at runtime
+            val extraLeftShiftPx = settingsManager.getExtraLeftShiftPx()
+
             val params = WindowManager.LayoutParams(
                 rect.width(),
                 rect.height(),
                 layoutFlag,
+                // Keep not touchable so underlying seekbar remains clickable
                 WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE,
                 PixelFormat.TRANSLUCENT
             ).apply {
                 gravity = Gravity.TOP or Gravity.START
-                x = (rect.left - overlayXOffsetPx).coerceIn(0, max(0, screenWidth - rect.width()))
+                // apply user X offset (positive moves left relative to rect.left to allow covering original subs)
+                // shift left by the configured extra pixels
+                x = (rect.left - xOffsetPx - extraLeftShiftPx).coerceIn(0, max(0, screenWidth - rect.width()))
                 y = rect.top.coerceIn(0, max(0, screenHeight - rect.height()))
             }
+            Log.d(TAG, "Overlay create params: x=${params.x} y=${params.y} w=${params.width} h=${params.height}")
             windowManager.addView(overlayContainer, params)
             currentOverlayX = params.x
             currentOverlayY = params.y
@@ -166,7 +207,10 @@ class OverlayService : Service() {
         } else {
             overlayContainer?.let {
                 val params = it.layoutParams as WindowManager.LayoutParams
-                val newX = (rect.left - overlayXOffsetPx).coerceIn(0, max(0, screenWidth - rect.width()))
+                val xOffsetPx = dpToPx(settingsManager.getXOffsetDp().toFloat())
+                // apply same extra-left-shift from settings for updates
+                val extraLeftShiftPx = settingsManager.getExtraLeftShiftPx()
+                val newX = (rect.left - xOffsetPx - extraLeftShiftPx).coerceIn(0, max(0, screenWidth - rect.width()))
                 val newY = rect.top.coerceIn(0, max(0, screenHeight - rect.height()))
                 val newWidth = rect.width()
                 val newHeight = rect.height()
@@ -179,6 +223,7 @@ class OverlayService : Service() {
                     params.y = newY
                     params.width = newWidth
                     params.height = newHeight
+                    Log.d(TAG, "Overlay update params: x=${params.x} y=${params.y} w=${params.width} h=${params.height}")
                     currentOverlayX = newX
                     currentOverlayY = newY
                     currentOverlayWidth = newWidth
@@ -207,13 +252,8 @@ class OverlayService : Service() {
         resources.displayMetrics
     ).toInt()
 
-    private fun px(value: Float): Float = TypedValue.applyDimension(
-        TypedValue.COMPLEX_UNIT_DIP,
-        value,
-        resources.displayMetrics
-    )
-
     // Update to consider both original and modified lines and apply rounded background
+    @SuppressLint("RtlHardcoded")
     private fun ensurePerLineViews(originalText: String, modifiedText: String, rect: Rect) {
         val container = linesContainer ?: return
         val origLinesAll = originalText.split("\n").map { it.trim() }
@@ -225,9 +265,15 @@ class OverlayService : Service() {
         // Approximate YouTube caption style
         val verticalPadPx = dpToPx(6f)
         val horizontalPadPx = dpToPx(12f)
-        val cornerRadiusPx = dpToPx(6f)
         val ytTypeface = Typeface.create("sans-serif-medium", Typeface.NORMAL)
-        val textSizePx = (lineHeight * 0.75f).coerceAtLeast(dpToPx(12f).toFloat())
+
+        // Read user font preference and convert to px
+        val userFontDp = if (this::settingsManager.isInitialized) settingsManager.getFontSizeDp() else 16
+        val userFontPx = dpToPx(userFontDp.toFloat()).toFloat()
+
+        val computedTextSize = (lineHeight * 0.75f).coerceAtLeast(dpToPx(12f).toFloat())
+        val textSizePx = max(computedTextSize, userFontPx)
+
         val modPaint = TextPaint().apply { isAntiAlias = true; color = Color.WHITE; textSize = textSizePx; typeface = ytTypeface }
         val origPaint = TextPaint().apply { isAntiAlias = true; color = Color.WHITE; textSize = textSizePx; typeface = ytTypeface }
 
@@ -235,7 +281,7 @@ class OverlayService : Service() {
         while (container.childCount < lineCount) {
             val tv = TextView(this).apply {
                 setTextColor(Color.WHITE)
-                background = buildCaptionBackground(cornerRadiusPx)
+                background = buildCaptionBackground()
                 setPadding(horizontalPadPx, verticalPadPx / 2, horizontalPadPx, verticalPadPx / 2)
                 gravity = Gravity.LEFT or Gravity.CENTER_VERTICAL
                 includeFontPadding = false

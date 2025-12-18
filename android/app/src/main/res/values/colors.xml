@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#F58A07</color>
+    <color name="colorPrimaryDark">#D97904</color>
+    <color name="colorAccent">#F58A07</color>
+    <color name="talkfix_background">#1A1D24</color>
+</resources>
