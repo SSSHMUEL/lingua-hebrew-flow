@@ -1,22 +1,39 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Label } from '@/components/ui/label';
 import { useAuth } from '@/components/AuthProvider';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
-import { Settings, BookOpen, Target } from 'lucide-react';
+import { Settings, BookOpen, Target, Crown, Languages, GraduationCap, Sparkles } from 'lucide-react';
+import { PaddleCheckout } from '@/components/PaddleCheckout';
+import { useSubscription } from '@/components/SubscriptionGuard';
+
+const englishLevels = [
+  { id: "beginner", label: "מתחיל" },
+  { id: "elementary", label: "בסיסי" },
+  { id: "intermediate", label: "בינוני" },
+  { id: "upper-intermediate", label: "מתקדם בינוני" },
+  { id: "advanced", label: "מתקדם" },
+];
 
 const Profile: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { isTrialing, isActive, isExpired, daysRemaining, subscription } = useSubscription();
   const [learned, setLearned] = useState(0);
   const [total, setTotal] = useState(0);
   const [selectedTopics, setSelectedTopics] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
+  const [englishLevel, setEnglishLevel] = useState("");
+  const [sourceLanguage, setSourceLanguage] = useState("hebrew");
+  const [targetLanguage, setTargetLanguage] = useState("english");
+  const [showUpgrade, setShowUpgrade] = useState(false);
 
   const availableTopics = [
     { id: 'basic', name: 'מילים בסיסיות', description: 'מילים חיוניות לשיחה יומיומית' },
@@ -59,6 +76,19 @@ const Profile: React.FC = () => {
       
       if (preferences) {
         setSelectedTopics(preferences.map((p: any) => p.topic_id));
+      }
+      
+      // Load user's profile settings
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('english_level, source_language, target_language')
+        .eq('user_id', user.id)
+        .single();
+      
+      if (profile) {
+        setEnglishLevel(profile.english_level || "");
+        setSourceLanguage(profile.source_language || "hebrew");
+        setTargetLanguage(profile.target_language || "english");
       }
     })();
   }, [user, navigate]);
@@ -114,6 +144,38 @@ const Profile: React.FC = () => {
     }
   };
 
+  const saveLanguageSettings = async () => {
+    if (!user) return;
+    
+    setLoading(true);
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          english_level: englishLevel,
+          source_language: sourceLanguage,
+          target_language: targetLanguage,
+        })
+        .eq('user_id', user.id);
+      
+      if (error) throw error;
+      
+      toast({
+        title: "הצלחה!",
+        description: "הגדרות השפה נשמרו בהצלחה",
+      });
+    } catch (error) {
+      console.error('Error saving language settings:', error);
+      toast({
+        title: "שגיאה",
+        description: "לא ניתן לשמור את ההגדרות. נסה שוב.",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleDeleteAccount = async () => {
     if (!user) return;
     
@@ -127,12 +189,16 @@ const Profile: React.FC = () => {
     try {
       // Delete user's data
       await supabase.from('learned_words').delete().eq('user_id', user.id);
+      await supabase.from('subscriptions' as any).delete().eq('user_id', user.id);
       await supabase.from('profiles').delete().eq('user_id', user.id);
       
-      // Delete the user account
-      const { error } = await supabase.auth.admin.deleteUser(user.id);
+      // Sign out the user (admin delete requires server-side)
+      await supabase.auth.signOut();
       
-      if (error) throw error;
+      toast({
+        title: "החשבון נמחק",
+        description: "להתראות! אנחנו מקווים לראות אותך שוב",
+      });
       
       navigate('/');
     } catch (error) {
@@ -176,32 +242,153 @@ const Profile: React.FC = () => {
             </CardContent>
           </Card>
 
-          {/* Quick Stats */}
-          <Card className="shadow-lg">
+        {/* Subscription Status */}
+          <Card className={`shadow-lg ${isExpired ? 'border-destructive' : isTrialing ? 'border-primary' : 'border-green-500'}`}>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <BookOpen className="h-5 w-5" />
-                סטטיסטיקות
+                <Crown className={`h-5 w-5 ${isActive ? 'text-green-500' : isTrialing ? 'text-primary' : 'text-destructive'}`} />
+                סטטוס מנוי
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <span className="text-muted-foreground">סטטוס</span>
+                  <Badge variant={isActive ? "default" : isTrialing ? "secondary" : "destructive"}>
+                    {isActive ? "פעיל" : isTrialing ? "תקופת ניסיון" : "לא פעיל"}
+                  </Badge>
+                </div>
+                {(isTrialing || isActive) && (
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">ימים שנותרו</span>
+                    <Badge variant="outline">{daysRemaining}</Badge>
+                  </div>
+                )}
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">אחוז השלמה</span>
-                  <Badge variant="secondary">{Math.round(percent)}%</Badge>
+                  <Badge className="bg-primary/20 text-primary">{Math.round(percent)}%</Badge>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">נושאים נבחרים</span>
-                  <Badge variant="outline">{selectedTopics.length}</Badge>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">מילים זמינות</span>
-                  <Badge className="bg-primary/20 text-primary">{total}</Badge>
-                </div>
+                
+                {(isTrialing || isExpired) && (
+                  <Button 
+                    className="w-full gap-2" 
+                    onClick={() => setShowUpgrade(!showUpgrade)}
+                  >
+                    <Sparkles className="w-4 h-4" />
+                    {showUpgrade ? "סגור" : "שדרג עכשיו"}
+                  </Button>
+                )}
               </div>
             </CardContent>
           </Card>
         </div>
+
+        {/* Upgrade Section */}
+        {showUpgrade && (
+          <Card className="shadow-lg mt-6 border-primary">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Crown className="h-5 w-5 text-primary" />
+                שדרוג לחשבון פרימיום
+              </CardTitle>
+              <CardDescription>
+                בחר את התוכנית המתאימה לך והמשך ללמוד ללא הגבלה
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <PaddleCheckout onSuccess={() => {
+                setShowUpgrade(false);
+                window.location.reload();
+              }} />
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Language Settings */}
+        <Card className="shadow-lg mt-6">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Languages className="h-5 w-5" />
+              הגדרות שפה ורמה
+            </CardTitle>
+            <CardDescription>
+              ערוך את הגדרות הלמידה שלך
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div>
+              <Label className="text-sm font-medium mb-3 block">רמת האנגלית שלי:</Label>
+              <RadioGroup value={englishLevel} onValueChange={setEnglishLevel} className="flex flex-wrap gap-2">
+                {englishLevels.map((level) => (
+                  <div
+                    key={level.id}
+                    className={`flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer transition-all ${
+                      englishLevel === level.id ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"
+                    }`}
+                    onClick={() => setEnglishLevel(level.id)}
+                  >
+                    <RadioGroupItem value={level.id} id={`level-${level.id}`} className="sr-only" />
+                    <Label htmlFor={`level-${level.id}`} className="cursor-pointer text-sm">{level.label}</Label>
+                  </div>
+                ))}
+              </RadioGroup>
+            </div>
+            
+            <div className="grid sm:grid-cols-2 gap-4">
+              <div>
+                <Label className="text-sm font-medium mb-2 block">שפת מקור:</Label>
+                <RadioGroup value={sourceLanguage} onValueChange={setSourceLanguage} className="flex gap-2">
+                  <div
+                    className={`flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer ${
+                      sourceLanguage === "hebrew" ? "border-primary bg-primary/5" : "border-border"
+                    }`}
+                    onClick={() => setSourceLanguage("hebrew")}
+                  >
+                    <span>🇮🇱</span>
+                    <span className="text-sm">עברית</span>
+                  </div>
+                  <div
+                    className={`flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer ${
+                      sourceLanguage === "english" ? "border-primary bg-primary/5" : "border-border"
+                    }`}
+                    onClick={() => setSourceLanguage("english")}
+                  >
+                    <span>🇺🇸</span>
+                    <span className="text-sm">אנגלית</span>
+                  </div>
+                </RadioGroup>
+              </div>
+              
+              <div>
+                <Label className="text-sm font-medium mb-2 block">שפת יעד:</Label>
+                <RadioGroup value={targetLanguage} onValueChange={setTargetLanguage} className="flex gap-2">
+                  <div
+                    className={`flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer ${
+                      targetLanguage === "english" ? "border-primary bg-primary/5" : "border-border"
+                    }`}
+                    onClick={() => setTargetLanguage("english")}
+                  >
+                    <span>🇺🇸</span>
+                    <span className="text-sm">אנגלית</span>
+                  </div>
+                  <div
+                    className={`flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer ${
+                      targetLanguage === "hebrew" ? "border-primary bg-primary/5" : "border-border"
+                    }`}
+                    onClick={() => setTargetLanguage("hebrew")}
+                  >
+                    <span>🇮🇱</span>
+                    <span className="text-sm">עברית</span>
+                  </div>
+                </RadioGroup>
+              </div>
+            </div>
+            
+            <Button onClick={saveLanguageSettings} disabled={loading} size="sm">
+              {loading ? 'שומר...' : 'שמור הגדרות'}
+            </Button>
+          </CardContent>
+        </Card>
 
         {/* Topic Selection */}
         <Card className="shadow-lg mt-6">

@@ -31,31 +31,57 @@ export const Auth: React.FC = () => {
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    const redirectUrl = `${window.location.origin}/`;
-    const {
-      error
-    } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: redirectUrl,
-        data: {
-          display_name: displayName
+    const redirectUrl = `${window.location.origin}/onboarding`;
+    
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: redirectUrl,
+          data: {
+            display_name: displayName
+          }
         }
+      });
+      
+      if (error) {
+        toast({
+          title: "שגיאת הרשמה",
+          description: error.message,
+          variant: "destructive"
+        });
+        return;
       }
-    });
-    setLoading(false);
-    if (error) {
+
+      // Create profile for the new user
+      if (data.user) {
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .insert({
+            user_id: data.user.id,
+            display_name: displayName,
+          });
+        
+        if (profileError && !profileError.message.includes('duplicate')) {
+          console.error('Error creating profile:', profileError);
+        }
+        
+        toast({
+          title: "נרשמת בהצלחה! 🎉",
+          description: "כעת תעבור למסך ההכרות"
+        });
+        
+        navigate('/onboarding');
+      }
+    } catch (err: any) {
       toast({
-        title: "שגיאת הרשמה",
-        description: error.message,
+        title: "שגיאה",
+        description: err.message,
         variant: "destructive"
       });
-    } else {
-      toast({
-        title: "נרשמת בהצלחה!",
-        description: "בדוק את האימייל שלך לאישור החשבון"
-      });
+    } finally {
+      setLoading(false);
     }
   };
   const handleSignIn = async (e: React.FormEvent) => {

@@ -83,21 +83,81 @@ export type Database = {
         Row: {
           created_at: string
           display_name: string | null
+          english_level: string | null
           id: string
+          onboarding_completed: boolean | null
+          source_language: string | null
+          target_language: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
           created_at?: string
           display_name?: string | null
+          english_level?: string | null
           id?: string
+          onboarding_completed?: boolean | null
+          source_language?: string | null
+          target_language?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
           created_at?: string
           display_name?: string | null
+          english_level?: string | null
           id?: string
+          onboarding_completed?: boolean | null
+          source_language?: string | null
+          target_language?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      subscriptions: {
+        Row: {
+          cancel_at: string | null
+          created_at: string
+          current_period_end: string | null
+          current_period_start: string | null
+          id: string
+          paddle_customer_id: string | null
+          paddle_subscription_id: string | null
+          plan: string | null
+          status: string
+          trial_end: string | null
+          trial_start: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          cancel_at?: string | null
+          created_at?: string
+          current_period_end?: string | null
+          current_period_start?: string | null
+          id?: string
+          paddle_customer_id?: string | null
+          paddle_subscription_id?: string | null
+          plan?: string | null
+          status?: string
+          trial_end?: string | null
+          trial_start?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          cancel_at?: string | null
+          created_at?: string
+          current_period_end?: string | null
+          current_period_start?: string | null
+          id?: string
+          paddle_customer_id?: string | null
+          paddle_subscription_id?: string | null
+          plan?: string | null
+          status?: string
+          trial_end?: string | null
+          trial_start?: string | null
           updated_at?: string
           user_id?: string
         }
