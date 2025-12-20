@@ -348,9 +348,46 @@ export const useLanguage = () => {
 
 export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const { user } = useAuth();
-  const [language, setLanguageState] = useState<LanguageCode>('he');
+  const [language, setLanguageState] = useState<LanguageCode>(() => {
+    // Check localStorage first
+    const saved = localStorage.getItem('ui-language');
+    if (saved === 'he' || saved === 'en') return saved;
+    return 'he'; // Default, will be updated by geo detection
+  });
   const [sourceLanguage, setSourceLanguage] = useState<LanguageCode>('he');
   const [targetLanguage, setTargetLanguage] = useState<LanguageCode>('en');
+  const [initialized, setInitialized] = useState(false);
+
+  // Detect user's location on first load (only if not logged in and no saved preference)
+  useEffect(() => {
+    const detectLocation = async () => {
+      // Skip if already initialized or user is logged in (will use profile settings)
+      if (initialized || user) return;
+      
+      const savedLang = localStorage.getItem('ui-language');
+      if (savedLang) {
+        setInitialized(true);
+        return;
+      }
+
+      try {
+        // Use a free geolocation API
+        const response = await fetch('https://ipapi.co/json/');
+        const data = await response.json();
+        
+        // If user is in Israel, use Hebrew; otherwise use English
+        const detectedLang: LanguageCode = data.country_code === 'IL' ? 'he' : 'en';
+        setLanguageState(detectedLang);
+        localStorage.setItem('ui-language', detectedLang);
+      } catch (error) {
+        console.log('Could not detect location, defaulting to Hebrew');
+      }
+      
+      setInitialized(true);
+    };
+
+    detectLocation();
+  }, [user, initialized]);
 
   // Load user's language preference from profile
   useEffect(() => {
@@ -361,7 +398,7 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
         .from('profiles')
         .select('source_language, target_language')
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle();
 
       if (profile) {
         const sourceLang = profile.source_language === 'english' ? 'en' : 'he';
@@ -372,7 +409,9 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
         
         // If user's source language is English, show the UI in English
         setLanguageState(sourceLang);
+        localStorage.setItem('ui-language', sourceLang);
       }
+      setInitialized(true);
     };
 
     loadUserLanguage();
@@ -380,6 +419,7 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
 
   const setLanguage = (lang: LanguageCode) => {
     setLanguageState(lang);
+    localStorage.setItem('ui-language', lang);
     // Update document direction
     document.documentElement.dir = lang === 'he' ? 'rtl' : 'ltr';
     document.documentElement.lang = lang;
