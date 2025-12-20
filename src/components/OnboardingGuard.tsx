@@ -29,13 +29,14 @@ export const OnboardingGuard = ({ children }: OnboardingGuardProps) => {
           .from("profiles")
           .select("onboarding_completed")
           .eq("user_id", user.id)
-          .single();
+          .maybeSingle();
 
-        if (error && error.code !== "PGRST116") {
+        if (error) {
           console.error("Error checking onboarding status:", error);
         }
 
-        const completed = profile?.onboarding_completed ?? false;
+        // If no profile exists or onboarding not completed, redirect to onboarding
+        const completed = profile?.onboarding_completed === true;
         setOnboardingCompleted(completed);
 
         // If onboarding is not completed and user is not on an exempt route, redirect to onboarding
