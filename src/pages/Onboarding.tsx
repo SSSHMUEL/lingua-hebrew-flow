@@ -122,15 +122,40 @@ const Onboarding = () => {
       const sourceLanguage = learningDirection === 'he-en' ? 'hebrew' : 'english';
       const targetLanguage = learningDirection === 'he-en' ? 'english' : 'hebrew';
 
-      const { error: profileError } = await supabase
+      // First check if profile exists
+      const { data: existingProfile } = await supabase
         .from("profiles")
-        .update({
-          english_level: level,
-          source_language: sourceLanguage,
-          target_language: targetLanguage,
-          onboarding_completed: true,
-        })
-        .eq("user_id", user.id);
+        .select("id")
+        .eq("user_id", user.id)
+        .single();
+
+      let profileError;
+
+      if (existingProfile) {
+        // Update existing profile
+        const result = await supabase
+          .from("profiles")
+          .update({
+            english_level: level,
+            source_language: sourceLanguage,
+            target_language: targetLanguage,
+            onboarding_completed: true,
+          })
+          .eq("user_id", user.id);
+        profileError = result.error;
+      } else {
+        // Create new profile (upsert)
+        const result = await supabase
+          .from("profiles")
+          .insert({
+            user_id: user.id,
+            english_level: level,
+            source_language: sourceLanguage,
+            target_language: targetLanguage,
+            onboarding_completed: true,
+          });
+        profileError = result.error;
+      }
 
       if (profileError) throw profileError;
 
