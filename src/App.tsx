@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/components/AuthProvider";
 import { Navigation } from "@/components/Navigation";
 import { SubscriptionProvider, SubscriptionBanner } from "@/components/SubscriptionGuard";
+import { LanguageProvider, useLanguage } from "@/contexts/LanguageContext";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Learn from "./pages/Learn";
@@ -23,39 +24,46 @@ import { UserWordsSynchronizer } from "@/components/UserWordsSynchronizer";
 
 const queryClient = new QueryClient();
 
+const AppContent = () => {
+  const { isRTL } = useLanguage();
+  
+  return (
+    <div dir={isRTL ? "rtl" : "ltr"} className="min-h-screen bg-background">
+      <SubscriptionBanner />
+      <Navigation />
+      <Routes>
+        <Route path="/" element={<Index />} />
+        <Route path="/auth" element={<Auth />} />
+        <Route path="/onboarding" element={<Onboarding />} />
+        <Route path="/learn" element={<Learn />} />
+        <Route path="/flashcards" element={<Flashcards />} />
+        <Route path="/quiz" element={<Quiz />} />
+        <Route path="/learned" element={<Learned />} />
+        <Route path="/downloads" element={<Downloads />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/ai-subtitles" element={<AISubtitles />} />
+        <Route path="/practice" element={<Practice />} />
+        <Route path="/profile" element={<Profile />} />
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </div>
+  );
+};
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <BrowserRouter>
       <AuthProvider>
-        <SubscriptionProvider>
-          {/* This component will now run in the background without displaying anything */}
-          <UserWordsSynchronizer />
-          
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            <div dir="rtl" className="min-h-screen bg-background">
-              <SubscriptionBanner />
-              <Navigation />
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/auth" element={<Auth />} />
-                <Route path="/onboarding" element={<Onboarding />} />
-                <Route path="/learn" element={<Learn />} />
-                <Route path="/flashcards" element={<Flashcards />} />
-                <Route path="/quiz" element={<Quiz />} />
-                <Route path="/learned" element={<Learned />} />
-                <Route path="/downloads" element={<Downloads />} />
-                <Route path="/about" element={<About />} />
-                <Route path="/ai-subtitles" element={<AISubtitles />} />
-                <Route path="/practice" element={<Practice />} />
-                <Route path="/profile" element={<Profile />} />
-                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </div>
-          </TooltipProvider>
-        </SubscriptionProvider>
+        <LanguageProvider>
+          <SubscriptionProvider>
+            <UserWordsSynchronizer />
+            <TooltipProvider>
+              <Toaster />
+              <Sonner />
+              <AppContent />
+            </TooltipProvider>
+          </SubscriptionProvider>
+        </LanguageProvider>
       </AuthProvider>
     </BrowserRouter>
   </QueryClientProvider>
