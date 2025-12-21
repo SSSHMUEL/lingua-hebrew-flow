@@ -14,7 +14,10 @@ interface PaddleCheckoutProps {
 declare global {
   interface Window {
     Paddle?: {
-      Initialize: (options: { token: string; environment?: string }) => void;
+      Environment: {
+        set: (env: 'sandbox' | 'production') => void;
+      };
+      Initialize: (options: { token: string }) => void;
       Checkout: {
         open: (options: {
           items: Array<{ priceId: string; quantity: number }>;
@@ -88,6 +91,7 @@ export const PaddleCheckout = ({ onSuccess }: PaddleCheckoutProps) => {
     clientToken: string;
     monthlyPriceId: string;
     yearlyPriceId: string;
+    environment: 'sandbox' | 'production';
   } | null>(null);
 
   // Poll for subscription updates after successful checkout
@@ -156,6 +160,8 @@ export const PaddleCheckout = ({ onSuccess }: PaddleCheckoutProps) => {
     const existingScript = document.querySelector('script[src*="paddle.js"]');
     if (existingScript) {
       if (window.Paddle) {
+        // Set environment BEFORE Initialize
+        window.Paddle.Environment.set(paddleConfig.environment);
         window.Paddle.Initialize({ token: paddleConfig.clientToken });
         setIsPaddleReady(true);
       }
@@ -167,6 +173,8 @@ export const PaddleCheckout = ({ onSuccess }: PaddleCheckoutProps) => {
     script.async = true;
     script.onload = () => {
       if (window.Paddle && paddleConfig.clientToken) {
+        // Set environment BEFORE Initialize
+        window.Paddle.Environment.set(paddleConfig.environment);
         window.Paddle.Initialize({ token: paddleConfig.clientToken });
         setIsPaddleReady(true);
       }

@@ -14,6 +14,8 @@ serve(async (req) => {
     const clientToken = Deno.env.get("PADDLE_CLIENT_TOKEN");
     const monthlyPriceId = Deno.env.get("PADDLE_MONTHLY_PRICE_ID");
     const yearlyPriceId = Deno.env.get("PADDLE_YEARLY_PRICE_ID");
+    // Use sandbox for test tokens, production for live tokens
+    const environment = clientToken?.startsWith("test_") ? "sandbox" : "production";
 
     if (!clientToken || !monthlyPriceId || !yearlyPriceId) {
       return new Response(
@@ -30,6 +32,7 @@ serve(async (req) => {
         clientToken,
         monthlyPriceId,
         yearlyPriceId,
+        environment,
       }),
       { 
         status: 200, 
