@@ -285,9 +285,25 @@ const Index = () => {
           </Link>
         </div>
 
-        <div className="text-center text-sm text-muted-foreground">
-          {isRTL ? 'מסמך בטכנולוגיות לתחומים מקצועיים' : 'Document in professional technologies'}
-        </div>
+        {/* Footer with Legal Links */}
+        <footer className="border-t border-white/10 pt-8 mt-12">
+          <div className="flex flex-col items-center gap-4">
+            <div className="flex flex-wrap justify-center gap-6 text-sm">
+              <Link to="/terms" className="text-muted-foreground hover:text-primary transition-colors">
+                {isRTL ? 'תנאי שימוש' : 'Terms of Service'}
+              </Link>
+              <Link to="/privacy" className="text-muted-foreground hover:text-primary transition-colors">
+                {isRTL ? 'מדיניות פרטיות' : 'Privacy Policy'}
+              </Link>
+              <Link to="/refund" className="text-muted-foreground hover:text-primary transition-colors">
+                {isRTL ? 'מדיניות החזרים' : 'Refund Policy'}
+              </Link>
+            </div>
+            <div className="text-center text-sm text-muted-foreground">
+              © {new Date().getFullYear()} TalkFix. {isRTL ? 'כל הזכויות שמורות.' : 'All rights reserved.'}
+            </div>
+          </div>
+        </footer>
       </div>
     </div>
   );
