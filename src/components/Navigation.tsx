@@ -5,7 +5,7 @@ import { useAuth } from '@/components/AuthProvider';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { BookOpen, Home, Download, Heart, LogOut, FlipHorizontal2, HelpCircle, Menu, Sparkles } from 'lucide-react';
+import { BookOpen, Home, Download, Heart, LogOut, FlipHorizontal2, HelpCircle, Menu, Sparkles, CreditCard } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { useUserWordsSync } from '@/hooks/use-words';
 
@@ -63,6 +63,10 @@ export const Navigation: React.FC = () => {
       <Link to="/downloads" className="flex items-center gap-2 text-foreground hover:text-primary transition-colors" onClick={() => setIsOpen(false)}>
         <Download className="h-4 w-4" />
         {t('nav.downloads')}
+      </Link>
+      <Link to="/pricing" className="flex items-center gap-2 text-foreground hover:text-primary transition-colors" onClick={() => setIsOpen(false)}>
+        <CreditCard className="h-4 w-4" />
+        {isRTL ? 'מחירים' : 'Pricing'}
       </Link>
     </>
   );

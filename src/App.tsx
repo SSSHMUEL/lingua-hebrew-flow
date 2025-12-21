@@ -24,6 +24,7 @@ import Onboarding from "./pages/Onboarding";
 import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
 import Refund from "./pages/Refund";
+import Pricing from "./pages/Pricing";
 import { UserWordsSynchronizer } from "@/components/UserWordsSynchronizer";
 
 const queryClient = new QueryClient();
@@ -55,6 +56,7 @@ const AppContent = () => {
         <Route path="/terms" element={<Terms />} />
         <Route path="/privacy" element={<Privacy />} />
         <Route path="/refund" element={<Refund />} />
+        <Route path="/pricing" element={<Pricing />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </div>
