@@ -21,6 +21,9 @@ import Quiz from "./pages/Quiz";
 import Practice from "./pages/Practice";
 import Profile from "./pages/Profile";
 import Onboarding from "./pages/Onboarding";
+import Terms from "./pages/Terms";
+import Privacy from "./pages/Privacy";
+import Refund from "./pages/Refund";
 import { UserWordsSynchronizer } from "@/components/UserWordsSynchronizer";
 
 const queryClient = new QueryClient();
@@ -49,6 +52,9 @@ const AppContent = () => {
         <Route path="/ai-subtitles" element={<AISubtitles />} />
         <Route path="/practice" element={<Practice />} />
         <Route path="/profile" element={<Profile />} />
+        <Route path="/terms" element={<Terms />} />
+        <Route path="/privacy" element={<Privacy />} />
+        <Route path="/refund" element={<Refund />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </div>
