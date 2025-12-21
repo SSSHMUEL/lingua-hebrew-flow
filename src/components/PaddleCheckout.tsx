@@ -1,10 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Check, Sparkles, Loader2 } from "lucide-react";
+import { Check, Sparkles, Loader2, PartyPopper } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { useSubscription } from "@/components/SubscriptionGuard";
 
 interface PaddleCheckoutProps {
   onSuccess?: () => void;
@@ -77,15 +78,49 @@ const plans = [
 
 export const PaddleCheckout = ({ onSuccess }: PaddleCheckoutProps) => {
   const { toast } = useToast();
+  const { refreshSubscription, isActive } = useSubscription();
   const [isLoading, setIsLoading] = useState<string | null>(null);
   const [userEmail, setUserEmail] = useState<string>("");
   const [userId, setUserId] = useState<string>("");
   const [isPaddleReady, setIsPaddleReady] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
   const [paddleConfig, setPaddleConfig] = useState<{
     clientToken: string;
     monthlyPriceId: string;
     yearlyPriceId: string;
   } | null>(null);
+
+  // Poll for subscription updates after successful checkout
+  const pollForSubscriptionUpdate = useCallback(async () => {
+    const maxAttempts = 10;
+    const pollInterval = 2000; // 2 seconds
+    
+    for (let i = 0; i < maxAttempts; i++) {
+      await new Promise(resolve => setTimeout(resolve, pollInterval));
+      await refreshSubscription();
+      
+      // Check if subscription is now active
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data } = await supabase
+          .from("subscriptions")
+          .select("status")
+          .eq("user_id", user.id)
+          .maybeSingle();
+        
+        if (data?.status === "active") {
+          setShowSuccess(true);
+          toast({
+            title: "🎉 תודה על הרכישה!",
+            description: "המנוי שלך פעיל עכשיו. תהנה מגישה מלאה לכל התכנים!",
+          });
+          onSuccess?.();
+          return true;
+        }
+      }
+    }
+    return false;
+  }, [refreshSubscription, toast, onSuccess]);
 
   useEffect(() => {
     // Fetch Paddle configuration from edge function
@@ -169,12 +204,14 @@ export const PaddleCheckout = ({ onSuccess }: PaddleCheckoutProps) => {
         items: [{ priceId, quantity: 1 }],
         customer: { email: userEmail },
         customData: { userId },
-        successCallback: async (data) => {
+        successCallback: async () => {
           toast({
-            title: "תודה על הרכישה! 🎉",
-            description: "המנוי שלך פעיל עכשיו",
+            title: "מעבד את התשלום...",
+            description: "אנא המתן רגע",
           });
-          onSuccess?.();
+          // Start polling for webhook update
+          await pollForSubscriptionUpdate();
+          setIsLoading(null);
         },
         closeCallback: () => {
           setIsLoading(null);
@@ -196,6 +233,21 @@ export const PaddleCheckout = ({ onSuccess }: PaddleCheckoutProps) => {
       <div className="flex items-center justify-center p-8">
         <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
       </div>
+    );
+  }
+
+  // Show success state after purchase
+  if (showSuccess || isActive) {
+    return (
+      <Card className="border-primary bg-primary/5">
+        <CardContent className="flex flex-col items-center justify-center p-8 text-center">
+          <PartyPopper className="w-16 h-16 text-primary mb-4" />
+          <h3 className="text-2xl font-bold mb-2">תודה על הרכישה! 🎉</h3>
+          <p className="text-muted-foreground">
+            המנוי שלך פעיל עכשיו. תהנה מגישה מלאה לכל התכנים!
+          </p>
+        </CardContent>
+      </Card>
     );
   }
 
