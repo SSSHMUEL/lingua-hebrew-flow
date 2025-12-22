@@ -59,3 +59,9 @@ verify_jwt = true
 
 [functions.transcribeVideo]
 verify_jwt = true
+
+[functions.paddle-webhook]
+verify_jwt = false
+
+[functions.paddle-config]
+verify_jwt = false

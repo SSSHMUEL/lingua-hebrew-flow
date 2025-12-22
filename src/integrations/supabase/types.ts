@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      languages: {
+        Row: {
+          code: string
+          created_at: string
+          direction: string
+          id: string
+          name: string
+          native_name: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          direction?: string
+          id?: string
+          name: string
+          native_name: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          direction?: string
+          id?: string
+          name?: string
+          native_name?: string
+        }
+        Relationships: []
+      }
       learned_words: {
         Row: {
           created_at: string
@@ -83,21 +110,81 @@ export type Database = {
         Row: {
           created_at: string
           display_name: string | null
+          english_level: string | null
           id: string
+          onboarding_completed: boolean | null
+          source_language: string | null
+          target_language: string | null
           updated_at: string
           user_id: string
         }
         Insert: {
           created_at?: string
           display_name?: string | null
+          english_level?: string | null
           id?: string
+          onboarding_completed?: boolean | null
+          source_language?: string | null
+          target_language?: string | null
           updated_at?: string
           user_id: string
         }
         Update: {
           created_at?: string
           display_name?: string | null
+          english_level?: string | null
           id?: string
+          onboarding_completed?: boolean | null
+          source_language?: string | null
+          target_language?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      subscriptions: {
+        Row: {
+          cancel_at: string | null
+          created_at: string
+          current_period_end: string | null
+          current_period_start: string | null
+          id: string
+          paddle_customer_id: string | null
+          paddle_subscription_id: string | null
+          plan: string | null
+          status: string
+          trial_end: string | null
+          trial_start: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          cancel_at?: string | null
+          created_at?: string
+          current_period_end?: string | null
+          current_period_start?: string | null
+          id?: string
+          paddle_customer_id?: string | null
+          paddle_subscription_id?: string | null
+          plan?: string | null
+          status?: string
+          trial_end?: string | null
+          trial_start?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          cancel_at?: string | null
+          created_at?: string
+          current_period_end?: string | null
+          current_period_start?: string | null
+          id?: string
+          paddle_customer_id?: string | null
+          paddle_subscription_id?: string | null
+          plan?: string | null
+          status?: string
+          trial_end?: string | null
+          trial_start?: string | null
           updated_at?: string
           user_id?: string
         }
@@ -129,6 +216,47 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      user_learned_words: {
+        Row: {
+          created_at: string
+          id: string
+          last_reviewed_at: string | null
+          learned_at: string
+          next_review_at: string | null
+          strength_score: number
+          translation_pair_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          last_reviewed_at?: string | null
+          learned_at?: string
+          next_review_at?: string | null
+          strength_score?: number
+          translation_pair_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          last_reviewed_at?: string | null
+          learned_at?: string
+          next_review_at?: string | null
+          strength_score?: number
+          translation_pair_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_learned_words_translation_pair_id_fkey"
+            columns: ["translation_pair_id"]
+            isOneToOne: false
+            referencedRelation: "word_translations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_topic_preferences: {
         Row: {
@@ -189,6 +317,83 @@ export type Database = {
           word_pair?: string | null
         }
         Relationships: []
+      }
+      word_translations: {
+        Row: {
+          category: string
+          created_at: string
+          example_sentence_1: string | null
+          example_sentence_2: string | null
+          id: string
+          word_id_1: string
+          word_id_2: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          example_sentence_1?: string | null
+          example_sentence_2?: string | null
+          id?: string
+          word_id_1: string
+          word_id_2: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          example_sentence_1?: string | null
+          example_sentence_2?: string | null
+          id?: string
+          word_id_1?: string
+          word_id_2?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "word_translations_word_id_1_fkey"
+            columns: ["word_id_1"]
+            isOneToOne: false
+            referencedRelation: "words"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "word_translations_word_id_2_fkey"
+            columns: ["word_id_2"]
+            isOneToOne: false
+            referencedRelation: "words"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      words: {
+        Row: {
+          created_at: string
+          id: string
+          language_id: string
+          pronunciation: string | null
+          word_text: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          language_id: string
+          pronunciation?: string | null
+          word_text: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          language_id?: string
+          pronunciation?: string | null
+          word_text?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "words_language_id_fkey"
+            columns: ["language_id"]
+            isOneToOne: false
+            referencedRelation: "languages"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
