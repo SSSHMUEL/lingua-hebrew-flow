@@ -45,8 +45,56 @@ const Privacy = () => {
                 </ul>
               </section>
 
+              {/* Google User Data Section - Required for Google OAuth verification */}
+              <section className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <h2 className="text-xl font-semibold mt-2 mb-3">3. נתוני משתמש Google (Google User Data)</h2>
+                
+                <h3 className="font-semibold mt-4 mb-2">3.1 נתונים שאנו ניגשים אליהם מ-Google</h3>
+                <p>כאשר אתה נכנס באמצעות חשבון Google שלך, אנו ניגשים <strong>אך ורק</strong> לנתונים הבאים:</p>
+                <ul className="list-disc list-inside mt-2 space-y-1">
+                  <li><strong>כתובת אימייל:</strong> לצורך יצירת חשבון, זיהוי והתחברות</li>
+                  <li><strong>שם פרופיל:</strong> להצגת שמך באפליקציה</li>
+                  <li><strong>תמונת פרופיל:</strong> להצגה בפרופיל שלך (אופציונלי)</li>
+                </ul>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  אנו משתמשים בהיקפי ההרשאות הבאים בלבד: <code>email</code>, <code>profile</code>, <code>openid</code>
+                </p>
+
+                <h3 className="font-semibold mt-4 mb-2">3.2 כיצד אנו משתמשים בנתוני Google</h3>
+                <p>אנו משתמשים בנתוני Google שלך אך ורק למטרות הבאות:</p>
+                <ul className="list-disc list-inside mt-2 space-y-1">
+                  <li><strong>אימות:</strong> כדי לאמת את זהותך ולאפשר לך להתחבר לחשבונך</li>
+                  <li><strong>הצגת פרופיל:</strong> להציג את שמך ותמונתך בממשק האפליקציה</li>
+                  <li><strong>תקשורת:</strong> לשלוח התראות חשובות על חשבונך (כמו אימות או שינויי מנוי)</li>
+                </ul>
+                <p className="mt-2"><strong>אנו לא משתמשים בנתוני Google שלך לפרסום, שיווק, או מכירה לצדדים שלישיים.</strong></p>
+
+                <h3 className="font-semibold mt-4 mb-2">3.3 אחסון נתוני Google</h3>
+                <p>נתוני Google שלך מאוחסנים בצורה מאובטחת:</p>
+                <ul className="list-disc list-inside mt-2 space-y-1">
+                  <li><strong>מיקום:</strong> שרתי Supabase עם הצפנה בזמן מנוחה ובזמן העברה</li>
+                  <li><strong>משך שמירה:</strong> כל עוד יש לך חשבון פעיל</li>
+                  <li><strong>הגנה:</strong> Row Level Security (RLS) מבטיחה שרק אתה יכול לגשת לנתונים שלך</li>
+                </ul>
+
+                <h3 className="font-semibold mt-4 mb-2">3.4 שיתוף נתוני Google</h3>
+                <p><strong>אנו לא משתפים את נתוני Google שלך עם צדדים שלישיים</strong> למעט:</p>
+                <ul className="list-disc list-inside mt-2 space-y-1">
+                  <li><strong>Supabase:</strong> לאחסון מאובטח (ספק התשתית שלנו)</li>
+                </ul>
+                <p className="mt-2">אנו לא מוכרים, משכירים או סוחרים בנתוני Google שלך.</p>
+
+                <h3 className="font-semibold mt-4 mb-2">3.5 מחיקת נתוני Google</h3>
+                <p>תוכל לבקש מחיקה מלאה של נתוני Google שלך בכל עת:</p>
+                <ul className="list-disc list-inside mt-2 space-y-1">
+                  <li>דרך הגדרות הפרופיל באפליקציה (לחץ על "מחק חשבון")</li>
+                  <li>על ידי שליחת אימייל ל-<a href="mailto:support@talkfix.app" className="text-primary hover:underline">support@talkfix.app</a></li>
+                </ul>
+                <p className="mt-2">לאחר מחיקה, כל נתוני Google שלך יוסרו לצמיתות תוך 30 יום.</p>
+              </section>
+
               <section>
-                <h2 className="text-xl font-semibold mt-6 mb-3">3. מידע שנאסף על ידי Paddle</h2>
+                <h2 className="text-xl font-semibold mt-6 mb-3">4. מידע שנאסף על ידי Paddle</h2>
                 <p>
                   כשאתה מבצע רכישה, Paddle כסוחר הרשום אוסף:
                 </p>
@@ -63,7 +111,7 @@ const Privacy = () => {
               </section>
 
               <section>
-                <h2 className="text-xl font-semibold mt-6 mb-3">4. כיצד אנו משתמשים במידע שלך</h2>
+                <h2 className="text-xl font-semibold mt-6 mb-3">5. כיצד אנו משתמשים במידע שלך</h2>
                 <p>אנו משתמשים במידע שלך כדי:</p>
                 <ul className="list-disc list-inside mt-2 space-y-1">
                   <li>לספק ולשפר את שירותינו</li>
@@ -72,6 +120,14 @@ const Privacy = () => {
                   <li>לשלוח עדכונים חשובים על חשבונך</li>
                   <li>לנתח דפוסי שימוש לשיפור האפליקציה</li>
                 </ul>
+              </section>
+
+              <section>
+                <h2 className="text-xl font-semibold mt-6 mb-3">6. שימוש בנתונים עבור AI/ML</h2>
+                <p>
+                  <strong>אנו לא משתמשים בנתונים האישיים שלך או בנתוני Google שלך לאימון מודלים של בינה מלאכותית או למידת מכונה.</strong> 
+                  כל שירותי AI שאנו מספקים משתמשים במודלים מאומנים מראש ללא נתוני המשתמש שלך.
+                </p>
               </section>
 
               <section>
@@ -185,21 +241,63 @@ const Privacy = () => {
                 </ul>
               </section>
 
-              <section>
-                <h2 className="text-xl font-semibold mt-6 mb-3">3. Information Collected by Paddle</h2>
-                <p>
-                  When you make a purchase, Paddle as the Merchant of Record collects:
+              {/* Google User Data Section - Required for Google OAuth verification */}
+              <section className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <h2 className="text-xl font-semibold mt-2 mb-3">3. Google User Data</h2>
+                
+                <h3 className="font-semibold mt-4 mb-2">3.1 Data We Access from Google</h3>
+                <p>When you sign in with your Google account, we access <strong>only</strong> the following data:</p>
+                <ul className="list-disc list-inside mt-2 space-y-1">
+                  <li><strong>Email address:</strong> For account creation, identification, and login</li>
+                  <li><strong>Profile name:</strong> To display your name in the app</li>
+                  <li><strong>Profile picture:</strong> To display in your profile (optional)</li>
+                </ul>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  We use only the following scopes: <code>email</code>, <code>profile</code>, <code>openid</code>
                 </p>
+
+                <h3 className="font-semibold mt-4 mb-2">3.2 How We Use Google Data</h3>
+                <p>We use your Google data solely for the following purposes:</p>
+                <ul className="list-disc list-inside mt-2 space-y-1">
+                  <li><strong>Authentication:</strong> To verify your identity and allow you to log into your account</li>
+                  <li><strong>Profile display:</strong> To show your name and picture in the app interface</li>
+                  <li><strong>Communication:</strong> To send important notifications about your account</li>
+                </ul>
+                <p className="mt-2"><strong>We do not use your Google data for advertising, marketing, or selling to third parties.</strong></p>
+
+                <h3 className="font-semibold mt-4 mb-2">3.3 Google Data Storage</h3>
+                <p>Your Google data is stored securely:</p>
+                <ul className="list-disc list-inside mt-2 space-y-1">
+                  <li><strong>Location:</strong> Supabase servers with encryption at rest and in transit</li>
+                  <li><strong>Retention:</strong> As long as you have an active account</li>
+                  <li><strong>Protection:</strong> Row Level Security (RLS) ensures only you can access your data</li>
+                </ul>
+
+                <h3 className="font-semibold mt-4 mb-2">3.4 Google Data Sharing</h3>
+                <p><strong>We do not share your Google data with third parties</strong> except:</p>
+                <ul className="list-disc list-inside mt-2 space-y-1">
+                  <li><strong>Supabase:</strong> For secure storage (our infrastructure provider)</li>
+                </ul>
+                <p className="mt-2">We do not sell, rent, or trade your Google data.</p>
+
+                <h3 className="font-semibold mt-4 mb-2">3.5 Google Data Deletion</h3>
+                <p>You can request complete deletion of your Google data at any time:</p>
+                <ul className="list-disc list-inside mt-2 space-y-1">
+                  <li>Through the profile settings in the app (click "Delete Account")</li>
+                  <li>By emailing <a href="mailto:support@talkfix.app" className="text-primary hover:underline">support@talkfix.app</a></li>
+                </ul>
+                <p className="mt-2">After deletion, all your Google data will be permanently removed within 30 days.</p>
+              </section>
+
+              <section>
+                <h2 className="text-xl font-semibold mt-6 mb-3">4. Information Collected by Paddle</h2>
+                <p>When you make a purchase, Paddle as the Merchant of Record collects:</p>
                 <ul className="list-disc list-inside mt-2 space-y-1">
                   <li>Payment details (credit card, PayPal, etc.)</li>
                   <li>Billing address</li>
                   <li>Tax information (VAT if applicable)</li>
                   <li>IP address and device information</li>
                 </ul>
-                <p className="mt-2">
-                  Paddle will maintain appropriate administrative, physical and technical safeguards for protection of the security, 
-                  confidentiality and integrity of this data.
-                </p>
               </section>
 
               <section>
