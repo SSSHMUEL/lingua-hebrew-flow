@@ -11,15 +11,24 @@ serve(async (req) => {
   }
 
   try {
-    const clientToken = Deno.env.get("PADDLE_CLIENT_TOKEN");
-    const monthlyPriceId = Deno.env.get("PADDLE_MONTHLY_PRICE_ID");
-    const yearlyPriceId = Deno.env.get("PADDLE_YEARLY_PRICE_ID");
-    // Use sandbox for test tokens, production for live tokens
-    const environment = clientToken?.startsWith("test_") ? "sandbox" : "production";
+    const clientId = Deno.env.get("PAYPAL_CLIENT_ID");
+    const monthlyPlanId = Deno.env.get("PAYPAL_MONTHLY_PLAN_ID");
+    const yearlyPlanId = Deno.env.get("PAYPAL_YEARLY_PLAN_ID");
+    
+    // Determine environment based on client ID format
+    // Sandbox client IDs typically start with "sb-" or contain "sandbox"
+    const environment = clientId?.includes("sandbox") || clientId?.startsWith("sb-") 
+      ? "sandbox" 
+      : "production";
 
-    if (!clientToken || !monthlyPriceId || !yearlyPriceId) {
+    if (!clientId || !monthlyPlanId || !yearlyPlanId) {
+      console.error("Missing PayPal configuration:", { 
+        hasClientId: !!clientId, 
+        hasMonthly: !!monthlyPlanId, 
+        hasYearly: !!yearlyPlanId 
+      });
       return new Response(
-        JSON.stringify({ error: "Paddle configuration missing" }),
+        JSON.stringify({ error: "PayPal configuration missing" }),
         { 
           status: 500, 
           headers: { ...corsHeaders, "Content-Type": "application/json" } 
@@ -27,11 +36,13 @@ serve(async (req) => {
       );
     }
 
+    console.log("PayPal config loaded successfully, environment:", environment);
+
     return new Response(
       JSON.stringify({
-        clientToken,
-        monthlyPriceId,
-        yearlyPriceId,
+        clientId,
+        monthlyPlanId,
+        yearlyPlanId,
         environment,
       }),
       { 

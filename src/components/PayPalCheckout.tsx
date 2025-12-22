@@ -7,25 +7,26 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useSubscription } from "@/components/SubscriptionGuard";
 
-interface PaddleCheckoutProps {
+interface PayPalCheckoutProps {
   onSuccess?: () => void;
 }
 
 declare global {
   interface Window {
-    Paddle?: {
-      Environment: {
-        set: (env: 'sandbox' | 'production') => void;
-      };
-      Initialize: (options: { token: string }) => void;
-      Checkout: {
-        open: (options: {
-          items: Array<{ priceId: string; quantity: number }>;
-          customer?: { email: string };
-          customData?: Record<string, string>;
-          successCallback?: (data: any) => void;
-          closeCallback?: () => void;
-        }) => void;
+    paypal?: {
+      Buttons: (options: {
+        style?: {
+          shape?: string;
+          color?: string;
+          layout?: string;
+          label?: string;
+        };
+        createSubscription: (data: any, actions: any) => Promise<string>;
+        onApprove: (data: { subscriptionID: string; orderID?: string }, actions: any) => Promise<void>;
+        onError: (err: any) => void;
+        onCancel?: () => void;
+      }) => {
+        render: (container: string | HTMLElement) => Promise<void>;
       };
     };
   }
@@ -39,7 +40,6 @@ const plans = [
     price: "₪9.90",
     period: "לחודש",
     periodEn: "/month",
-    priceIdKey: "PADDLE_MONTHLY_PRICE_ID",
     features: [
       "גישה לכל המילים והנושאים",
       "כרטיסיות לימוד ללא הגבלה",
@@ -60,7 +60,6 @@ const plans = [
     price: "₪99.90",
     period: "לשנה",
     periodEn: "/year",
-    priceIdKey: "PADDLE_YEARLY_PRICE_ID",
     popular: true,
     savings: "חסכון של 17%",
     savingsEn: "Save 17%",
@@ -79,31 +78,31 @@ const plans = [
   },
 ];
 
-export const PaddleCheckout = ({ onSuccess }: PaddleCheckoutProps) => {
+export const PayPalCheckout = ({ onSuccess }: PayPalCheckoutProps) => {
   const { toast } = useToast();
   const { refreshSubscription, isActive } = useSubscription();
-  const [isLoading, setIsLoading] = useState<string | null>(null);
-  const [userEmail, setUserEmail] = useState<string>("");
+  const [isLoading, setIsLoading] = useState(true);
   const [userId, setUserId] = useState<string>("");
-  const [isPaddleReady, setIsPaddleReady] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
-  const [paddleConfig, setPaddleConfig] = useState<{
-    clientToken: string;
-    monthlyPriceId: string;
-    yearlyPriceId: string;
+  const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
+  const [paypalConfig, setPaypalConfig] = useState<{
+    clientId: string;
+    monthlyPlanId: string;
+    yearlyPlanId: string;
     environment: 'sandbox' | 'production';
   } | null>(null);
+  const [paypalLoaded, setPaypalLoaded] = useState(false);
+  const [buttonsRendered, setButtonsRendered] = useState<Record<string, boolean>>({});
 
   // Poll for subscription updates after successful checkout
   const pollForSubscriptionUpdate = useCallback(async () => {
     const maxAttempts = 10;
-    const pollInterval = 2000; // 2 seconds
+    const pollInterval = 2000;
     
     for (let i = 0; i < maxAttempts; i++) {
       await new Promise(resolve => setTimeout(resolve, pollInterval));
       await refreshSubscription();
       
-      // Check if subscription is now active
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
         const { data } = await supabase
@@ -127,116 +126,146 @@ export const PaddleCheckout = ({ onSuccess }: PaddleCheckoutProps) => {
   }, [refreshSubscription, toast, onSuccess]);
 
   useEffect(() => {
-    // Fetch Paddle configuration from edge function
-    const fetchPaddleConfig = async () => {
+    const fetchPayPalConfig = async () => {
       try {
-        const { data, error } = await supabase.functions.invoke("paddle-config");
+        const { data, error } = await supabase.functions.invoke("paypal-config");
         if (error) throw error;
         if (data) {
-          setPaddleConfig(data);
+          setPaypalConfig(data);
         }
       } catch (error) {
-        console.error("Failed to fetch Paddle config:", error);
+        console.error("Failed to fetch PayPal config:", error);
+        toast({
+          title: "שגיאה",
+          description: "לא ניתן לטעון את מערכת התשלומים",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
       }
     };
 
-    fetchPaddleConfig();
-
-    // Get user info
     const getUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
-        setUserEmail(user.email || "");
         setUserId(user.id);
       }
     };
+
+    fetchPayPalConfig();
     getUser();
-  }, []);
+  }, [toast]);
 
   useEffect(() => {
-    if (!paddleConfig?.clientToken) return;
+    if (!paypalConfig?.clientId) return;
 
-    // Load Paddle.js
-    const existingScript = document.querySelector('script[src*="paddle.js"]');
+    const existingScript = document.querySelector('script[src*="paypal.com/sdk/js"]');
     if (existingScript) {
-      if (window.Paddle) {
-        // Set environment BEFORE Initialize
-        window.Paddle.Environment.set(paddleConfig.environment);
-        window.Paddle.Initialize({ token: paddleConfig.clientToken });
-        setIsPaddleReady(true);
+      if (window.paypal) {
+        setPaypalLoaded(true);
       }
       return;
     }
 
     const script = document.createElement("script");
-    script.src = "https://cdn.paddle.com/paddle/v2/paddle.js";
+    const environment = paypalConfig.environment === 'sandbox' ? 'sandbox' : 'live';
+    script.src = `https://www.paypal.com/sdk/js?client-id=${paypalConfig.clientId}&vault=true&intent=subscription&currency=ILS`;
     script.async = true;
     script.onload = () => {
-      if (window.Paddle && paddleConfig.clientToken) {
-        // Set environment BEFORE Initialize
-        window.Paddle.Environment.set(paddleConfig.environment);
-        window.Paddle.Initialize({ token: paddleConfig.clientToken });
-        setIsPaddleReady(true);
-      }
+      setPaypalLoaded(true);
+    };
+    script.onerror = () => {
+      console.error("Failed to load PayPal SDK");
+      toast({
+        title: "שגיאה",
+        description: "לא ניתן לטעון את מערכת התשלומים",
+        variant: "destructive",
+      });
     };
     document.body.appendChild(script);
 
     return () => {
       // Don't remove script as it might be needed later
     };
-  }, [paddleConfig]);
+  }, [paypalConfig, toast]);
 
-  const getPriceId = (plan: typeof plans[0]) => {
-    if (!paddleConfig) return null;
-    return plan.id === "monthly" 
-      ? paddleConfig.monthlyPriceId 
-      : paddleConfig.yearlyPriceId;
-  };
+  useEffect(() => {
+    if (!paypalLoaded || !paypalConfig || !window.paypal) return;
 
-  const handleCheckout = async (plan: typeof plans[0]) => {
-    const priceId = getPriceId(plan);
-    
-    if (!isPaddleReady || !priceId) {
-      toast({
-        title: "שגיאה",
-        description: "מערכת התשלומים לא זמינה כרגע. נסה שוב מאוחר יותר.",
-        variant: "destructive",
-      });
-      return;
-    }
+    plans.forEach((plan) => {
+      const containerId = `paypal-button-${plan.id}`;
+      const container = document.getElementById(containerId);
+      
+      if (!container || buttonsRendered[plan.id]) return;
 
-    setIsLoading(plan.id);
+      const planId = plan.id === "monthly" 
+        ? paypalConfig.monthlyPlanId 
+        : paypalConfig.yearlyPlanId;
 
-    try {
-      window.Paddle?.Checkout.open({
-        items: [{ priceId, quantity: 1 }],
-        customer: { email: userEmail },
-        customData: { userId },
-        successCallback: async () => {
-          toast({
-            title: "מעבד את התשלום...",
-            description: "אנא המתן רגע",
-          });
-          // Start polling for webhook update
-          await pollForSubscriptionUpdate();
-          setIsLoading(null);
-        },
-        closeCallback: () => {
-          setIsLoading(null);
-        },
-      });
-    } catch (error) {
-      console.error("Checkout error:", error);
-      toast({
-        title: "שגיאה",
-        description: "אירעה שגיאה בפתיחת חלון התשלום",
-        variant: "destructive",
-      });
-      setIsLoading(null);
-    }
-  };
+      try {
+        window.paypal!.Buttons({
+          style: {
+            shape: 'rect',
+            color: 'gold',
+            layout: 'vertical',
+            label: 'subscribe'
+          },
+          createSubscription: async (data: any, actions: any) => {
+            setSelectedPlan(plan.id);
+            return actions.subscription.create({
+              plan_id: planId,
+              custom_id: userId,
+            });
+          },
+          onApprove: async (data: { subscriptionID: string }) => {
+            console.log("PayPal subscription approved:", data.subscriptionID);
+            
+            toast({
+              title: "מעבד את התשלום...",
+              description: "אנא המתן רגע",
+            });
 
-  if (!paddleConfig) {
+            // Notify our backend about the subscription
+            try {
+              await supabase.functions.invoke("paypal-webhook", {
+                body: {
+                  event_type: "BILLING.SUBSCRIPTION.ACTIVATED",
+                  resource: {
+                    id: data.subscriptionID,
+                    custom_id: userId,
+                    plan_id: plan.id === "monthly" ? paypalConfig.monthlyPlanId : paypalConfig.yearlyPlanId,
+                  }
+                }
+              });
+            } catch (err) {
+              console.error("Error notifying backend:", err);
+            }
+
+            await pollForSubscriptionUpdate();
+            setSelectedPlan(null);
+          },
+          onError: (err: any) => {
+            console.error("PayPal error:", err);
+            toast({
+              title: "שגיאה",
+              description: "אירעה שגיאה בתשלום. נסה שוב.",
+              variant: "destructive",
+            });
+            setSelectedPlan(null);
+          },
+          onCancel: () => {
+            setSelectedPlan(null);
+          }
+        }).render(`#${containerId}`);
+
+        setButtonsRendered(prev => ({ ...prev, [plan.id]: true }));
+      } catch (err) {
+        console.error("Error rendering PayPal button:", err);
+      }
+    });
+  }, [paypalLoaded, paypalConfig, userId, pollForSubscriptionUpdate, toast, buttonsRendered]);
+
+  if (isLoading) {
     return (
       <div className="flex items-center justify-center p-8">
         <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
@@ -244,7 +273,6 @@ export const PaddleCheckout = ({ onSuccess }: PaddleCheckoutProps) => {
     );
   }
 
-  // Show success state after purchase
   if (showSuccess || isActive) {
     return (
       <Card className="border-primary bg-primary/5">
@@ -297,21 +325,25 @@ export const PaddleCheckout = ({ onSuccess }: PaddleCheckoutProps) => {
                 </li>
               ))}
             </ul>
-            <Button
-              className="w-full"
-              variant={plan.popular ? "default" : "outline"}
-              onClick={() => handleCheckout(plan)}
-              disabled={isLoading !== null || !isPaddleReady}
+            
+            {/* PayPal Button Container */}
+            <div 
+              id={`paypal-button-${plan.id}`} 
+              className="min-h-[50px]"
             >
-              {isLoading === plan.id ? (
-                <>
-                  <Loader2 className="w-4 h-4 ml-2 animate-spin" />
-                  מעבד...
-                </>
-              ) : (
-                "בחר תוכנית"
+              {!paypalLoaded && (
+                <div className="flex items-center justify-center py-4">
+                  <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
+                </div>
               )}
-            </Button>
+            </div>
+            
+            {selectedPlan === plan.id && (
+              <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+                <Loader2 className="w-4 h-4 animate-spin" />
+                מעבד...
+              </div>
+            )}
           </CardContent>
         </Card>
       ))}
