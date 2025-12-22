@@ -13,6 +13,7 @@ import android.app.AlertDialog;
 import android.view.View;
 import android.widget.ImageButton;
 import com.getcapacitor.BridgeActivity;
+import com.getcapacitor.JSObject;
 import android.widget.FrameLayout;
 import android.view.Gravity;
 import android.graphics.drawable.GradientDrawable;
@@ -42,6 +43,24 @@ public class MainActivity extends BridgeActivity {
         checkOverlayPermissionPrompt();
 
         Log.d(TAG, "onCreate finished");
+        
+        // Log the initial intent if exists
+        Intent intent = getIntent();
+        if (intent != null && intent.getData() != null) {
+            Log.d(TAG, "onCreate: Launched with URI: " + intent.getData().toString());
+        }
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+        
+        if (intent != null && intent.getData() != null) {
+            Log.d(TAG, "onNewIntent: Received URI: " + intent.getData().toString());
+        } else {
+            Log.d(TAG, "onNewIntent: Received intent but no URI data");
+        }
     }
 
     @Override
