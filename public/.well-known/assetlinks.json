@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.talkfix.app",
+      "sha256_cert_fingerprints": [
+        "D3:9A:FD:17:DB:A7:55:EA:74:28:66:EA:E6:58:CB:9D:01:89:37:92:47:20:A3:45:EF:5B:EF:42:5D:4F:AC:85"
+      ]
+    }
+  }
+]
