@@ -11,73 +11,144 @@ serve(async (req) => {
   }
 
   try {
-    const clientId = Deno.env.get("PAYPAL_CLIENT_ID");
-    const clientSecret = Deno.env.get("PAYPAL_SECRET");
-    const monthlyPlanId = Deno.env.get("PAYPAL_MONTHLY_PLAN_ID");
-    const yearlyPlanId = Deno.env.get("PAYPAL_YEARLY_PLAN_ID");
+    const clientId = Deno.env.get("PAYPAL_CLIENT_ID")?.trim();
+    const clientSecret = Deno.env.get("PAYPAL_SECRET")?.trim();
+    const monthlyPlanId = Deno.env.get("PAYPAL_MONTHLY_PLAN_ID")?.trim();
+    const yearlyPlanId = Deno.env.get("PAYPAL_YEARLY_PLAN_ID")?.trim();
 
-    if (!clientId || !monthlyPlanId || !yearlyPlanId) {
+    if (!clientId || !clientSecret || !monthlyPlanId || !yearlyPlanId) {
       console.error("Missing PayPal configuration:", {
         hasClientId: !!clientId,
         hasClientSecret: !!clientSecret,
         hasMonthly: !!monthlyPlanId,
         hasYearly: !!yearlyPlanId,
       });
-      return new Response(JSON.stringify({ error: "PayPal configuration missing" }), {
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+
+      return new Response(
+        JSON.stringify({
+          error: "PayPal configuration missing",
+          missing: {
+            PAYPAL_CLIENT_ID: !clientId,
+            PAYPAL_SECRET: !clientSecret,
+            PAYPAL_MONTHLY_PLAN_ID: !monthlyPlanId,
+            PAYPAL_YEARLY_PLAN_ID: !yearlyPlanId,
+          },
+        }),
+        {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
     }
 
-    // Detect environment reliably by attempting to fetch an OAuth token.
-    // This prevents common sandbox/live mismatches that cause the PayPal popup to open and immediately close.
-    let environment: "sandbox" | "production" = "production";
+    const basicAuth = `Basic ${btoa(`${clientId}:${clientSecret}`)}`;
 
-    const heuristicEnv = (): "sandbox" | "production" => {
-      // NOTE: client IDs do not always include "sb-" even in sandbox, so this is only a fallback.
-      return clientId.includes("sandbox") || clientId.startsWith("sb-") ? "sandbox" : "production";
-    };
-
-    const tryGetToken = async (baseUrl: string) => {
-      if (!clientSecret) {
-        return { ok: false as const, status: 0, text: "Missing PAYPAL_SECRET" };
-      }
-
-      const auth = `Basic ${btoa(`${clientId}:${clientSecret}`)}`;
-
+    const getToken = async (baseUrl: string) => {
       const res = await fetch(`${baseUrl}/v1/oauth2/token`, {
         method: "POST",
         headers: {
-          Authorization: auth,
+          Authorization: basicAuth,
           "Content-Type": "application/x-www-form-urlencoded",
         },
         body: "grant_type=client_credentials",
       });
 
-      if (res.ok) return { ok: true as const };
-      const text = await res.text().catch(() => "");
-      return { ok: false as const, status: res.status, text };
+      if (!res.ok) {
+        const text = await res.text().catch(() => "");
+        return { ok: false as const, status: res.status, text };
+      }
+
+      const json = await res.json().catch(() => null);
+      const accessToken = json?.access_token as string | undefined;
+      if (!accessToken) {
+        return { ok: false as const, status: 500, text: "Missing access_token" };
+      }
+
+      return { ok: true as const, accessToken };
     };
 
-    // Try production first, then sandbox.
-    const prod = await tryGetToken("https://api-m.paypal.com");
-    if (prod.ok) {
-      environment = "production";
-    } else {
-      const sb = await tryGetToken("https://api-m.sandbox.paypal.com");
-      if (sb.ok) {
-        environment = "sandbox";
-      } else {
-        environment = heuristicEnv();
-        console.warn("Could not detect PayPal env via OAuth; falling back to heuristic.", {
-          productionAttempt: prod,
-          sandboxAttempt: sb,
-          chosen: environment,
-        });
-      }
+    // Detect environment *strictly* via OAuth so we don't accidentally mix sandbox/live.
+    const prod = await getToken("https://api-m.paypal.com");
+    const sb = prod.ok ? null : await getToken("https://api-m.sandbox.paypal.com");
+
+    const environment: "sandbox" | "production" = prod.ok ? "production" : sb?.ok ? "sandbox" : "production";
+
+    if (!prod.ok && !sb?.ok) {
+      console.error("PayPal OAuth failed in both environments", {
+        productionAttempt: prod,
+        sandboxAttempt: sb,
+      });
+
+      return new Response(
+        JSON.stringify({
+          error: "PayPal credentials mismatch",
+          message:
+            "PAYPAL_CLIENT_ID/PAYPAL_SECRET לא תואמים או לא שייכים לאותה סביבה (Sandbox/Production).",
+          attempts: {
+            production: prod,
+            sandbox: sb,
+          },
+        }),
+        {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
     }
 
-    console.log("PayPal config loaded successfully, environment:", environment);
+    const apiBase = environment === "sandbox" ? "https://api-m.sandbox.paypal.com" : "https://api-m.paypal.com";
+    const accessToken = prod.ok ? prod.accessToken : sb!.accessToken;
+
+    const validatePlan = async (planId: string) => {
+      const res = await fetch(`${apiBase}/v1/billing/plans/${encodeURIComponent(planId)}`, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!res.ok) {
+        const text = await res.text().catch(() => "");
+        return { ok: false as const, status: res.status, text };
+      }
+
+      const plan = await res.json().catch(() => null);
+      return { ok: true as const, plan };
+    };
+
+    const monthlyCheck = await validatePlan(monthlyPlanId);
+    const yearlyCheck = await validatePlan(yearlyPlanId);
+
+    if (!monthlyCheck.ok || !yearlyCheck.ok) {
+      console.error("PayPal plan validation failed", {
+        environment,
+        monthly: monthlyCheck,
+        yearly: yearlyCheck,
+      });
+
+      return new Response(
+        JSON.stringify({
+          error: "PayPal plan not found",
+          message:
+            "אחד ממזהי התוכניות לא קיים באותה סביבה/חשבון של ה‑Client ID. צור Plans מחדש באותו חשבון ובאותה סביבה.",
+          environment,
+          monthly: monthlyCheck,
+          yearly: yearlyCheck,
+        }),
+        {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    console.log("PayPal config loaded successfully", {
+      environment,
+      monthlyStatus: monthlyCheck.plan?.status,
+      yearlyStatus: yearlyCheck.plan?.status,
+      monthlyCurrency: monthlyCheck.plan?.billing_cycles?.[0]?.pricing_scheme?.fixed_price?.currency_code,
+      yearlyCurrency: yearlyCheck.plan?.billing_cycles?.[0]?.pricing_scheme?.fixed_price?.currency_code,
+    });
 
     return new Response(
       JSON.stringify({
