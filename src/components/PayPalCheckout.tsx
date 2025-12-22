@@ -104,7 +104,6 @@ export const PayPalCheckout = ({ onSuccess }: PayPalCheckoutProps) => {
   } | null>(null);
   const [paypalLoaded, setPaypalLoaded] = useState(false);
   const [buttonsRendered, setButtonsRendered] = useState<Record<string, boolean>>({});
-  const [googlePayEligible, setGooglePayEligible] = useState<Record<string, boolean | undefined>>({});
 
   // Poll for subscription updates after successful checkout
   const pollForSubscriptionUpdate = useCallback(async () => {
@@ -196,10 +195,9 @@ export const PayPalCheckout = ({ onSuccess }: PayPalCheckoutProps) => {
       : "https://www.paypal.com";
 
     // Using v6 SDK with googlepay and buttons components for Advanced Checkout
-    // Note: Google Pay must be explicitly enabled via `enable-funding=googlepay`.
     const desiredSrc = `${desiredHost}/sdk/js?client-id=${encodeURIComponent(
       paypalConfig.clientId
-    )}&vault=true&intent=subscription&currency=ILS&components=buttons,googlepay&enable-funding=googlepay`;
+    )}&vault=true&intent=subscription&currency=ILS&components=buttons,googlepay`;
 
     const existingScript = document.querySelector(
       'script[src*="paypal.com/sdk/js"], script[src*="sandbox.paypal.com/sdk/js"]'
@@ -216,7 +214,6 @@ export const PayPalCheckout = ({ onSuccess }: PayPalCheckoutProps) => {
       // Reset so we re-render buttons after the correct SDK loads.
       setPaypalLoaded(false);
       setButtonsRendered({});
-      setGooglePayEligible({});
     }
 
     const scriptAlreadyThere = document.querySelector(
@@ -400,10 +397,8 @@ export const PayPalCheckout = ({ onSuccess }: PayPalCheckoutProps) => {
             }
           });
 
-          const eligible = googlePayButton.isEligible?.() ?? false;
-          setGooglePayEligible((prev) => ({ ...prev, [plan.id]: eligible }));
-
-          if (eligible) {
+          // Only render if Google Pay is eligible
+          if (googlePayButton.isEligible?.()) {
             googlePayButton.render(`#${googlePayContainerId}`);
           }
         }
@@ -492,12 +487,7 @@ export const PayPalCheckout = ({ onSuccess }: PayPalCheckoutProps) => {
             <div 
               id={`googlepay-button-${plan.id}`} 
               className="min-h-[40px]"
-            />
-            {paypalLoaded && googlePayEligible[plan.id] === false && (
-              <p className="text-xs text-muted-foreground">
-                Google Pay לא זמין במכשיר/דפדפן הזה.
-              </p>
-            )}
+            />{/* Google Pay will only render if eligible */}
             
             {selectedPlan === plan.id && (
               <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
