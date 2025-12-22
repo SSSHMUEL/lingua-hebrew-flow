@@ -7,7 +7,18 @@ import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/components/AuthProvider';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
-import { BookOpen, Volume2, CheckCircle, ArrowLeft, ArrowRight } from 'lucide-react';
+import { useDailyLimit } from '@/hooks/use-daily-limit';
+import { BookOpen, Volume2, CheckCircle, ArrowLeft, ArrowRight, Crown, Lock } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface VocabularyWord {
   id: string;
@@ -16,7 +27,7 @@ interface VocabularyWord {
   category: string;
   example_sentence: string;
   pronunciation?: string;
-  word_pair: string; // Added word_pair field
+  word_pair: string;
 }
 
 export const Learn: React.FC = () => {
@@ -28,6 +39,9 @@ export const Learn: React.FC = () => {
   const [learnedWords, setLearnedWords] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [currentCategory, setCurrentCategory] = useState<string>('');
+  const [showUpgradeDialog, setShowUpgradeDialog] = useState(false);
+
+  const { canLearnMore, isPremium, remainingWords, refresh: refreshDailyLimit, dailyLimit, loading: limitLoading } = useDailyLimit(user?.id);
 
   useEffect(() => {
     if (!user) {
@@ -108,18 +122,27 @@ export const Learn: React.FC = () => {
   const markAsLearned = async () => {
     if (!currentWord || !user) return;
 
+    // Check daily limit for free users
+    if (!isPremium && !canLearnMore) {
+      setShowUpgradeDialog(true);
+      return;
+    }
+
     try {
       const { error } = await supabase
         .from('learned_words')
         .insert({
           user_id: user.id,
           vocabulary_word_id: currentWord.id,
-          word_pair: currentWord.word_pair // Using the word_pair from vocabulary_words
+          word_pair: currentWord.word_pair
         });
 
       if (error) throw error;
 
       setLearnedWords(prev => new Set([...prev, currentWord.id]));
+      
+      // Refresh daily limit count
+      await refreshDailyLimit();
       
       toast({
         title: "מעולה!",
@@ -181,7 +204,7 @@ export const Learn: React.FC = () => {
   const progress = categoryWords.length > 0 ? ((currentIndex + 1) / categoryWords.length) * 100 : 0;
   const learnedInCategory = categoryWords.filter(word => learnedWords.has(word.id)).length;
 
-  if (loading) {
+  if (loading || limitLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
@@ -224,12 +247,27 @@ export const Learn: React.FC = () => {
             </Badge>
           </div>
 
-          {/* Media Placeholder */}
-          <div className="mb-6">
-            <div className="rounded-xl border border-muted bg-secondary/30 p-6 text-center text-muted-foreground">
-              מקום לסרטון או קובץ שמע
+          {/* Daily Limit Banner for Free Users */}
+          {!isPremium && (
+            <div className="mb-6 p-4 rounded-xl border border-primary/30 bg-primary/10">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Lock className="h-5 w-5 text-primary" />
+                  <span className="text-sm font-medium">
+                    מנוי חינמי: נותרו לך {remainingWords} מילים היום מתוך {dailyLimit}
+                  </span>
+                </div>
+                <Button 
+                  size="sm" 
+                  onClick={() => navigate('/pricing')}
+                  className="bg-gradient-to-r from-primary to-accent text-primary-foreground"
+                >
+                  <Crown className="h-4 w-4 ml-1" />
+                  שדרג לפרימיום
+                </Button>
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Progress */}
           <div className="mb-8">
@@ -327,6 +365,39 @@ export const Learn: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Upgrade Dialog */}
+      <AlertDialog open={showUpgradeDialog} onOpenChange={setShowUpgradeDialog}>
+        <AlertDialogContent className="max-w-md">
+          <AlertDialogHeader>
+            <div className="flex justify-center mb-4">
+              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center">
+                <Crown className="h-8 w-8 text-white" />
+              </div>
+            </div>
+            <AlertDialogTitle className="text-center text-2xl">
+              הגעת למגבלה היומית!
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-center text-lg">
+              במנוי החינמי ניתן ללמוד עד {dailyLimit} מילים ביום.
+              <br />
+              <span className="font-semibold text-primary">שדרג לפרימיום</span> כדי ללמוד מילים ללא הגבלה!
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="flex-col sm:flex-row gap-2">
+            <AlertDialogCancel className="sm:w-1/2">
+              אולי מחר
+            </AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={() => navigate('/pricing')}
+              className="sm:w-1/2 bg-gradient-to-r from-primary to-accent text-primary-foreground"
+            >
+              <Crown className="h-4 w-4 ml-2" />
+              שדרג עכשיו
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

@@ -107,49 +107,9 @@ export const SubscriptionProvider = ({ children }: { children: ReactNode }) => {
   );
 };
 
-// Component to show subscription status banner
-// Only shows after 30 days if user hasn't paid, or when trial is ending soon (7 days left)
+// Component removed - no longer showing subscription banners
 export const SubscriptionBanner = () => {
-  const { isTrialing, isExpired, daysRemaining, subscription } = useSubscription();
-  const navigate = useNavigate();
-
-  // Don't show banner if user has active paid subscription
-  if (!isTrialing && !isExpired) return null;
-
-  // During trial: only show banner when 7 days or less remain
-  if (isTrialing && daysRemaining > 7) return null;
-
-  return (
-    <div
-      className={`w-full py-2 px-4 text-center text-sm font-medium ${
-        isExpired
-          ? "bg-destructive text-destructive-foreground"
-          : "bg-yellow-500/20 text-yellow-700 dark:text-yellow-300"
-      }`}
-    >
-      {isExpired ? (
-        <span>
-          תקופת הניסיון הסתיימה.{" "}
-          <button
-            onClick={() => navigate("/profile")}
-            className="underline font-bold hover:no-underline"
-          >
-            שדרג עכשיו
-          </button>
-        </span>
-      ) : (
-        <span>
-          נותרו לך {daysRemaining} ימי ניסיון חינם{" "}
-          <button
-            onClick={() => navigate("/profile")}
-            className="underline font-bold hover:no-underline mr-2"
-          >
-            שדרג עכשיו
-          </button>
-        </span>
-      )}
-    </div>
-  );
+  return null;
 };
 
 // HOC to protect routes that require active subscription
