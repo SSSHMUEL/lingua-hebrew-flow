@@ -190,7 +190,8 @@ export const PayPalCheckout = ({ onSuccess }: PayPalCheckoutProps) => {
   }, [paypalConfig, toast]);
 
   useEffect(() => {
-    if (!paypalLoaded || !paypalConfig || !window.paypal) return;
+    // Wait for userId to be available before rendering buttons
+    if (!paypalLoaded || !paypalConfig || !window.paypal || !userId) return;
 
     plans.forEach((plan) => {
       const containerId = `paypal-button-${plan.id}`;
@@ -202,6 +203,12 @@ export const PayPalCheckout = ({ onSuccess }: PayPalCheckoutProps) => {
         ? paypalConfig.monthlyPlanId 
         : paypalConfig.yearlyPlanId;
 
+      // Validate that planId exists
+      if (!planId) {
+        console.error(`No plan ID found for ${plan.id} plan`);
+        return;
+      }
+
       try {
         window.paypal!.Buttons({
           style: {
@@ -212,6 +219,7 @@ export const PayPalCheckout = ({ onSuccess }: PayPalCheckoutProps) => {
           },
           createSubscription: async (data: any, actions: any) => {
             setSelectedPlan(plan.id);
+            console.log("Creating subscription with plan_id:", planId, "custom_id:", userId);
             return actions.subscription.create({
               plan_id: planId,
               custom_id: userId,
@@ -233,7 +241,7 @@ export const PayPalCheckout = ({ onSuccess }: PayPalCheckoutProps) => {
                   resource: {
                     id: data.subscriptionID,
                     custom_id: userId,
-                    plan_id: plan.id === "monthly" ? paypalConfig.monthlyPlanId : paypalConfig.yearlyPlanId,
+                    plan_id: planId,
                   }
                 }
               });
