@@ -12,7 +12,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Settings, Target, Crown, Languages, Sparkles } from 'lucide-react';
-import { PaddleCheckout } from '@/components/PaddleCheckout';
+import { PayPalCheckout } from '@/components/PayPalCheckout';
 import { useSubscription } from '@/components/SubscriptionGuard';
 
 const Profile: React.FC = () => {
@@ -301,7 +301,7 @@ const Profile: React.FC = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <PaddleCheckout onSuccess={() => {
+              <PayPalCheckout onSuccess={() => {
                 setShowUpgrade(false);
                 window.location.reload();
               }} />
