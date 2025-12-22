@@ -5,7 +5,7 @@ import { useAuth } from '@/components/AuthProvider';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { BookOpen, Home, Download, Heart, LogOut, FlipHorizontal2, HelpCircle, Menu, Sparkles, CreditCard } from 'lucide-react';
+import { BookOpen, Home, Download, Heart, LogOut, FlipHorizontal2, User, Menu, CreditCard } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { useUserWordsSync } from '@/hooks/use-words';
 
@@ -44,10 +44,6 @@ export const Navigation: React.FC = () => {
         <BookOpen className="h-4 w-4" />
         {t('nav.learn')}
       </Link>
-      <Link to="/ai-subtitles" className="flex items-center gap-2 text-foreground hover:text-primary transition-colors" onClick={() => setIsOpen(false)}>
-        <Sparkles className="h-4 w-4" />
-        {t('nav.subtitles')}
-      </Link>
       <Link to="/practice" className="flex items-center gap-2 text-foreground hover:text-primary transition-colors" onClick={() => setIsOpen(false)}>
         <FlipHorizontal2 className="h-4 w-4" />
         {t('nav.practice')}
@@ -57,7 +53,7 @@ export const Navigation: React.FC = () => {
         {t('nav.learned')}
       </Link>
       <Link to="/profile" className="flex items-center gap-2 text-foreground hover:text-primary transition-colors" onClick={() => setIsOpen(false)}>
-        <HelpCircle className="h-4 w-4" />
+        <User className="h-4 w-4" />
         {t('nav.profile')}
       </Link>
       <Link to="/downloads" className="flex items-center gap-2 text-foreground hover:text-primary transition-colors" onClick={() => setIsOpen(false)}>
