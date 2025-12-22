@@ -18,6 +18,7 @@ import android.view.Gravity;
 import android.graphics.drawable.GradientDrawable;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
+import android.webkit.WebView;
 
 public class MainActivity extends BridgeActivity {
     private static final String TAG = "MainActivity";
@@ -42,6 +43,38 @@ public class MainActivity extends BridgeActivity {
         checkOverlayPermissionPrompt();
 
         Log.d(TAG, "onCreate finished");
+
+        // Log the initial intent if exists
+        Intent intent = getIntent();
+        if (intent != null && intent.getData() != null) {
+            Log.d(TAG, "onCreate: Launched with URI: " + intent.getData().toString());
+        }
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+        
+        if (intent != null && intent.getData() != null) {
+            String url = intent.getData().toString();
+            Log.d(TAG, "onNewIntent: Received URI: " + url);
+            
+            // Attempt to force-feed the URL to JS via direct evaluation
+            // This acts as a fallback if the standard Capacitor event listener isn't firing
+            try {
+                if (getBridge() != null && getBridge().getWebView() != null) {
+                    // Inject a custom event on 'window' that the JS can listen to as a backup
+                    String js = "window.dispatchEvent(new CustomEvent('appUrlOpen', { detail: { url: '" + url + "' } }));";
+                    getBridge().getWebView().evaluateJavascript(js, null);
+                    Log.d(TAG, "onNewIntent: Injected manual JS event for appUrlOpen");
+                }
+            } catch (Exception e) {
+                Log.e(TAG, "Failed to inject manual JS event", e);
+            }
+        } else {
+            Log.d(TAG, "onNewIntent: Received intent but no URI data");
+        }
     }
 
     @Override
