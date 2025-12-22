@@ -167,21 +167,44 @@ export const PayPalCheckout = ({ onSuccess }: PayPalCheckoutProps) => {
   useEffect(() => {
     if (!paypalConfig?.clientId) return;
 
-    const existingScript = document.querySelector('script[src*="paypal.com/sdk/js"]');
-    if (existingScript) {
-      if (window.paypal) {
-        setPaypalLoaded(true);
-      }
+    const desiredHost = paypalConfig.environment === "sandbox"
+      ? "https://www.sandbox.paypal.com"
+      : "https://www.paypal.com";
+
+    const desiredSrc = `${desiredHost}/sdk/js?client-id=${encodeURIComponent(
+      paypalConfig.clientId
+    )}&vault=true&intent=subscription&currency=ILS&components=buttons`;
+
+    const existingScript = document.querySelector(
+      'script[src*="paypal.com/sdk/js"], script[src*="sandbox.paypal.com/sdk/js"]'
+    ) as HTMLScriptElement | null;
+
+    // If there is an existing SDK script but it doesn't match the desired environment/params,
+    // remove it and reload (otherwise the popup often opens then closes immediately).
+    if (existingScript && existingScript.src !== desiredSrc) {
+      console.warn("Replacing PayPal SDK script", {
+        existing: existingScript.src,
+        desired: desiredSrc,
+      });
+      existingScript.remove();
+      // Reset so we re-render buttons after the correct SDK loads.
+      setPaypalLoaded(false);
+      setButtonsRendered({});
+    }
+
+    const scriptAlreadyThere = document.querySelector(
+      `script[src="${desiredSrc}"]`
+    ) as HTMLScriptElement | null;
+
+    if (scriptAlreadyThere) {
+      if (window.paypal) setPaypalLoaded(true);
       return;
     }
 
     const script = document.createElement("script");
-    const environment = paypalConfig.environment === 'sandbox' ? 'sandbox' : 'live';
-    script.src = `https://www.paypal.com/sdk/js?client-id=${paypalConfig.clientId}&vault=true&intent=subscription&currency=ILS`;
+    script.src = desiredSrc;
     script.async = true;
-    script.onload = () => {
-      setPaypalLoaded(true);
-    };
+    script.onload = () => setPaypalLoaded(true);
     script.onerror = () => {
       console.error("Failed to load PayPal SDK");
       toast({
@@ -262,9 +285,16 @@ export const PayPalCheckout = ({ onSuccess }: PayPalCheckoutProps) => {
           },
           onError: (err: any) => {
             console.error("PayPal error:", err);
+            const errMsg =
+              typeof err === "string"
+                ? err
+                : err?.message || err?.details?.[0]?.issue || err?.name || "";
+
             toast({
               title: "שגיאה",
-              description: "אירעה שגיאה בתשלום. נסה שוב.",
+              description: errMsg
+                ? `אירעה שגיאה בתשלום: ${errMsg}`
+                : "אירעה שגיאה בתשלום. נסה שוב.",
               variant: "destructive",
             });
             setSelectedPlan(null);
