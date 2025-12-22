@@ -265,7 +265,7 @@ export const PayPalCheckout = ({ onSuccess }: PayPalCheckoutProps) => {
       }
 
       try {
-        // Render main PayPal subscription button
+        // Render main PayPal + Card subscription button (no fundingSource = shows all options)
         window.paypal!.Buttons({
           style: {
             shape: 'rect',
@@ -273,7 +273,7 @@ export const PayPalCheckout = ({ onSuccess }: PayPalCheckoutProps) => {
             layout: 'vertical',
             label: 'subscribe'
           },
-          fundingSource: window.paypal!.FUNDING?.PAYPAL,
+          // Removed fundingSource to allow PayPal AND credit card options
           createSubscription: async (data: any, actions: any) => {
             setSelectedPlan(plan.id);
             console.log("Creating subscription with plan_id:", planId, "custom_id:", userId);
