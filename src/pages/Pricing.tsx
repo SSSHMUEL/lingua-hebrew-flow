@@ -1,5 +1,5 @@
 import React from 'react';
-import { PaddleCheckout } from '@/components/PaddleCheckout';
+import { PayPalCheckout } from '@/components/PayPalCheckout';
 import { Link } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { ArrowLeft, Shield, CreditCard, CheckCircle } from 'lucide-react';
@@ -40,8 +40,8 @@ const Pricing = () => {
           </div>
         </div>
 
-        {/* Paddle Checkout Component */}
-        <PaddleCheckout onSuccess={() => {
+        {/* PayPal Checkout Component */}
+        <PayPalCheckout onSuccess={() => {
           console.log('Subscription successful!');
         }} />
 

@@ -26,10 +26,10 @@ const Privacy = () => {
                   מדיניות פרטיות זו מסבירה כיצד אנו אוספים, משתמשים ומגנים על המידע שלך.
                 </p>
                 <p className="mt-2">
-                  <strong>Paddle משמש כסוחר הרשום (Merchant of Record)</strong> עבור עסקאות התשלום שלנו. 
-                  Paddle אוסף ומעבד מידע תשלום בהתאם למדיניות הפרטיות שלו הזמינה ב-
-                  <a href="https://www.paddle.com/legal/privacy" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
-                    paddle.com/legal/privacy
+                  <strong>PayPal משמש לעיבוד התשלומים שלנו.</strong>{" "}
+                  PayPal אוסף ומעבד מידע תשלום בהתאם למדיניות הפרטיות שלו הזמינה ב-
+                  <a href="https://www.paypal.com/webapps/mpp/ua/privacy-full" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                    paypal.com/privacy
                   </a>.
                 </p>
               </section>
@@ -41,7 +41,7 @@ const Privacy = () => {
                   <li><strong>פרטי חשבון:</strong> כתובת דוא"ל, שם תצוגה, העדפות שפה</li>
                   <li><strong>נתוני למידה:</strong> התקדמות, מילים שנלמדו, תוצאות חידונים</li>
                   <li><strong>נתוני שימוש:</strong> אופן האינטראקציה שלך עם האפליקציה</li>
-                  <li><strong>מידע תשלום:</strong> נאסף ומעובד על ידי Paddle (לא נשמר על ידינו)</li>
+                  <li><strong>מידע תשלום:</strong> נאסף ומעובד על ידי PayPal (לא נשמר על ידינו)</li>
                 </ul>
               </section>
 
@@ -94,18 +94,18 @@ const Privacy = () => {
               </section>
 
               <section>
-                <h2 className="text-xl font-semibold mt-6 mb-3">4. מידע שנאסף על ידי Paddle</h2>
+                <h2 className="text-xl font-semibold mt-6 mb-3">4. מידע שנאסף על ידי PayPal</h2>
                 <p>
-                  כשאתה מבצע רכישה, Paddle כסוחר הרשום אוסף:
+                  כשאתה מבצע רכישה, PayPal אוסף:
                 </p>
                 <ul className="list-disc list-inside mt-2 space-y-1">
-                  <li>פרטי תשלום (כרטיס אשראי, PayPal וכו')</li>
+                  <li>פרטי תשלום (כרטיס אשראי, חשבון PayPal, Google Pay)</li>
                   <li>כתובת חיוב</li>
                   <li>מידע מס (מע"מ אם רלוונטי)</li>
                   <li>כתובת IP ומידע על המכשיר</li>
                 </ul>
                 <p className="mt-2">
-                  Paddle ישמור על אמצעי הגנה אדמיניסטרטיביים, פיזיים וטכניים מתאימים להגנה על האבטחה, 
+                  PayPal שומר על אמצעי הגנה מתקדמים להגנה על האבטחה, 
                   הסודיות והשלמות של נתונים אלה.
                 </p>
               </section>
@@ -131,7 +131,7 @@ const Privacy = () => {
               </section>
 
               <section>
-                <h2 className="text-xl font-semibold mt-6 mb-3">5. אחסון ואבטחת נתונים</h2>
+                <h2 className="text-xl font-semibold mt-6 mb-3">7. אחסון ואבטחת נתונים</h2>
                 <p>
                   הנתונים שלך מאוחסנים באופן מאובטח באמצעות Supabase, עם הצפנה במנוחה ובמעבר. 
                   אנו מיישמים אמצעי אבטחה סטנדרטיים בתעשייה להגנה על המידע שלך.
@@ -139,17 +139,17 @@ const Privacy = () => {
               </section>
 
               <section>
-                <h2 className="text-xl font-semibold mt-6 mb-3">6. שיתוף נתונים</h2>
+                <h2 className="text-xl font-semibold mt-6 mb-3">8. שיתוף נתונים</h2>
                 <p>אנו לא מוכרים את הנתונים האישיים שלך. אנו משתפים נתונים עם:</p>
                 <ul className="list-disc list-inside mt-2 space-y-1">
-                  <li><strong>Paddle:</strong> סוחר רשום לעיבוד תשלומים (<a href="https://www.paddle.com/legal/privacy" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">מדיניות הפרטיות של Paddle</a>)</li>
+                  <li><strong>PayPal:</strong> לעיבוד תשלומים (<a href="https://www.paypal.com/webapps/mpp/ua/privacy-full" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">מדיניות הפרטיות של PayPal</a>)</li>
                   <li><strong>Supabase:</strong> לאחסון וניהול נתונים</li>
                   <li><strong>ספקי ניתוח:</strong> לשיפור השירות (נתונים אנונימיים)</li>
                 </ul>
               </section>
 
               <section>
-                <h2 className="text-xl font-semibold mt-6 mb-3">7. הזכויות שלך</h2>
+                <h2 className="text-xl font-semibold mt-6 mb-3">9. הזכויות שלך</h2>
                 <p>יש לך את הזכות:</p>
                 <ul className="list-disc list-inside mt-2 space-y-1">
                   <li>לגשת לנתונים האישיים שלך</li>
@@ -159,21 +159,21 @@ const Privacy = () => {
                   <li>לבטל הסכמה לתקשורת שיווקית</li>
                 </ul>
                 <p className="mt-2">
-                  לבקשות הקשורות לנתוני תשלום, אנא צור קשר עם Paddle ישירות דרך{" "}
-                  <a href="https://www.paddle.com/help" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">paddle.com/help</a>.
+                  לבקשות הקשורות לנתוני תשלום, אנא צור קשר עם PayPal ישירות דרך{" "}
+                  <a href="https://www.paypal.com/help" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">paypal.com/help</a>.
                 </p>
               </section>
 
               <section>
-                <h2 className="text-xl font-semibold mt-6 mb-3">8. קובצי עוגיות</h2>
+                <h2 className="text-xl font-semibold mt-6 mb-3">10. קובצי עוגיות</h2>
                 <p>
                   אנו משתמשים בקובצי עוגיות חיוניים לפונקציונליות האפליקציה, כגון שמירה על 
-                  סשן ההתחברות שלך. Paddle עשוי להשתמש בקובצי עוגיות נוספים לעיבוד תשלומים.
+                  סשן ההתחברות שלך. PayPal עשוי להשתמש בקובצי עוגיות נוספים לעיבוד תשלומים.
                 </p>
               </section>
 
               <section>
-                <h2 className="text-xl font-semibold mt-6 mb-3">9. פרטיות ילדים</h2>
+                <h2 className="text-xl font-semibold mt-6 mb-3">11. פרטיות ילדים</h2>
                 <p>
                   השירות שלנו אינו מיועד לילדים מתחת לגיל 13. איננו אוספים ביודעין 
                   מידע מילדים מתחת לגיל זה.
@@ -181,15 +181,15 @@ const Privacy = () => {
               </section>
 
               <section>
-                <h2 className="text-xl font-semibold mt-6 mb-3">10. העברות בינלאומיות</h2>
+                <h2 className="text-xl font-semibold mt-6 mb-3">12. העברות בינלאומיות</h2>
                 <p>
                   הנתונים שלך עשויים להיות מועברים ומעובדים במדינות מחוץ למדינת מגוריך. 
-                  Paddle ו-TalkFix מבטיחים שהעברות כאלה נעשות בהתאם לחוקי הגנת המידע החלים.
+                  PayPal ו-TalkFix מבטיחים שהעברות כאלה נעשות בהתאם לחוקי הגנת המידע החלים.
                 </p>
               </section>
 
               <section>
-                <h2 className="text-xl font-semibold mt-6 mb-3">11. שינויים במדיניות זו</h2>
+                <h2 className="text-xl font-semibold mt-6 mb-3">13. שינויים במדיניות זו</h2>
                 <p>
                   אנו עשויים לעדכן מדיניות זו מעת לעת. נודיע לך על שינויים משמעותיים 
                   באמצעות דוא"ל או הודעה באפליקציה.
@@ -197,11 +197,11 @@ const Privacy = () => {
               </section>
 
               <section>
-                <h2 className="text-xl font-semibold mt-6 mb-3">12. יצירת קשר</h2>
+                <h2 className="text-xl font-semibold mt-6 mb-3">14. יצירת קשר</h2>
                 <p>לשאלות לגבי מדיניות פרטיות זו:</p>
                 <ul className="list-disc list-inside mt-2 space-y-1">
                   <li>TalkFix: privacy@talkfix.app</li>
-                  <li>Paddle (לעניינים הקשורים לתשלום): <a href="https://www.paddle.com/legal/privacy" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">paddle.com/legal/privacy</a></li>
+                  <li>PayPal (לעניינים הקשורים לתשלום): <a href="https://www.paypal.com/help" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">paypal.com/help</a></li>
                 </ul>
               </section>
 
@@ -222,10 +222,10 @@ const Privacy = () => {
                   This privacy policy explains how we collect, use, and protect your information.
                 </p>
                 <p className="mt-2">
-                  <strong>Paddle serves as our Merchant of Record</strong> for payment transactions. 
-                  Paddle collects and processes payment information in accordance with their privacy policy available at{" "}
-                  <a href="https://www.paddle.com/legal/privacy" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
-                    paddle.com/legal/privacy
+                  <strong>PayPal is used for our payment processing.</strong>{" "}
+                  PayPal collects and processes payment information in accordance with their privacy policy available at{" "}
+                  <a href="https://www.paypal.com/webapps/mpp/ua/privacy-full" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                    paypal.com/privacy
                   </a>.
                 </p>
               </section>
@@ -237,7 +237,7 @@ const Privacy = () => {
                   <li><strong>Account details:</strong> Email address, display name, language preferences</li>
                   <li><strong>Learning data:</strong> Progress, learned words, quiz results</li>
                   <li><strong>Usage data:</strong> How you interact with the app</li>
-                  <li><strong>Payment information:</strong> Collected and processed by Paddle (not stored by us)</li>
+                  <li><strong>Payment information:</strong> Collected and processed by PayPal (not stored by us)</li>
                 </ul>
               </section>
 
@@ -290,10 +290,10 @@ const Privacy = () => {
               </section>
 
               <section>
-                <h2 className="text-xl font-semibold mt-6 mb-3">4. Information Collected by Paddle</h2>
-                <p>When you make a purchase, Paddle as the Merchant of Record collects:</p>
+                <h2 className="text-xl font-semibold mt-6 mb-3">4. Information Collected by PayPal</h2>
+                <p>When you make a purchase, PayPal collects:</p>
                 <ul className="list-disc list-inside mt-2 space-y-1">
-                  <li>Payment details (credit card, PayPal, etc.)</li>
+                  <li>Payment details (credit card, PayPal account, Google Pay)</li>
                   <li>Billing address</li>
                   <li>Tax information (VAT if applicable)</li>
                   <li>IP address and device information</li>
@@ -301,7 +301,7 @@ const Privacy = () => {
               </section>
 
               <section>
-                <h2 className="text-xl font-semibold mt-6 mb-3">4. How We Use Your Information</h2>
+                <h2 className="text-xl font-semibold mt-6 mb-3">5. How We Use Your Information</h2>
                 <p>We use your information to:</p>
                 <ul className="list-disc list-inside mt-2 space-y-1">
                   <li>Provide and improve our services</li>
@@ -313,7 +313,15 @@ const Privacy = () => {
               </section>
 
               <section>
-                <h2 className="text-xl font-semibold mt-6 mb-3">5. Data Storage and Security</h2>
+                <h2 className="text-xl font-semibold mt-6 mb-3">6. AI/ML Data Usage</h2>
+                <p>
+                  <strong>We do not use your personal data or Google data for training artificial intelligence or machine learning models.</strong> 
+                  Any AI services we provide use pre-trained models without your user data.
+                </p>
+              </section>
+
+              <section>
+                <h2 className="text-xl font-semibold mt-6 mb-3">7. Data Storage and Security</h2>
                 <p>
                   Your data is stored securely using Supabase, with encryption at rest and in transit. 
                   We implement industry-standard security measures to protect your information.
@@ -321,17 +329,17 @@ const Privacy = () => {
               </section>
 
               <section>
-                <h2 className="text-xl font-semibold mt-6 mb-3">6. Data Sharing</h2>
+                <h2 className="text-xl font-semibold mt-6 mb-3">8. Data Sharing</h2>
                 <p>We do not sell your personal data. We share data with:</p>
                 <ul className="list-disc list-inside mt-2 space-y-1">
-                  <li><strong>Paddle:</strong> Merchant of Record for payment processing (<a href="https://www.paddle.com/legal/privacy" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Paddle's Privacy Policy</a>)</li>
+                  <li><strong>PayPal:</strong> For payment processing (<a href="https://www.paypal.com/webapps/mpp/ua/privacy-full" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">PayPal's Privacy Policy</a>)</li>
                   <li><strong>Supabase:</strong> For data storage and management</li>
                   <li><strong>Analytics providers:</strong> For service improvement (anonymized data)</li>
                 </ul>
               </section>
 
               <section>
-                <h2 className="text-xl font-semibold mt-6 mb-3">7. Your Rights</h2>
+                <h2 className="text-xl font-semibold mt-6 mb-3">9. Your Rights</h2>
                 <p>You have the right to:</p>
                 <ul className="list-disc list-inside mt-2 space-y-1">
                   <li>Access your personal data</li>
@@ -341,21 +349,21 @@ const Privacy = () => {
                   <li>Opt-out of marketing communications</li>
                 </ul>
                 <p className="mt-2">
-                  For requests related to payment data, please contact Paddle directly at{" "}
-                  <a href="https://www.paddle.com/help" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">paddle.com/help</a>.
+                  For requests related to payment data, please contact PayPal directly at{" "}
+                  <a href="https://www.paypal.com/help" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">paypal.com/help</a>.
                 </p>
               </section>
 
               <section>
-                <h2 className="text-xl font-semibold mt-6 mb-3">8. Cookies</h2>
+                <h2 className="text-xl font-semibold mt-6 mb-3">10. Cookies</h2>
                 <p>
                   We use essential cookies for app functionality, such as maintaining your login session. 
-                  Paddle may use additional cookies for payment processing.
+                  PayPal may use additional cookies for payment processing.
                 </p>
               </section>
 
               <section>
-                <h2 className="text-xl font-semibold mt-6 mb-3">9. Children's Privacy</h2>
+                <h2 className="text-xl font-semibold mt-6 mb-3">11. Children's Privacy</h2>
                 <p>
                   Our service is not intended for children under 13. We do not knowingly collect 
                   information from children under this age.
@@ -363,15 +371,15 @@ const Privacy = () => {
               </section>
 
               <section>
-                <h2 className="text-xl font-semibold mt-6 mb-3">10. International Transfers</h2>
+                <h2 className="text-xl font-semibold mt-6 mb-3">12. International Transfers</h2>
                 <p>
                   Your data may be transferred and processed in countries outside your country of residence. 
-                  Paddle and TalkFix ensure such transfers are made in compliance with applicable data protection laws.
+                  PayPal and TalkFix ensure such transfers are made in compliance with applicable data protection laws.
                 </p>
               </section>
 
               <section>
-                <h2 className="text-xl font-semibold mt-6 mb-3">11. Changes to This Policy</h2>
+                <h2 className="text-xl font-semibold mt-6 mb-3">13. Changes to This Policy</h2>
                 <p>
                   We may update this policy from time to time. We will notify you of significant changes 
                   via email or in-app notification.
@@ -379,11 +387,11 @@ const Privacy = () => {
               </section>
 
               <section>
-                <h2 className="text-xl font-semibold mt-6 mb-3">12. Contact Us</h2>
+                <h2 className="text-xl font-semibold mt-6 mb-3">14. Contact Us</h2>
                 <p>For questions about this privacy policy:</p>
                 <ul className="list-disc list-inside mt-2 space-y-1">
                   <li>TalkFix: privacy@talkfix.app</li>
-                  <li>Paddle (for payment-related matters): <a href="https://www.paddle.com/legal/privacy" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">paddle.com/legal/privacy</a></li>
+                  <li>PayPal (for payment-related matters): <a href="https://www.paypal.com/help" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">paypal.com/help</a></li>
                 </ul>
               </section>
 
