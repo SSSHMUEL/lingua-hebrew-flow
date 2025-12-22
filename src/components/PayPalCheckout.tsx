@@ -21,12 +21,23 @@ declare global {
           layout?: string;
           label?: string;
         };
-        createSubscription: (data: any, actions: any) => Promise<string>;
-        onApprove: (data: { subscriptionID: string; orderID?: string }, actions: any) => Promise<void>;
+        fundingSource?: string;
+        createSubscription?: (data: any, actions: any) => Promise<string>;
+        onApprove: (data: { subscriptionID?: string; orderID?: string }, actions: any) => Promise<void>;
         onError: (err: any) => void;
         onCancel?: () => void;
       }) => {
+        isEligible?: () => boolean;
         render: (container: string | HTMLElement) => Promise<void>;
+      };
+      FUNDING?: {
+        PAYPAL: string;
+        GOOGLEPAY: string;
+        CARD: string;
+      };
+      Googlepay?: () => {
+        config: () => Promise<any>;
+        confirmOrder: (options: { orderId: string }) => Promise<any>;
       };
     };
   }
@@ -183,9 +194,10 @@ export const PayPalCheckout = ({ onSuccess }: PayPalCheckoutProps) => {
       ? "https://www.sandbox.paypal.com"
       : "https://www.paypal.com";
 
+    // Using v6 SDK with googlepay and buttons components for Advanced Checkout
     const desiredSrc = `${desiredHost}/sdk/js?client-id=${encodeURIComponent(
       paypalConfig.clientId
-    )}&vault=true&intent=subscription&currency=ILS&components=buttons`;
+    )}&vault=true&intent=subscription&currency=ILS&components=buttons,googlepay`;
 
     const existingScript = document.querySelector(
       'script[src*="paypal.com/sdk/js"], script[src*="sandbox.paypal.com/sdk/js"]'
@@ -253,6 +265,7 @@ export const PayPalCheckout = ({ onSuccess }: PayPalCheckoutProps) => {
       }
 
       try {
+        // Render main PayPal subscription button
         window.paypal!.Buttons({
           style: {
             shape: 'rect',
@@ -260,6 +273,7 @@ export const PayPalCheckout = ({ onSuccess }: PayPalCheckoutProps) => {
             layout: 'vertical',
             label: 'subscribe'
           },
+          fundingSource: window.paypal!.FUNDING?.PAYPAL,
           createSubscription: async (data: any, actions: any) => {
             setSelectedPlan(plan.id);
             console.log("Creating subscription with plan_id:", planId, "custom_id:", userId);
@@ -268,7 +282,7 @@ export const PayPalCheckout = ({ onSuccess }: PayPalCheckoutProps) => {
               custom_id: userId,
             });
           },
-          onApprove: async (data: { subscriptionID: string }) => {
+          onApprove: async (data: { subscriptionID?: string }) => {
             console.log("PayPal subscription approved:", data.subscriptionID);
             
             toast({
@@ -315,6 +329,79 @@ export const PayPalCheckout = ({ onSuccess }: PayPalCheckoutProps) => {
             setSelectedPlan(null);
           }
         }).render(`#${containerId}`);
+
+        // Render Google Pay button if available
+        const googlePayContainerId = `googlepay-button-${plan.id}`;
+        const googlePayContainer = document.getElementById(googlePayContainerId);
+        
+        if (googlePayContainer && window.paypal?.FUNDING?.GOOGLEPAY) {
+          const googlePayButton = window.paypal!.Buttons({
+            fundingSource: window.paypal!.FUNDING.GOOGLEPAY,
+            style: {
+              shape: 'rect',
+              color: 'black',
+              layout: 'vertical'
+            },
+            createSubscription: async (data: any, actions: any) => {
+              setSelectedPlan(plan.id);
+              console.log("Creating Google Pay subscription with plan_id:", planId, "custom_id:", userId);
+              return actions.subscription.create({
+                plan_id: planId,
+                custom_id: userId,
+              });
+            },
+            onApprove: async (data: { subscriptionID?: string }) => {
+              console.log("Google Pay subscription approved:", data.subscriptionID);
+              
+              toast({
+                title: "מעבד את התשלום...",
+                description: "אנא המתן רגע",
+              });
+
+              try {
+                await supabase.functions.invoke("paypal-webhook", {
+                  body: {
+                    event_type: "BILLING.SUBSCRIPTION.ACTIVATED",
+                    resource: {
+                      id: data.subscriptionID,
+                      custom_id: userId,
+                      plan_id: planId,
+                    }
+                  }
+                });
+              } catch (err) {
+                console.error("Error notifying backend:", err);
+              }
+
+              await pollForSubscriptionUpdate();
+              setSelectedPlan(null);
+            },
+            onError: (err: any) => {
+              console.error("Google Pay error:", err);
+              const errMsg =
+                typeof err === "string"
+                  ? err
+                  : err?.message || err?.details?.[0]?.issue || err?.name || "";
+
+              toast({
+                title: "שגיאה",
+                description: errMsg
+                  ? `אירעה שגיאה בתשלום: ${errMsg}`
+                  : "אירעה שגיאה בתשלום. נסה שוב.",
+                variant: "destructive",
+              });
+              setSelectedPlan(null);
+            },
+            onCancel: () => {
+              setSelectedPlan(null);
+            }
+          });
+
+          // Only render if Google Pay is eligible
+          if (googlePayButton.isEligible?.()) {
+            googlePayButton.render(`#${googlePayContainerId}`);
+          }
+        }
 
         setButtonsRendered(prev => ({ ...prev, [plan.id]: true }));
       } catch (err) {
@@ -395,6 +482,12 @@ export const PayPalCheckout = ({ onSuccess }: PayPalCheckoutProps) => {
                 </div>
               )}
             </div>
+            
+            {/* Google Pay Button Container */}
+            <div 
+              id={`googlepay-button-${plan.id}`} 
+              className="min-h-[40px]"
+            />{/* Google Pay will only render if eligible */}
             
             {selectedPlan === plan.id && (
               <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
