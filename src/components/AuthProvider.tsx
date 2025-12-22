@@ -1,6 +1,8 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
+import { App } from '@capacitor/app';
+import { Capacitor } from '@capacitor/core';
 
 interface AuthContextType {
   user: User | null;
@@ -43,6 +45,43 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setUser(session?.user ?? null);
       setLoading(false);
     });
+
+    // Handle deep links for Capacitor (OAuth callback)
+    if (Capacitor.isNativePlatform()) {
+      App.addListener('appUrlOpen', async (event) => {
+        const url = event.url;
+        console.log('Capacitor appUrlOpen:', url);
+
+        // Check if this is an OAuth callback with access token
+        if (url.includes('#access_token=') || url.includes('?code=')) {
+          try {
+            // Extract the fragment/query from the URL and let Supabase handle it
+            const hashIndex = url.indexOf('#');
+            if (hashIndex !== -1) {
+              const fragment = url.substring(hashIndex + 1);
+              const params = new URLSearchParams(fragment);
+              const accessToken = params.get('access_token');
+              const refreshToken = params.get('refresh_token');
+              
+              if (accessToken && refreshToken) {
+                const { data, error } = await supabase.auth.setSession({
+                  access_token: accessToken,
+                  refresh_token: refreshToken,
+                });
+                
+                if (error) {
+                  console.error('Error setting session from deep link:', error);
+                } else {
+                  console.log('Successfully authenticated from deep link!', data.session?.user?.email);
+                }
+              }
+            }
+          } catch (error) {
+            console.error('Error handling OAuth deep link:', error);
+          }
+        }
+      });
+    }
 
     return () => subscription.unsubscribe();
   }, []);
