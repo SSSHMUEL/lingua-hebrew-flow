@@ -129,8 +129,15 @@ export const PayPalCheckout = ({ onSuccess }: PayPalCheckoutProps) => {
     const fetchPayPalConfig = async () => {
       try {
         const { data, error } = await supabase.functions.invoke("paypal-config");
+        console.log("PayPal config response:", { data, error });
         if (error) throw error;
         if (data) {
+          console.log("PayPal config loaded:", {
+            clientId: data.clientId ? data.clientId.substring(0, 10) + "..." : "MISSING",
+            monthlyPlanId: data.monthlyPlanId || "MISSING",
+            yearlyPlanId: data.yearlyPlanId || "MISSING",
+            environment: data.environment
+          });
           setPaypalConfig(data);
         }
       } catch (error) {
@@ -147,6 +154,7 @@ export const PayPalCheckout = ({ onSuccess }: PayPalCheckoutProps) => {
 
     const getUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
+      console.log("User loaded:", user?.id || "NO USER");
       if (user) {
         setUserId(user.id);
       }
