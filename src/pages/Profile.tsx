@@ -11,7 +11,7 @@ import { useAuth } from '@/components/AuthProvider';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Settings, Target, Crown, Languages, Sparkles } from 'lucide-react';
+import { Settings, Target, Crown, Languages } from 'lucide-react';
 import { PayPalCheckout } from '@/components/PayPalCheckout';
 import { useSubscription } from '@/components/SubscriptionGuard';
 
@@ -248,7 +248,7 @@ const Profile: React.FC = () => {
           </Card>
 
           {/* Subscription Status */}
-          <Card className={`shadow-lg ${isExpired ? 'border-destructive' : isTrialing ? 'border-primary' : 'border-green-500'}`}>
+          <Card className={`shadow-lg ${isActive ? 'border-green-500' : 'border-border'}`}>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Crown className={`h-5 w-5 ${isActive ? 'text-green-500' : isTrialing ? 'text-primary' : 'text-destructive'}`} />
@@ -259,11 +259,11 @@ const Profile: React.FC = () => {
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
                   <span className="text-muted-foreground">{isRTL ? 'סטטוס' : 'Status'}</span>
-                  <Badge variant={isActive ? "default" : isTrialing ? "secondary" : "destructive"}>
-                    {isActive ? (isRTL ? "פעיל" : "Active") : isTrialing ? (isRTL ? "תקופת ניסיון" : "Trial") : (isRTL ? "לא פעיל" : "Inactive")}
+                  <Badge variant={isActive ? "default" : "secondary"}>
+                    {isActive ? (isRTL ? "פרימיום" : "Premium") : (isRTL ? "חינמי" : "Free")}
                   </Badge>
                 </div>
-                {(isTrialing || isActive) && (
+                {isActive && daysRemaining > 0 && (
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">{isRTL ? 'ימים שנותרו' : 'Days Remaining'}</span>
                     <Badge variant="outline">{daysRemaining}</Badge>
@@ -274,13 +274,13 @@ const Profile: React.FC = () => {
                   <Badge className="bg-primary/20 text-primary">{Math.round(percent)}%</Badge>
                 </div>
                 
-                {(isTrialing || isExpired) && (
+                {!isActive && (
                   <Button 
-                    className="w-full gap-2" 
+                    className="w-full gap-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white border-0" 
                     onClick={() => setShowUpgrade(!showUpgrade)}
                   >
-                    <Sparkles className="w-4 h-4" />
-                    {showUpgrade ? (isRTL ? "סגור" : "Close") : (isRTL ? "שדרג עכשיו" : "Upgrade Now")}
+                    <Crown className="w-4 h-4" />
+                    {showUpgrade ? (isRTL ? "סגור" : "Close") : (isRTL ? "שדרג לפרימיום" : "Upgrade to Premium")}
                   </Button>
                 )}
               </div>
