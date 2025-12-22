@@ -140,11 +140,23 @@ export const PayPalCheckout = ({ onSuccess }: PayPalCheckoutProps) => {
           });
           setPaypalConfig(data);
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error("Failed to fetch PayPal config:", error);
+
+        let description = "לא ניתן לטעון את מערכת התשלומים";
+        try {
+          const ctx = error?.context;
+          if (ctx && typeof ctx.json === "function") {
+            const body = await ctx.json();
+            description = body?.message || body?.error || description;
+          }
+        } catch {
+          // ignore
+        }
+
         toast({
           title: "שגיאה",
-          description: "לא ניתן לטעון את מערכת התשלומים",
+          description,
           variant: "destructive",
         });
       } finally {
