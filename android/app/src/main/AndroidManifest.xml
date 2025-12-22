@@ -40,33 +40,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
 
-            <!-- Intent filter for Supabase Auth callback (App Link) -->
-            <intent-filter android:autoVerify="true">
-                <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-                <data
-                    android:scheme="https"
-                    android:host="ozadplmtmuwykreoxagg.supabase.co"
-                    android:pathPrefix="/auth/v1/callback" />
-            </intent-filter>
-
-            <!-- Intent filter for Netlify Auth callback (App Link) -->
-            <intent-filter android:autoVerify="true">
-                <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="https" android:host="talkfix.netlify.app" />
-            </intent-filter>
-
-            <!-- Fallback Custom Scheme Intent Filter -->
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="com.talkfix.app" />
-            </intent-filter>
-
         </activity>
 
         <!-- Settings Activities -->
