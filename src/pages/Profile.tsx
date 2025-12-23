@@ -254,10 +254,19 @@ const Profile: React.FC = () => {
     
     setLoading(true);
     try {
-      await supabase.from('learned_words').delete().eq('user_id', user.id);
-      await supabase.from('subscriptions' as any).delete().eq('user_id', user.id);
-      await supabase.from('profiles').delete().eq('user_id', user.id);
+      // Call edge function to delete user account completely from Supabase
+      const { data: sessionData } = await supabase.auth.getSession();
+      const response = await supabase.functions.invoke('delete-account', {
+        headers: {
+          Authorization: `Bearer ${sessionData.session?.access_token}`
+        }
+      });
       
+      if (response.error) {
+        throw new Error(response.error.message);
+      }
+      
+      // Sign out locally
       await supabase.auth.signOut();
       
       toast({

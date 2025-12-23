@@ -25,6 +25,7 @@ import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
 import Refund from "./pages/Refund";
 import Pricing from "./pages/Pricing";
+import ResetPassword from "./pages/ResetPassword";
 import { UserWordsSynchronizer } from "@/components/UserWordsSynchronizer";
 
 const queryClient = new QueryClient();
@@ -34,7 +35,7 @@ const AppContent = () => {
   const location = useLocation();
   
   // Don't show navigation on onboarding page
-  const hideNavigation = location.pathname === "/onboarding";
+  const hideNavigation = location.pathname === "/onboarding" || location.pathname === "/reset-password";
   
   return (
     <div dir={isRTL ? "rtl" : "ltr"} className="min-h-screen bg-background">
@@ -57,6 +58,7 @@ const AppContent = () => {
         <Route path="/privacy" element={<Privacy />} />
         <Route path="/refund" element={<Refund />} />
         <Route path="/pricing" element={<Pricing />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
     </div>

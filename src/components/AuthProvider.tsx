@@ -33,12 +33,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // Helper function to sync Google profile data
     const syncGoogleProfile = async (user: User) => {
       if (user.app_metadata?.provider === 'google' || user.identities?.some(i => i.provider === 'google')) {
-        const googleName = user.user_metadata?.full_name || user.user_metadata?.name;
-        if (googleName) {
+        // Extract first name from Google data
+        const fullName = user.user_metadata?.full_name || user.user_metadata?.name;
+        const givenName = user.user_metadata?.given_name;
+        const displayName = givenName || (fullName ? fullName.split(' ')[0] : null);
+        
+        if (displayName) {
           // Update user metadata with display_name if not set
           if (!user.user_metadata?.display_name) {
             await supabase.auth.updateUser({
-              data: { display_name: googleName }
+              data: { display_name: displayName }
             });
           }
           
@@ -48,18 +52,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               .from('profiles')
               .select('display_name')
               .eq('user_id', user.id)
-              .single();
+              .maybeSingle();
             
             if (!existingProfile) {
               // Create profile
               await supabase.from('profiles').insert({
                 user_id: user.id,
-                display_name: googleName,
+                display_name: displayName,
               });
             } else if (!existingProfile.display_name) {
               // Update display_name if empty
               await supabase.from('profiles').update({
-                display_name: googleName
+                display_name: displayName
               }).eq('user_id', user.id);
             }
           }, 0);
