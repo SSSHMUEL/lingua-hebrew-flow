@@ -93,8 +93,51 @@ const Privacy = () => {
                 <p className="mt-2">לאחר מחיקה, כל נתוני Google שלך יוסרו לצמיתות תוך 30 יום.</p>
               </section>
 
+              {/* Chrome Extension Privacy Section */}
+              <section className="bg-secondary/50 border border-border rounded-lg p-4">
+                <h2 className="text-xl font-semibold mt-2 mb-3">4. תוסף הדפדפן של TalkFix</h2>
+                
+                <h3 className="font-semibold mt-4 mb-2">4.1 מבוא</h3>
+                <p>
+                  ברוכים הבאים ל-TalkFix. אנו מחויבים להגן על פרטיותך. 
+                  סעיף זה מסביר כיצד תוסף הדפדפן שלנו מתקשר עם הנתונים שלך.
+                </p>
+
+                <h3 className="font-semibold mt-4 mb-2">4.2 איסוף ושימוש במידע</h3>
+                <p>TalkFix אינו אוסף, מאחסן או מעביר נתוני גלישה אישיים.</p>
+                <ul className="list-disc list-inside mt-2 space-y-1">
+                  <li><strong>תוכן אתרים:</strong> התוסף שלנו דורש הרשאה לקרוא ולשנות תוכן אתרים. זה משמש באופן מקומי בלבד בדפדפן שלך לזיהוי מילים בעברית והחלפתן בתרגומים לאנגלית למטרות חינוכיות.</li>
+                  <li><strong>אין העברת היסטוריית גלישה:</strong> שום טקסט מהאתרים שאתה מבקר בהם לא נשלח לשרתים שלנו או לצדדים שלישיים.</li>
+                </ul>
+
+                <h3 className="font-semibold mt-4 mb-2">4.3 אחסון וסנכרון נתונים (Supabase)</h3>
+                <p>כדי לספק חוויית למידה עקבית, TalkFix מסנכרן את ההתקדמות שלך:</p>
+                <ul className="list-disc list-inside mt-2 space-y-1">
+                  <li><strong>רשימת מילים:</strong> רשימת המילים שלמדת מאוחסנת ונשלפת מ-Supabase, ספק מסד נתונים מאובטח של צד שלישי.</li>
+                  <li><strong>מטרה:</strong> אחסון זה משמש אך ורק כדי לאפשר לך גישה לרשימת המילים האישית שלך ממכשירים שונים ולשמור את התקדמות הלמידה שלך.</li>
+                  <li><strong>אימות:</strong> אם אתה מתחבר, פרטי החשבון הבסיסיים שלך (כמו אימייל) מטופלים באופן מאובטח על ידי Supabase לזיהוי רשימת המילים הספציפית שלך.</li>
+                </ul>
+
+                <h3 className="font-semibold mt-4 mb-2">4.4 גילוי מידע</h3>
+                <p>
+                  אנו לא מוכרים, סוחרים או מעבירים את המידע שלך לצדדים חיצוניים. 
+                  אנו עומדים במדיניות נתוני המשתמש של Google, כולל:
+                </p>
+                <ul className="list-disc list-inside mt-2 space-y-1">
+                  <li>אי מכירת נתוני משתמשים.</li>
+                  <li>אי שימוש בנתונים למטרות לא קשורות (כמו פרסום או דירוג אשראי).</li>
+                </ul>
+
+                <h3 className="font-semibold mt-4 mb-2">4.5 הרשאות התוסף</h3>
+                <p>התוסף מבקש את ההרשאות הבאות:</p>
+                <ul className="list-disc list-inside mt-2 space-y-1">
+                  <li><strong>storage:</strong> לשמירת הסשן וההגדרות המקומיות שלך.</li>
+                  <li><strong>scripting / activeTab / host permissions:</strong> לאפשר החלפת טקסט בדפים שאתה מבקר בהם למטרות חינוכיות.</li>
+                </ul>
+              </section>
+
               <section>
-                <h2 className="text-xl font-semibold mt-6 mb-3">4. מידע שנאסף על ידי PayPal</h2>
+                <h2 className="text-xl font-semibold mt-6 mb-3">5. מידע שנאסף על ידי PayPal</h2>
                 <p>
                   כשאתה מבצע רכישה, PayPal אוסף:
                 </p>
@@ -111,7 +154,7 @@ const Privacy = () => {
               </section>
 
               <section>
-                <h2 className="text-xl font-semibold mt-6 mb-3">5. כיצד אנו משתמשים במידע שלך</h2>
+                <h2 className="text-xl font-semibold mt-6 mb-3">6. כיצד אנו משתמשים במידע שלך</h2>
                 <p>אנו משתמשים במידע שלך כדי:</p>
                 <ul className="list-disc list-inside mt-2 space-y-1">
                   <li>לספק ולשפר את שירותינו</li>
@@ -123,7 +166,7 @@ const Privacy = () => {
               </section>
 
               <section>
-                <h2 className="text-xl font-semibold mt-6 mb-3">6. שימוש בנתונים עבור AI/ML</h2>
+                <h2 className="text-xl font-semibold mt-6 mb-3">7. שימוש בנתונים עבור AI/ML</h2>
                 <p>
                   <strong>אנו לא משתמשים בנתונים האישיים שלך או בנתוני Google שלך לאימון מודלים של בינה מלאכותית או למידת מכונה.</strong> 
                   כל שירותי AI שאנו מספקים משתמשים במודלים מאומנים מראש ללא נתוני המשתמש שלך.
@@ -131,7 +174,7 @@ const Privacy = () => {
               </section>
 
               <section>
-                <h2 className="text-xl font-semibold mt-6 mb-3">7. אחסון ואבטחת נתונים</h2>
+                <h2 className="text-xl font-semibold mt-6 mb-3">8. אחסון ואבטחת נתונים</h2>
                 <p>
                   הנתונים שלך מאוחסנים באופן מאובטח באמצעות Supabase, עם הצפנה במנוחה ובמעבר. 
                   אנו מיישמים אמצעי אבטחה סטנדרטיים בתעשייה להגנה על המידע שלך.
@@ -139,7 +182,7 @@ const Privacy = () => {
               </section>
 
               <section>
-                <h2 className="text-xl font-semibold mt-6 mb-3">8. שיתוף נתונים</h2>
+                <h2 className="text-xl font-semibold mt-6 mb-3">9. שיתוף נתונים</h2>
                 <p>אנו לא מוכרים את הנתונים האישיים שלך. אנו משתפים נתונים עם:</p>
                 <ul className="list-disc list-inside mt-2 space-y-1">
                   <li><strong>PayPal:</strong> לעיבוד תשלומים (<a href="https://www.paypal.com/webapps/mpp/ua/privacy-full" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">מדיניות הפרטיות של PayPal</a>)</li>
@@ -149,7 +192,7 @@ const Privacy = () => {
               </section>
 
               <section>
-                <h2 className="text-xl font-semibold mt-6 mb-3">9. הזכויות שלך</h2>
+                <h2 className="text-xl font-semibold mt-6 mb-3">10. הזכויות שלך</h2>
                 <p>יש לך את הזכות:</p>
                 <ul className="list-disc list-inside mt-2 space-y-1">
                   <li>לגשת לנתונים האישיים שלך</li>
@@ -165,7 +208,7 @@ const Privacy = () => {
               </section>
 
               <section>
-                <h2 className="text-xl font-semibold mt-6 mb-3">10. קובצי עוגיות</h2>
+                <h2 className="text-xl font-semibold mt-6 mb-3">11. קובצי עוגיות</h2>
                 <p>
                   אנו משתמשים בקובצי עוגיות חיוניים לפונקציונליות האפליקציה, כגון שמירה על 
                   סשן ההתחברות שלך. PayPal עשוי להשתמש בקובצי עוגיות נוספים לעיבוד תשלומים.
@@ -173,7 +216,7 @@ const Privacy = () => {
               </section>
 
               <section>
-                <h2 className="text-xl font-semibold mt-6 mb-3">11. פרטיות ילדים</h2>
+                <h2 className="text-xl font-semibold mt-6 mb-3">12. פרטיות ילדים</h2>
                 <p>
                   השירות שלנו אינו מיועד לילדים מתחת לגיל 13. איננו אוספים ביודעין 
                   מידע מילדים מתחת לגיל זה.
@@ -181,7 +224,7 @@ const Privacy = () => {
               </section>
 
               <section>
-                <h2 className="text-xl font-semibold mt-6 mb-3">12. העברות בינלאומיות</h2>
+                <h2 className="text-xl font-semibold mt-6 mb-3">13. העברות בינלאומיות</h2>
                 <p>
                   הנתונים שלך עשויים להיות מועברים ומעובדים במדינות מחוץ למדינת מגוריך. 
                   PayPal ו-TalkFix מבטיחים שהעברות כאלה נעשות בהתאם לחוקי הגנת המידע החלים.
@@ -189,7 +232,7 @@ const Privacy = () => {
               </section>
 
               <section>
-                <h2 className="text-xl font-semibold mt-6 mb-3">13. שינויים במדיניות זו</h2>
+                <h2 className="text-xl font-semibold mt-6 mb-3">14. שינויים במדיניות זו</h2>
                 <p>
                   אנו עשויים לעדכן מדיניות זו מעת לעת. נודיע לך על שינויים משמעותיים 
                   באמצעות דוא"ל או הודעה באפליקציה.
@@ -197,7 +240,7 @@ const Privacy = () => {
               </section>
 
               <section>
-                <h2 className="text-xl font-semibold mt-6 mb-3">14. יצירת קשר</h2>
+                <h2 className="text-xl font-semibold mt-6 mb-3">15. יצירת קשר</h2>
                 <p>לשאלות לגבי מדיניות פרטיות זו:</p>
                 <ul className="list-disc list-inside mt-2 space-y-1">
                   <li>TalkFix: privacy@talkfix.app</li>
@@ -289,8 +332,51 @@ const Privacy = () => {
                 <p className="mt-2">After deletion, all your Google data will be permanently removed within 30 days.</p>
               </section>
 
+              {/* Chrome Extension Privacy Section */}
+              <section className="bg-secondary/50 border border-border rounded-lg p-4">
+                <h2 className="text-xl font-semibold mt-2 mb-3">4. TalkFix Chrome Extension</h2>
+                
+                <h3 className="font-semibold mt-4 mb-2">4.1 Introduction</h3>
+                <p>
+                  Welcome to TalkFix ("we," "our," or "us"). We are committed to protecting your privacy. 
+                  This section explains how our Chrome Extension interacts with your data.
+                </p>
+
+                <h3 className="font-semibold mt-4 mb-2">4.2 Information Collection and Use</h3>
+                <p>TalkFix does not collect, store, or transmit any personal browsing data.</p>
+                <ul className="list-disc list-inside mt-2 space-y-1">
+                  <li><strong>Website Content:</strong> Our extension requires permission to read and change website content. This is used strictly locally on your browser to identify Hebrew words and replace them with English translations for educational purposes.</li>
+                  <li><strong>No Data Transmission of Browsing History:</strong> No text from the websites you visit is ever sent to our servers or third parties.</li>
+                </ul>
+
+                <h3 className="font-semibold mt-4 mb-2">4.3 Data Storage and Sync (Supabase)</h3>
+                <p>To provide a consistent learning experience, TalkFix syncs your progress:</p>
+                <ul className="list-disc list-inside mt-2 space-y-1">
+                  <li><strong>User Word List:</strong> The list of words you have learned is stored and retrieved from Supabase, a secure third-party database provider.</li>
+                  <li><strong>Purpose:</strong> This storage is used solely to allow you to access your personal word list across different devices and to save your learning progress.</li>
+                  <li><strong>Authentication:</strong> If you sign in, your basic account information (like email) is handled securely by Supabase to identify your specific word list.</li>
+                </ul>
+
+                <h3 className="font-semibold mt-4 mb-2">4.4 Disclosure of Information</h3>
+                <p>
+                  We do not sell, trade, or otherwise transfer your information to outside parties. 
+                  We comply with Google User Data Policies, including:
+                </p>
+                <ul className="list-disc list-inside mt-2 space-y-1">
+                  <li>Not selling user data.</li>
+                  <li>Not using data for unrelated purposes (such as advertising or creditworthiness).</li>
+                </ul>
+
+                <h3 className="font-semibold mt-4 mb-2">4.5 Permissions</h3>
+                <p>The extension requests the following permissions:</p>
+                <ul className="list-disc list-inside mt-2 space-y-1">
+                  <li><strong>storage:</strong> To maintain your session and local settings.</li>
+                  <li><strong>scripting / activeTab / host permissions:</strong> To allow the replacement of text on the pages you visit for educational purposes.</li>
+                </ul>
+              </section>
+
               <section>
-                <h2 className="text-xl font-semibold mt-6 mb-3">4. Information Collected by PayPal</h2>
+                <h2 className="text-xl font-semibold mt-6 mb-3">5. Information Collected by PayPal</h2>
                 <p>When you make a purchase, PayPal collects:</p>
                 <ul className="list-disc list-inside mt-2 space-y-1">
                   <li>Payment details (credit card, PayPal account, Google Pay)</li>
@@ -301,7 +387,7 @@ const Privacy = () => {
               </section>
 
               <section>
-                <h2 className="text-xl font-semibold mt-6 mb-3">5. How We Use Your Information</h2>
+                <h2 className="text-xl font-semibold mt-6 mb-3">6. How We Use Your Information</h2>
                 <p>We use your information to:</p>
                 <ul className="list-disc list-inside mt-2 space-y-1">
                   <li>Provide and improve our services</li>
@@ -313,7 +399,7 @@ const Privacy = () => {
               </section>
 
               <section>
-                <h2 className="text-xl font-semibold mt-6 mb-3">6. AI/ML Data Usage</h2>
+                <h2 className="text-xl font-semibold mt-6 mb-3">7. AI/ML Data Usage</h2>
                 <p>
                   <strong>We do not use your personal data or Google data for training artificial intelligence or machine learning models.</strong> 
                   Any AI services we provide use pre-trained models without your user data.
@@ -321,7 +407,7 @@ const Privacy = () => {
               </section>
 
               <section>
-                <h2 className="text-xl font-semibold mt-6 mb-3">7. Data Storage and Security</h2>
+                <h2 className="text-xl font-semibold mt-6 mb-3">8. Data Storage and Security</h2>
                 <p>
                   Your data is stored securely using Supabase, with encryption at rest and in transit. 
                   We implement industry-standard security measures to protect your information.
@@ -329,7 +415,7 @@ const Privacy = () => {
               </section>
 
               <section>
-                <h2 className="text-xl font-semibold mt-6 mb-3">8. Data Sharing</h2>
+                <h2 className="text-xl font-semibold mt-6 mb-3">9. Data Sharing</h2>
                 <p>We do not sell your personal data. We share data with:</p>
                 <ul className="list-disc list-inside mt-2 space-y-1">
                   <li><strong>PayPal:</strong> For payment processing (<a href="https://www.paypal.com/webapps/mpp/ua/privacy-full" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">PayPal's Privacy Policy</a>)</li>
@@ -339,7 +425,7 @@ const Privacy = () => {
               </section>
 
               <section>
-                <h2 className="text-xl font-semibold mt-6 mb-3">9. Your Rights</h2>
+                <h2 className="text-xl font-semibold mt-6 mb-3">10. Your Rights</h2>
                 <p>You have the right to:</p>
                 <ul className="list-disc list-inside mt-2 space-y-1">
                   <li>Access your personal data</li>
@@ -355,7 +441,7 @@ const Privacy = () => {
               </section>
 
               <section>
-                <h2 className="text-xl font-semibold mt-6 mb-3">10. Cookies</h2>
+                <h2 className="text-xl font-semibold mt-6 mb-3">11. Cookies</h2>
                 <p>
                   We use essential cookies for app functionality, such as maintaining your login session. 
                   PayPal may use additional cookies for payment processing.
@@ -363,7 +449,7 @@ const Privacy = () => {
               </section>
 
               <section>
-                <h2 className="text-xl font-semibold mt-6 mb-3">11. Children's Privacy</h2>
+                <h2 className="text-xl font-semibold mt-6 mb-3">12. Children's Privacy</h2>
                 <p>
                   Our service is not intended for children under 13. We do not knowingly collect 
                   information from children under this age.
@@ -371,7 +457,7 @@ const Privacy = () => {
               </section>
 
               <section>
-                <h2 className="text-xl font-semibold mt-6 mb-3">12. International Transfers</h2>
+                <h2 className="text-xl font-semibold mt-6 mb-3">13. International Transfers</h2>
                 <p>
                   Your data may be transferred and processed in countries outside your country of residence. 
                   PayPal and TalkFix ensure such transfers are made in compliance with applicable data protection laws.
@@ -379,7 +465,7 @@ const Privacy = () => {
               </section>
 
               <section>
-                <h2 className="text-xl font-semibold mt-6 mb-3">13. Changes to This Policy</h2>
+                <h2 className="text-xl font-semibold mt-6 mb-3">14. Changes to This Policy</h2>
                 <p>
                   We may update this policy from time to time. We will notify you of significant changes 
                   via email or in-app notification.
@@ -387,7 +473,7 @@ const Privacy = () => {
               </section>
 
               <section>
-                <h2 className="text-xl font-semibold mt-6 mb-3">14. Contact Us</h2>
+                <h2 className="text-xl font-semibold mt-6 mb-3">15. Contact Us</h2>
                 <p>For questions about this privacy policy:</p>
                 <ul className="list-disc list-inside mt-2 space-y-1">
                   <li>TalkFix: privacy@talkfix.app</li>
