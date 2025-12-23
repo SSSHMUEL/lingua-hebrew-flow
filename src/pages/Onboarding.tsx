@@ -209,8 +209,13 @@ const Onboarding = () => {
   const currentDir = isEnglishUI ? 'ltr' : 'rtl';
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 py-8 px-4" dir={currentDir}>
-      <div className="max-w-2xl mx-auto">
+    <div className="min-h-screen relative overflow-hidden py-8 px-4" style={{ background: 'var(--gradient-hero)' }} dir={currentDir}>
+      {/* Enhanced glowing background effects */}
+      <div className="absolute top-10 left-1/4 w-[500px] h-[500px] bg-primary/15 rounded-full blur-[120px] animate-pulse-slow" />
+      <div className="absolute bottom-10 right-1/4 w-[400px] h-[400px] bg-accent/12 rounded-full blur-[100px] animate-pulse-slow" />
+      <div className="absolute top-1/2 right-1/3 w-72 h-72 bg-primary/8 rounded-full blur-[80px]" />
+      
+      <div className="max-w-2xl mx-auto relative z-10">
         {/* Progress indicator */}
         <div className="flex items-center justify-center gap-2 mb-8">
           {[1, 2, 3].map((s) => (

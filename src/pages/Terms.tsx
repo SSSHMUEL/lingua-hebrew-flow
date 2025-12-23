@@ -7,8 +7,14 @@ const Terms = () => {
   const isHebrew = language === "he";
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-4xl">
-      <Card>
+    <div className="min-h-screen relative overflow-hidden" style={{ background: 'var(--gradient-hero)' }}>
+      {/* Enhanced glowing background effects */}
+      <div className="absolute top-10 left-1/4 w-[500px] h-[500px] bg-primary/15 rounded-full blur-[120px] animate-pulse-slow" />
+      <div className="absolute bottom-10 right-1/4 w-[400px] h-[400px] bg-accent/12 rounded-full blur-[100px] animate-pulse-slow" />
+      <div className="absolute top-1/2 right-1/3 w-72 h-72 bg-primary/8 rounded-full blur-[80px]" />
+      
+      <div className="container mx-auto px-4 py-8 max-w-4xl relative z-10">
+      <Card className="glass-card border-white/10">
         <CardHeader>
           <CardTitle className="text-2xl">
             {isHebrew ? "תנאי שימוש" : "Terms of Service"}
@@ -318,6 +324,7 @@ const Terms = () => {
           )}
         </CardContent>
       </Card>
+      </div>
     </div>
   );
 };

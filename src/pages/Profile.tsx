@@ -293,16 +293,17 @@ const Profile: React.FC = () => {
 
   return (
     <div className="min-h-screen relative overflow-hidden" style={{ background: 'var(--gradient-hero)' }}>
-      {/* Glowing background effects */}
-      <div className="absolute top-20 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl animate-pulse-slow" />
-      <div className="absolute bottom-20 right-1/4 w-80 h-80 bg-accent/10 rounded-full blur-3xl animate-pulse-slow" />
+      {/* Enhanced glowing background effects */}
+      <div className="absolute top-10 left-1/4 w-[500px] h-[500px] bg-primary/15 rounded-full blur-[120px] animate-pulse-slow" />
+      <div className="absolute bottom-10 right-1/4 w-[400px] h-[400px] bg-accent/12 rounded-full blur-[100px] animate-pulse-slow" />
+      <div className="absolute top-1/2 right-1/3 w-72 h-72 bg-primary/8 rounded-full blur-[80px]" />
       
       <div className="container mx-auto px-4 py-12 max-w-6xl relative z-10">
         {/* Header */}
         <div className="text-center mb-8">
           <Badge className="mb-4 bg-primary/20 text-primary border-primary/30">
             <Settings className="h-3 w-3 mr-1" />
-            ACCOUNT MANAGEMENT
+            {t('profile.accountManagement')}
           </Badge>
           <h1 className="text-4xl font-bold text-foreground">{t('profile.title')}</h1>
         </div>
@@ -313,14 +314,12 @@ const Profile: React.FC = () => {
           <Card className="glass-card border-white/10">
             <CardContent className="p-6">
               <div className="flex items-center justify-between mb-4">
-                <span className="text-sm text-muted-foreground uppercase tracking-wider">Account Level</span>
+                <span className="text-sm text-muted-foreground uppercase tracking-wider">{t('profile.accountLevel')}</span>
                 <Crown className={`h-6 w-6 ${isActive ? 'text-primary' : 'text-muted-foreground'}`} />
               </div>
-              <h3 className="text-2xl font-bold mb-4">{isActive ? 'PREMIUM' : 'INACTIVE'}</h3>
+              <h3 className="text-2xl font-bold mb-4">{isActive ? t('profile.premium') : t('profile.inactive')}</h3>
               <p className="text-sm text-muted-foreground mb-6">
-                {isRTL 
-                  ? 'שדרג לגישה מלאה לכל התכונות כולל כתוביות AI, מצב אופליין ומודולי למידה מתקדמים'
-                  : 'Unlock all features including AI subtitles, offline mode, and advanced learning modules'}
+                {t('profile.unlockFeatures')}
               </p>
               {!isActive && (
                 <Button 
@@ -328,7 +327,7 @@ const Profile: React.FC = () => {
                   onClick={() => setShowUpgrade(!showUpgrade)}
                 >
                   <Crown className="w-4 h-4 mr-2" />
-                  UPGRADE TO PRO
+                  {t('profile.upgradeToPro')}
                 </Button>
               )}
             </CardContent>
@@ -338,14 +337,14 @@ const Profile: React.FC = () => {
           <Card className="glass-card border-white/10">
             <CardContent className="p-6">
               <div className="flex items-center justify-between mb-4">
-                <span className="text-sm text-muted-foreground uppercase tracking-wider">Authenticated User</span>
+                <span className="text-sm text-muted-foreground uppercase tracking-wider">{t('profile.authenticatedUser')}</span>
                 <User className="h-6 w-6 text-muted-foreground" />
               </div>
               <h3 className="text-2xl font-bold mb-4">{user?.user_metadata?.display_name || user?.email?.split('@')[0]}</h3>
               <div className="flex items-center gap-2 mb-4">
                 <span className="text-3xl font-bold text-primary">{learned}</span>
                 <span className="text-muted-foreground">/ {total}</span>
-                <span className="text-sm text-muted-foreground ml-2">{isRTL ? 'מילים נלמדו' : 'words learned'}</span>
+                <span className="text-sm text-muted-foreground ml-2">{t('profile.wordsLearned')}</span>
               </div>
               <div className="flex gap-3">
                 <Button 
@@ -353,13 +352,13 @@ const Profile: React.FC = () => {
                   className="flex-1 glass-button border-white/20"
                   onClick={() => navigate('/practice')}
                 >
-                  {isRTL ? 'תרגול' : 'Practice'}
+                  {t('profile.practice')}
                 </Button>
                 <Button 
                   className="flex-1 bg-gradient-to-r from-primary to-primary/80"
                   onClick={() => navigate('/learn')}
                 >
-                  {isRTL ? 'המשך ללמוד' : 'Continue Learning'}
+                  {t('profile.continueLearning')}
                 </Button>
               </div>
             </CardContent>
@@ -372,10 +371,10 @@ const Profile: React.FC = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Crown className="h-5 w-5 text-primary" />
-                {isRTL ? 'שדרוג לחשבון פרימיום' : 'Upgrade to Premium'}
+                {t('profile.upgradePremium')}
               </CardTitle>
               <CardDescription>
-                {isRTL ? 'בחר את התוכנית המתאימה לך והמשך ללמוד ללא הגבלה' : 'Choose the plan that suits you and continue learning without limits'}
+                {t('profile.choosePlan')}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -393,7 +392,7 @@ const Profile: React.FC = () => {
           <Card className="glass-card border-white/10">
             <CardContent className="p-6">
               <div className="flex items-center gap-2 mb-6">
-                <h3 className="text-lg font-semibold">Security</h3>
+                <h3 className="text-lg font-semibold">{t('profile.security')}</h3>
                 <Shield className="h-5 w-5 text-accent" />
               </div>
               
@@ -403,15 +402,14 @@ const Profile: React.FC = () => {
                     variant="outline" 
                     className="w-full justify-start glass-button border-white/20"
                     onClick={() => {
-                      // Show password reset modal or navigate
                       toast({
-                        title: isRTL ? "איפוס סיסמה" : "Password Reset",
+                        title: t('profile.resetPassword'),
                         description: isRTL ? "הזן סיסמה חדשה למטה" : "Enter new password below"
                       });
                     }}
                   >
                     <KeyRound className="h-4 w-4 mr-2" />
-                    Reset Password
+                    {t('profile.resetPassword')}
                   </Button>
                 )}
                 
@@ -421,12 +419,12 @@ const Profile: React.FC = () => {
                   onClick={handleSignOut}
                 >
                   <LogOut className="h-4 w-4 mr-2" />
-                  Sign Out
+                  {t('profile.signOut')}
                 </Button>
               </div>
               
               <div className="mt-6 pt-4 border-t border-white/10">
-                <p className="text-xs text-muted-foreground mb-3 uppercase tracking-wider">Permanent Actions</p>
+                <p className="text-xs text-muted-foreground mb-3 uppercase tracking-wider">{t('profile.permanentActions')}</p>
                 <Button 
                   variant="ghost" 
                   className="text-destructive hover:text-destructive hover:bg-destructive/10"
@@ -434,7 +432,7 @@ const Profile: React.FC = () => {
                   disabled={loading}
                 >
                   <Trash2 className="h-4 w-4 mr-2" />
-                  Delete Account
+                  {t('profile.deleteAccount')}
                 </Button>
               </div>
             </CardContent>
@@ -444,14 +442,14 @@ const Profile: React.FC = () => {
           <Card className="glass-card border-white/10">
             <CardContent className="p-6">
               <div className="flex items-center gap-2 mb-6">
-                <h3 className="text-lg font-semibold">Language & Level</h3>
+                <h3 className="text-lg font-semibold">{t('profile.languageAndLevel')}</h3>
                 <Languages className="h-5 w-5 text-accent" />
               </div>
               
               {/* UI Language Toggle */}
               <div className="mb-6">
                 <Label className="text-xs text-muted-foreground mb-3 block uppercase tracking-wider">
-                  Interface Language
+                  {t('profile.interfaceLanguage')}
                 </Label>
                 <div className="flex gap-2">
                   <Button
@@ -476,7 +474,7 @@ const Profile: React.FC = () => {
               {/* Level Selection */}
               <div className="mb-6">
                 <Label className="text-xs text-muted-foreground mb-3 block uppercase tracking-wider">
-                  Target Proficiency
+                  {t('profile.targetProficiency')}
                 </Label>
                 <div className="flex flex-wrap gap-2">
                   {englishLevels.map((level) => (
@@ -501,7 +499,7 @@ const Profile: React.FC = () => {
                 className="w-full bg-gradient-to-r from-primary to-primary/80"
                 disabled={loading}
               >
-                Apply Settings
+                {t('profile.applySettings')}
               </Button>
             </CardContent>
           </Card>
@@ -512,7 +510,7 @@ const Profile: React.FC = () => {
           <CardContent className="p-6">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-2">
-                <h3 className="text-lg font-semibold">Learning Interests</h3>
+                <h3 className="text-lg font-semibold">{t('profile.learningInterests')}</h3>
                 <Target className="h-5 w-5 text-accent" />
               </div>
               <Button 
@@ -521,12 +519,12 @@ const Profile: React.FC = () => {
                 disabled={loading}
                 className="glass-button border-white/20"
               >
-                Save Preferences
+                {t('profile.savePreferences')}
               </Button>
             </div>
             
             <p className="text-sm text-muted-foreground mb-6">
-              {isRTL ? 'בחר את הקטגוריות שמעניינות אותך ביותר בחיי היומיום' : 'Select the categories that matter most to your daily life'}
+              {t('profile.selectCategories')}
             </p>
             
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">

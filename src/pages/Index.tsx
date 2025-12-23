@@ -54,10 +54,11 @@ const Index = () => {
     <div className="min-h-screen" style={{ background: 'var(--gradient-hero)' }}>
       {/* Hero Section */}
       <div className="relative overflow-hidden">
-        {/* Background Effects */}
+        {/* Enhanced Background Effects with lighter blue and orange */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-20 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl animate-pulse-slow" />
-          <div className="absolute bottom-20 right-1/4 w-80 h-80 bg-accent/10 rounded-full blur-3xl animate-pulse-slow" style={{ animationDelay: '2s' }} />
+          <div className="absolute top-10 left-1/4 w-[500px] h-[500px] bg-primary/15 rounded-full blur-[120px] animate-pulse-slow" />
+          <div className="absolute bottom-10 right-1/4 w-[400px] h-[400px] bg-accent/12 rounded-full blur-[100px] animate-pulse-slow" style={{ animationDelay: '2s' }} />
+          <div className="absolute top-1/2 right-1/3 w-72 h-72 bg-primary/8 rounded-full blur-[80px]" />
         </div>
 
         <div className="container mx-auto px-4 py-12 md:py-20 relative z-10">

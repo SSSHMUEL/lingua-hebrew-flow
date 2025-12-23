@@ -5,7 +5,7 @@ import { useAuth } from '@/components/AuthProvider';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { BookOpen, Home, Download, Heart, LogOut, FlipHorizontal2, User, Menu, CreditCard, Sparkles } from 'lucide-react';
+import { BookOpen, Home, Download, Heart, LogOut, FlipHorizontal2, User, Menu, CreditCard, Sparkles, Info } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { useUserWordsSync } from '@/hooks/use-words';
 import logoImage from '@/assets/logo.png';
@@ -64,6 +64,10 @@ export const Navigation: React.FC = () => {
       <Link to="/pricing" className="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors px-3 py-2 rounded-lg hover:bg-white/5" onClick={() => setIsOpen(false)}>
         <CreditCard className="h-4 w-4" />
         {isRTL ? 'מחירים' : 'Pricing'}
+      </Link>
+      <Link to="/about" className="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors px-3 py-2 rounded-lg hover:bg-white/5" onClick={() => setIsOpen(false)}>
+        <Info className="h-4 w-4" />
+        {isRTL ? 'אודות' : 'About'}
       </Link>
     </>
   );
