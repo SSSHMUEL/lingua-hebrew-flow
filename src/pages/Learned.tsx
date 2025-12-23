@@ -7,7 +7,8 @@ import { Input } from '@/components/ui/input';
 import { useAuth } from '@/components/AuthProvider';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
-import { Search, Heart, Trash2, RotateCcw, BookOpen } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { Search, Heart, Trash2, BookOpen, Sparkles } from 'lucide-react';
 
 interface LearnedWord {
   id: string;
@@ -23,6 +24,7 @@ interface LearnedWord {
 
 export const Learned: React.FC = () => {
   const { user } = useAuth();
+  const { isRTL } = useLanguage();
   const navigate = useNavigate();
   const [learnedWords, setLearnedWords] = useState<LearnedWord[]>([]);
   const [filteredWords, setFilteredWords] = useState<LearnedWord[]>([]);
@@ -39,7 +41,6 @@ export const Learned: React.FC = () => {
   }, [user, navigate]);
 
   useEffect(() => {
-    // Filter words based on search term
     if (searchTerm.trim() === '') {
       setFilteredWords(learnedWords);
     } else {
@@ -78,8 +79,8 @@ export const Learned: React.FC = () => {
     } catch (error) {
       console.error('Error loading learned words:', error);
       toast({
-        title: "שגיאה",
-        description: "לא ניתן לטעון את המילים הנלמדות",
+        title: isRTL ? "שגיאה" : "Error",
+        description: isRTL ? "לא ניתן לטעון את המילים הנלמדות" : "Could not load learned words",
         variant: "destructive"
       });
     } finally {
@@ -99,13 +100,13 @@ export const Learned: React.FC = () => {
       setLearnedWords(prev => prev.filter(word => word.id !== wordId));
       
       toast({
-        title: "הוסר",
-        description: `המילה "${englishWord}" הוסרה מהרשימה`
+        title: isRTL ? "הוסר" : "Removed",
+        description: isRTL ? `המילה "${englishWord}" הוסרה מהרשימה` : `"${englishWord}" removed from list`
       });
     } catch (error) {
       toast({
-        title: "שגיאה",
-        description: "לא ניתן להסיר את המילה",
+        title: isRTL ? "שגיאה" : "Error",
+        description: isRTL ? "לא ניתן להסיר את המילה" : "Could not remove word",
         variant: "destructive"
       });
     }
@@ -122,10 +123,10 @@ export const Learned: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--gradient-hero)' }}>
         <div className="text-center">
           <Heart className="h-12 w-12 text-primary mx-auto mb-4 animate-pulse" />
-          <p className="text-lg text-muted-foreground">טוען את המילים הנלמדות...</p>
+          <p className="text-lg text-muted-foreground">{isRTL ? 'טוען את המילים הנלמדות...' : 'Loading learned words...'}</p>
         </div>
       </div>
     );
@@ -133,19 +134,27 @@ export const Learned: React.FC = () => {
 
   if (learnedWords.length === 0) {
     return (
-      <div className="min-h-screen bg-background">
-        <div className="container mx-auto px-4 py-8">
-          <h1 className="text-3xl font-bold text-center text-primary mb-8">מילים נלמדות</h1>
+      <div className="min-h-screen" style={{ background: 'var(--gradient-hero)' }}>
+        <div className="container mx-auto px-4 py-12">
+          <div className="text-center mb-8">
+            <Badge className="mb-4 bg-primary/15 text-primary border-primary/20">
+              <Sparkles className="h-3 w-3 mr-1" />
+              {isRTL ? 'מאגר הידע שלך' : 'Your Knowledge Base'}
+            </Badge>
+            <h1 className="text-4xl font-bold text-foreground mb-4">{isRTL ? 'המילים שלמדת' : 'Your Learned Words'}</h1>
+          </div>
           
           <div className="text-center max-w-md mx-auto">
-            <BookOpen className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-            <h2 className="text-xl font-semibold mb-4">עוד לא למדת מילים</h2>
-            <p className="text-muted-foreground mb-6">
-              התחל ללמוד מילים חדשות ותראה אותן כאן
-            </p>
-            <Button onClick={() => navigate('/learn')} size="lg">
-              התחל ללמוד
-            </Button>
+            <div className="glass-card rounded-3xl p-8">
+              <BookOpen className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+              <h2 className="text-xl font-semibold mb-4 text-foreground">{isRTL ? 'עוד לא למדת מילים' : 'No words learned yet'}</h2>
+              <p className="text-muted-foreground mb-6">
+                {isRTL ? 'התחל ללמוד מילים חדשות ותראה אותן כאן' : 'Start learning new words and see them here'}
+              </p>
+              <Button onClick={() => navigate('/learn')} size="lg" className="bg-primary hover:bg-primary/90 rounded-full">
+                {isRTL ? 'התחל ללמוד' : 'Start Learning'}
+              </Button>
+            </div>
           </div>
         </div>
       </div>
@@ -153,19 +162,23 @@ export const Learned: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-8">
-        <div className="max-w-4xl mx-auto">
+    <div className="min-h-screen" style={{ background: 'var(--gradient-hero)' }}>
+      <div className="container mx-auto px-4 py-12">
+        <div className="max-w-5xl mx-auto">
           {/* Header */}
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-primary mb-4">מילים נלמדות</h1>
+            <Badge className="mb-4 bg-primary/15 text-primary border-primary/20">
+              <Sparkles className="h-3 w-3 mr-1" />
+              {isRTL ? 'מאגר הידע שלך' : 'Personal Knowledge Base'}
+            </Badge>
+            <h1 className="text-4xl font-bold text-foreground mb-4">{isRTL ? 'המילים שלמדת' : 'Your Learned Words'}</h1>
             <div className="flex items-center justify-center gap-4">
-              <Badge variant="secondary" className="text-lg px-4 py-2">
-                {learnedWords.length} מילים נלמדו
+              <Badge className="bg-primary/20 text-primary border-primary/30 text-base px-4 py-2">
+                {learnedWords.length} {isRTL ? 'מילים במאגר' : 'words mastered'}
               </Badge>
               {searchTerm && (
-                <Badge variant="outline">
-                  {filteredWords.length} תוצאות
+                <Badge variant="outline" className="border-white/20">
+                  {filteredWords.length} {isRTL ? 'תוצאות' : 'results'}
                 </Badge>
               )}
             </div>
@@ -174,58 +187,68 @@ export const Learned: React.FC = () => {
           {/* Search */}
           <div className="mb-8">
             <div className="relative max-w-md mx-auto">
-              <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+              <Search className={`absolute ${isRTL ? 'right-4' : 'left-4'} top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4`} />
               <Input
                 type="text"
-                placeholder="חפש מילים..."
+                placeholder={isRTL ? 'חפש מילה, תרגום או קטגוריה...' : 'Search word, translation or category...'}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pr-10 text-right"
+                className={`${isRTL ? 'pr-12' : 'pl-12'} glass-input rounded-full border-white/10 bg-white/5 placeholder:text-muted-foreground/50`}
               />
             </div>
           </div>
 
           {/* Words by Category */}
-          <div className="space-y-8">
-            {Object.entries(groupedByCategory).map(([category, words]) => (
+          <div className="space-y-10">
+            {Object.entries(groupedByCategory).map(([category, words], categoryIndex) => (
               <div key={category}>
-                <h2 className="text-xl font-semibold mb-4 text-right">
-                  {category} ({words.length})
-                </h2>
+                <div className="flex items-center gap-4 mb-6">
+                  <Badge variant="outline" className="text-sm border-white/20 bg-white/5">
+                    {categoryIndex + 1}
+                  </Badge>
+                  <h2 className="text-xl font-semibold text-foreground">
+                    {category}
+                  </h2>
+                  <div className="flex-1 h-px bg-gradient-to-r from-white/20 to-transparent" />
+                </div>
                 
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                   {words.map((word) => (
-                    <Card key={word.id} className="hover:shadow-md transition-shadow">
-                      <CardHeader className="pb-3">
-                        <CardTitle className="text-lg text-center">
+                    <Card key={word.id} className="glass-card border-white/10 hover:border-primary/30 transition-all duration-300 group">
+                      <CardHeader className="pb-2">
+                        <div className="flex items-center justify-between">
+                          <Badge className="bg-primary/20 text-primary text-xs">
+                            {new Date(word.learned_at).toLocaleDateString(isRTL ? 'he-IL' : 'en-US')}
+                          </Badge>
+                          <span className="text-xs text-muted-foreground uppercase tracking-wider">
+                            {isRTL ? 'נלמד' : 'Mastered'}
+                          </span>
+                        </div>
+                        <CardTitle className="text-2xl font-bold text-foreground mt-2">
                           {word.vocabulary_words.english_word}
                         </CardTitle>
                       </CardHeader>
                       
-                      <CardContent className="text-center space-y-3">
+                      <CardContent className="space-y-4">
                         <p className="text-xl font-semibold text-primary">
                           {word.vocabulary_words.hebrew_translation}
                         </p>
                         
-                        <p className="text-sm text-muted-foreground italic">
-                          "{word.vocabulary_words.example_sentence}"
-                        </p>
-                        
-                        <div className="text-xs text-muted-foreground">
-                          נלמד ב: {new Date(word.learned_at).toLocaleDateString('he-IL')}
+                        <div className="glass-card rounded-xl p-3 bg-white/5">
+                          <p className="text-sm text-muted-foreground italic">
+                            "{word.vocabulary_words.example_sentence}"
+                          </p>
                         </div>
 
-                        <div className="flex justify-center gap-2 pt-2">
-                          <Button 
-                            onClick={() => unmarkAsLearned(word.id, word.vocabulary_words.english_word)}
-                            variant="outline"
-                            size="sm"
-                            className="text-red-600 hover:text-red-700"
-                          >
-                            <Trash2 className="h-4 w-4 ml-1" />
-                            הסר
-                          </Button>
-                        </div>
+                        <Button 
+                          onClick={() => unmarkAsLearned(word.id, word.vocabulary_words.english_word)}
+                          variant="ghost"
+                          size="sm"
+                          className="w-full text-destructive/70 hover:text-destructive hover:bg-destructive/10 rounded-full"
+                        >
+                          <Trash2 className="h-4 w-4 mx-1" />
+                          {isRTL ? 'הסר מהמאגר' : 'Remove from list'}
+                        </Button>
                       </CardContent>
                     </Card>
                   ))}
@@ -237,19 +260,24 @@ export const Learned: React.FC = () => {
           {filteredWords.length === 0 && searchTerm && (
             <div className="text-center py-12">
               <Search className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-lg font-semibold mb-2">לא נמצאו תוצאות</h3>
+              <h3 className="text-lg font-semibold mb-2 text-foreground">{isRTL ? 'לא נמצאו תוצאות' : 'No results found'}</h3>
               <p className="text-muted-foreground">
-                נסה לחפש במילים אחרות או בקטגוריות שונות
+                {isRTL ? 'נסה לחפש במילים אחרות או בקטגוריות שונות' : 'Try searching with different keywords'}
               </p>
             </div>
           )}
 
-          {/* Continue Learning */}
+          {/* Continue Learning CTA */}
           <div className="text-center mt-12">
-            <Button onClick={() => navigate('/learn')} size="lg">
-              <BookOpen className="h-5 w-5 ml-2" />
-              המשך ללמוד
-            </Button>
+            <div className="glass-card rounded-2xl p-8 max-w-md mx-auto">
+              <p className="text-muted-foreground mb-4">
+                {isRTL ? 'טיפ: תרגול עושה מושלם. סקור את המילים שלמדת באופן קבוע!' : 'TIP: Practice makes perfect. Review your learned words regularly!'}
+              </p>
+              <Button onClick={() => navigate('/learn')} size="lg" className="bg-primary hover:bg-primary/90 rounded-full">
+                <BookOpen className="h-5 w-5 mx-2" />
+                {isRTL ? 'המשך ללמוד' : 'Continue Learning'}
+              </Button>
+            </div>
           </div>
         </div>
       </div>
