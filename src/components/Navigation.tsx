@@ -75,7 +75,7 @@ export const Navigation: React.FC = () => {
   return (
     <nav className="sticky top-0 z-50 border-b border-white/10 backdrop-blur-xl" style={{ background: 'linear-gradient(180deg, hsl(222 47% 10% / 0.95) 0%, hsl(222 47% 8% / 0.9) 100%)' }}>
       <div className="container mx-auto px-4 py-3">
-        <div className="flex items-center justify-between">
+        <div className={`flex items-center justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
           {/* Logo */}
           <Link to="/" className="flex items-center gap-3 group">
             <div className="relative">
@@ -141,7 +141,7 @@ export const Navigation: React.FC = () => {
                   <Menu className="h-5 w-5" />
                 </Button>
               </SheetTrigger>
-              <SheetContent side="left" className="w-[300px] border-white/10 bg-card/95 backdrop-blur-xl">
+              <SheetContent side={isRTL ? "right" : "left"} className="w-[300px] border-white/10 bg-card/95 backdrop-blur-xl">
                 <div className="flex flex-col gap-6 mt-6">
                   <div className="flex flex-col gap-2">
                     <NavLinks />
