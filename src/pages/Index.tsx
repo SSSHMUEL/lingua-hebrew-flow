@@ -51,16 +51,25 @@ const Index = () => {
   const ArrowIcon = isRTL ? ArrowLeft : ArrowRight;
 
   return (
-    <div className="min-h-screen" style={{ background: 'var(--gradient-hero)' }}>
+    <div className="min-h-screen relative" style={{ background: 'var(--gradient-hero)' }}>
+      {/* Fixed global background effect - Orange glow on left side covering half screen */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
+        {/* Main orange glow on left side */}
+        <div 
+          className="absolute top-1/2 -translate-y-1/2 -left-[200px] w-[800px] h-[120vh] rounded-full blur-[200px]"
+          style={{ background: 'hsl(25 90% 45% / 0.55)' }}
+        />
+        {/* Secondary orange layer for depth */}
+        <div 
+          className="absolute top-1/3 left-0 w-[500px] h-[600px] rounded-full blur-[180px]"
+          style={{ background: 'hsl(30 85% 50% / 0.35)' }}
+        />
+        {/* Subtle blue glow on right */}
+        <div className="absolute top-1/4 right-1/4 w-[400px] h-[400px] bg-primary/15 rounded-full blur-[150px]" />
+      </div>
+
       {/* Hero Section */}
-      <div className="relative overflow-hidden">
-        {/* Enhanced Background Effects with lighter blue and stronger orange */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-primary/20 rounded-full blur-[150px] animate-pulse-slow" />
-          <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-accent/18 rounded-full blur-[130px] animate-pulse-slow" style={{ animationDelay: '2s' }} />
-          <div className="absolute top-1/3 right-1/3 w-96 h-96 bg-primary/10 rounded-full blur-[100px]" />
-          <div className="absolute bottom-1/3 left-1/3 w-80 h-80 bg-accent/15 rounded-full blur-[100px]" style={{ animationDelay: '3s' }} />
-        </div>
+      <div className="relative overflow-hidden z-10">
 
         <div className="container mx-auto px-4 py-12 md:py-20 relative z-10">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
@@ -152,11 +161,7 @@ const Index = () => {
       </div>
 
       {/* How It Works Section */}
-      <div className="container mx-auto px-4 py-16 relative">
-        {/* Section background glow */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] bg-accent/10 rounded-full blur-[150px]" />
-        </div>
+      <div className="container mx-auto px-4 py-16 relative z-10">
         
         <div className="text-center mb-12 relative z-10">
           <Badge className="mb-4 bg-primary/15 text-primary border-primary/20 animate-fade-in">
@@ -210,7 +215,7 @@ const Index = () => {
       </div>
 
       {/* CTA Section */}
-      <div className="container mx-auto px-4 py-16">
+      <div className="container mx-auto px-4 py-16 relative z-10">
         <Card className="glass-card border-primary/20 max-w-4xl mx-auto overflow-hidden">
           <div className="relative">
             {/* Background glow */}
