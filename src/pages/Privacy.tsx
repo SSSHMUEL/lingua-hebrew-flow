@@ -8,13 +8,16 @@ const Privacy = () => {
 
   return (
     <div className="min-h-screen relative overflow-hidden" style={{ background: 'var(--gradient-hero)' }}>
-      {/* Fixed background effect - Orange glow on right side (weaker than homepage) */}
+      {/* Fixed background effect - Orange glow on right, Cyan on left */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
         <div 
           className="absolute top-1/2 -translate-y-1/2 -right-[150px] w-[600px] h-[100vh] rounded-full blur-[180px]"
-          style={{ background: 'hsl(25 85% 45% / 0.35)' }}
+          style={{ background: 'hsl(25 85% 45% / 0.3)' }}
         />
-        <div className="absolute top-1/4 left-1/4 w-[300px] h-[300px] bg-primary/10 rounded-full blur-[120px]" />
+        <div 
+          className="absolute top-1/2 -translate-y-1/2 -left-[150px] w-[500px] h-[90vh] rounded-full blur-[180px]"
+          style={{ background: 'hsl(190 85% 55% / 0.25)' }}
+        />
       </div>
       
       <div className="container mx-auto px-4 py-8 max-w-4xl relative z-10">

@@ -293,13 +293,18 @@ const Profile: React.FC = () => {
 
   return (
     <div className="min-h-screen relative overflow-hidden" style={{ background: 'var(--gradient-hero)' }}>
-      {/* Fixed background effect - Orange glow on right side (weaker than homepage) */}
+      {/* Fixed background effect - Orange glow on right side, Cyan on left (weaker than homepage) */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
+        {/* Orange glow on right */}
         <div 
           className="absolute top-1/2 -translate-y-1/2 -right-[150px] w-[600px] h-[100vh] rounded-full blur-[180px]"
-          style={{ background: 'hsl(25 85% 45% / 0.35)' }}
+          style={{ background: 'hsl(25 85% 45% / 0.3)' }}
         />
-        <div className="absolute top-1/4 left-1/4 w-[300px] h-[300px] bg-primary/10 rounded-full blur-[120px]" />
+        {/* Cyan/Light blue glow on left side */}
+        <div 
+          className="absolute top-1/2 -translate-y-1/2 -left-[150px] w-[500px] h-[90vh] rounded-full blur-[180px]"
+          style={{ background: 'hsl(190 85% 55% / 0.25)' }}
+        />
       </div>
       
       <div className="container mx-auto px-4 py-12 max-w-6xl relative z-10">
@@ -315,7 +320,7 @@ const Profile: React.FC = () => {
         {/* Top row - 2 cards */}
         <div className="grid md:grid-cols-2 gap-6 mb-6">
           {/* Subscription Status Card */}
-          <Card className="glass-card border-white/10">
+          <Card className="backdrop-blur-2xl bg-card/40 border-white/5 shadow-2xl">
             <CardContent className="p-6">
               <div className="flex items-center justify-between mb-4">
                 <span className="text-sm text-muted-foreground uppercase tracking-wider">{t('profile.accountLevel')}</span>
@@ -327,18 +332,19 @@ const Profile: React.FC = () => {
               </p>
               {!isActive && (
                 <Button 
-                  className="w-full bg-gradient-to-r from-primary to-primary/80 text-primary-foreground rounded-full glow-primary" 
+                  className="w-full text-white font-semibold rounded-full shadow-lg transition-all hover:scale-105 hover:shadow-xl" 
+                  style={{ background: 'linear-gradient(135deg, hsl(25 90% 55%) 0%, hsl(200 100% 55%) 100%)' }}
                   onClick={() => setShowUpgrade(!showUpgrade)}
                 >
                   <Crown className="w-4 h-4 mr-2" />
-                  {t('profile.upgradeToPro')}
+                  {isRTL ? 'שדרג עכשיו' : 'Upgrade Now'}
                 </Button>
               )}
             </CardContent>
           </Card>
 
           {/* User Progress Card */}
-          <Card className="glass-card border-white/10">
+          <Card className="backdrop-blur-2xl bg-card/40 border-white/5 shadow-2xl">
             <CardContent className="p-6">
               <div className="flex items-center justify-between mb-4">
                 <span className="text-sm text-muted-foreground uppercase tracking-wider">{t('profile.authenticatedUser')}</span>
@@ -353,7 +359,7 @@ const Profile: React.FC = () => {
               <div className="flex gap-3">
                 <Button 
                   variant="outline" 
-                  className="flex-1 glass-button border-white/20"
+                  className="flex-1 backdrop-blur-sm bg-white/5 border-white/10"
                   onClick={() => navigate('/practice')}
                 >
                   {t('profile.practice')}
@@ -371,7 +377,7 @@ const Profile: React.FC = () => {
 
         {/* Upgrade Section */}
         {showUpgrade && (
-          <Card className="glass-card mb-6 border-primary/30">
+          <Card className="backdrop-blur-2xl bg-card/40 border-white/5 shadow-2xl mb-6">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Crown className="h-5 w-5 text-primary" />
@@ -393,7 +399,7 @@ const Profile: React.FC = () => {
         {/* Middle row - 2 cards */}
         <div className="grid md:grid-cols-2 gap-6 mb-6">
           {/* Security Card */}
-          <Card className="glass-card border-white/10">
+          <Card className="backdrop-blur-2xl bg-card/40 border-white/5 shadow-2xl">
             <CardContent className="p-6">
               <div className="flex items-center gap-2 mb-6">
                 <h3 className="text-lg font-semibold">{t('profile.security')}</h3>
@@ -443,7 +449,7 @@ const Profile: React.FC = () => {
           </Card>
 
           {/* Language & Level Card */}
-          <Card className="glass-card border-white/10">
+          <Card className="backdrop-blur-2xl bg-card/40 border-white/5 shadow-2xl">
             <CardContent className="p-6">
               <div className="flex items-center gap-2 mb-6">
                 <h3 className="text-lg font-semibold">{t('profile.languageAndLevel')}</h3>
@@ -510,7 +516,7 @@ const Profile: React.FC = () => {
         </div>
 
         {/* Learning Interests Card */}
-        <Card className="glass-card border-white/10">
+        <Card className="backdrop-blur-2xl bg-card/40 border-white/5 shadow-2xl">
           <CardContent className="p-6">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-2">

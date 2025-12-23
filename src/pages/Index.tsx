@@ -52,7 +52,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen relative" style={{ background: 'var(--gradient-hero)' }}>
-      {/* Fixed global background effect - Orange glow on left side covering half screen */}
+      {/* Fixed global background effect - Orange glow on left side, Cyan glow on right */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
         {/* Main orange glow on left side */}
         <div 
@@ -64,8 +64,16 @@ const Index = () => {
           className="absolute top-1/3 left-0 w-[500px] h-[600px] rounded-full blur-[180px]"
           style={{ background: 'hsl(30 85% 50% / 0.35)' }}
         />
-        {/* Subtle blue glow on right */}
-        <div className="absolute top-1/4 right-1/4 w-[400px] h-[400px] bg-primary/15 rounded-full blur-[150px]" />
+        {/* Cyan/Light blue glow on right side */}
+        <div 
+          className="absolute top-1/2 -translate-y-1/2 -right-[200px] w-[700px] h-[100vh] rounded-full blur-[200px]"
+          style={{ background: 'hsl(190 85% 55% / 0.4)' }}
+        />
+        {/* Secondary cyan layer for depth */}
+        <div 
+          className="absolute top-2/3 right-0 w-[400px] h-[500px] rounded-full blur-[150px]"
+          style={{ background: 'hsl(195 80% 60% / 0.25)' }}
+        />
       </div>
 
       {/* Hero Section */}
