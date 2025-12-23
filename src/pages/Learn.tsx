@@ -1,14 +1,17 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 import { useAuth } from '@/components/AuthProvider';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { useDailyLimit } from '@/hooks/use-daily-limit';
-import { BookOpen, Volume2, CheckCircle, ArrowLeft, ArrowRight, Crown, Lock } from 'lucide-react';
+import { useSpeechRecognition, fuzzyMatch } from '@/hooks/use-speech-recognition';
+import { BookOpen, Volume2, CheckCircle, ArrowLeft, ArrowRight, Crown, Lock, Mic, MicOff, CheckCircle2 } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -40,8 +43,66 @@ export const Learn: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [currentCategory, setCurrentCategory] = useState<string>('');
   const [showUpgradeDialog, setShowUpgradeDialog] = useState(false);
+  
+  // Speech Practice Mode states
+  const [speechPracticeMode, setSpeechPracticeMode] = useState(false);
+  const [speechSuccess, setSpeechSuccess] = useState(false);
+  const [showNextAfterSuccess, setShowNextAfterSuccess] = useState(false);
 
   const { canLearnMore, isPremium, remainingWords, refresh: refreshDailyLimit, dailyLimit, loading: limitLoading } = useDailyLimit(user?.id);
+
+  // Speech recognition hook
+  const handleSpeechResult = useCallback((transcript: string) => {
+    if (!currentWord || !speechPracticeMode) return;
+    
+    const isMatch = fuzzyMatch(transcript, currentWord.english_word);
+    
+    if (isMatch) {
+      setSpeechSuccess(true);
+      setShowNextAfterSuccess(true);
+      
+      toast({
+        title: "Correct! 🎉",
+        description: `You said "${transcript}" - Perfect pronunciation!`,
+      });
+      
+      // Auto-advance after 1.5 seconds
+      setTimeout(() => {
+        if (speechPracticeMode) {
+          nextWord();
+          setSpeechSuccess(false);
+          setShowNextAfterSuccess(false);
+        }
+      }, 1500);
+    }
+  }, [currentWord, speechPracticeMode]);
+
+  const handleSpeechError = useCallback((error: string) => {
+    toast({
+      title: "Speech Error",
+      description: error,
+      variant: "destructive",
+    });
+  }, []);
+
+  const {
+    isListening,
+    transcript,
+    isSupported,
+    startListening,
+    stopListening,
+    resetTranscript,
+  } = useSpeechRecognition({
+    onResult: handleSpeechResult,
+    onError: handleSpeechError,
+  });
+
+  // Reset speech states when word changes
+  useEffect(() => {
+    setSpeechSuccess(false);
+    setShowNextAfterSuccess(false);
+    resetTranscript();
+  }, [currentWord, resetTranscript]);
 
   useEffect(() => {
     if (!user) {
@@ -269,6 +330,37 @@ export const Learn: React.FC = () => {
             </div>
           )}
 
+          {/* Speech Practice Mode Toggle */}
+          {isSupported && (
+            <div className="mb-6 p-4 rounded-xl border border-accent/30 bg-accent/10">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <Mic className="h-5 w-5 text-accent-foreground" />
+                  <div>
+                    <Label htmlFor="speech-mode" className="text-sm font-medium cursor-pointer">
+                      מצב תרגול דיבור
+                    </Label>
+                    <p className="text-xs text-muted-foreground">
+                      אמור את המילה באנגלית כדי להתקדם
+                    </p>
+                  </div>
+                </div>
+                <Switch
+                  id="speech-mode"
+                  checked={speechPracticeMode}
+                  onCheckedChange={(checked) => {
+                    setSpeechPracticeMode(checked);
+                    if (!checked) {
+                      stopListening();
+                      setSpeechSuccess(false);
+                      setShowNextAfterSuccess(false);
+                    }
+                  }}
+                />
+              </div>
+            </div>
+          )}
+
           {/* Progress */}
           <div className="mb-8">
             <div className="flex justify-between items-center mb-2">
@@ -323,6 +415,49 @@ export const Learn: React.FC = () => {
                 </div>
               </div>
 
+              {/* Speech Practice Section */}
+              {speechPracticeMode && (
+                <div className="bg-gradient-to-br from-primary/20 to-primary/10 rounded-xl p-6 border border-primary/30">
+                  <div className="flex flex-col items-center gap-4">
+                    {speechSuccess ? (
+                      <div className="flex flex-col items-center gap-2 animate-pulse">
+                        <CheckCircle2 className="h-12 w-12 text-green-500" />
+                        <p className="text-lg font-semibold text-green-600">מצוין! עובר למילה הבאה...</p>
+                      </div>
+                    ) : (
+                      <>
+                        <Button
+                          onClick={isListening ? stopListening : startListening}
+                          size="lg"
+                          variant={isListening ? "destructive" : "default"}
+                          className={isListening ? "animate-pulse" : "bg-gradient-to-r from-primary to-accent"}
+                        >
+                          {isListening ? (
+                            <>
+                              <MicOff className="h-5 w-5 ml-2" />
+                              עצור הקלטה
+                            </>
+                          ) : (
+                            <>
+                              <Mic className="h-5 w-5 ml-2" />
+                              התחל להקליט
+                            </>
+                          )}
+                        </Button>
+                        {transcript && (
+                          <p className="text-sm text-muted-foreground">
+                            שמעתי: <span className="font-medium text-foreground">"{transcript}"</span>
+                          </p>
+                        )}
+                        <p className="text-xs text-muted-foreground">
+                          אמור את המילה "{currentWord.english_word}" בקול רם
+                        </p>
+                      </>
+                    )}
+                  </div>
+                </div>
+              )}
+
               <div className="flex justify-center gap-4 pt-4">
                 <Button 
                   onClick={previousWord}
@@ -344,15 +479,18 @@ export const Learn: React.FC = () => {
                   {learnedWords.has(currentWord.id) ? 'נלמד' : 'למדתי!'}
                 </Button>
 
-                <Button 
-                  onClick={nextWord}
-                  variant="outline"
-                  disabled={currentIndex === categoryWords.length - 1}
-                  size="lg"
-                >
-                  הבא
-                  <ArrowRight className="h-5 w-5 mr-2" />
-                </Button>
+                {/* Hide Next button in speech mode unless success */}
+                {(!speechPracticeMode || showNextAfterSuccess) && (
+                  <Button 
+                    onClick={nextWord}
+                    variant="outline"
+                    disabled={currentIndex === categoryWords.length - 1}
+                    size="lg"
+                  >
+                    הבא
+                    <ArrowRight className="h-5 w-5 mr-2" />
+                  </Button>
+                )}
               </div>
             </CardContent>
           </Card>
