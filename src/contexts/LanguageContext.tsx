@@ -423,6 +423,22 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
     // Update document direction
     document.documentElement.dir = lang === 'he' ? 'rtl' : 'ltr';
     document.documentElement.lang = lang;
+    
+    // Save to profile if user is logged in (fire and forget)
+    if (user) {
+      (async () => {
+        try {
+          await supabase
+            .from('profiles')
+            .update({
+              source_language: lang === 'en' ? 'english' : 'hebrew',
+            })
+            .eq('user_id', user.id);
+        } catch (err) {
+          console.error('Failed to save language preference:', err);
+        }
+      })();
+    }
   };
 
   const setLearningDirection = async (source: LanguageCode, target: LanguageCode) => {
