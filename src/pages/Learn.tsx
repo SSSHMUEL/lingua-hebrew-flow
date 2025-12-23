@@ -11,7 +11,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { useDailyLimit } from '@/hooks/use-daily-limit';
 import { useSpeechRecognition, fuzzyMatch } from '@/hooks/use-speech-recognition';
-import { BookOpen, Volume2, CheckCircle, ArrowLeft, ArrowRight, Crown, Lock, Mic, MicOff, CheckCircle2 } from 'lucide-react';
+import { BookOpen, Volume2, CheckCircle, ArrowLeft, ArrowRight, Crown, Lock, Mic, MicOff, CheckCircle2, Sparkles } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -267,7 +267,7 @@ export const Learn: React.FC = () => {
 
   if (loading || limitLoading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--gradient-hero)' }}>
         <div className="text-center">
           <BookOpen className="h-12 w-12 text-primary mx-auto mb-4 animate-pulse" />
           <p className="text-lg text-muted-foreground">טוען את שיעור הלמידה...</p>
@@ -278,12 +278,12 @@ export const Learn: React.FC = () => {
 
   if (!currentWord) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--gradient-hero)' }}>
         <div className="text-center">
           <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
           <h2 className="text-2xl font-bold mb-2">כל הכבוד!</h2>
           <p className="text-muted-foreground mb-4">למדת את כל המילים</p>
-          <Button onClick={() => navigate('/learned')}>
+          <Button onClick={() => navigate('/learned')} className="glow-primary">
             צפה במילים שלמדת
           </Button>
         </div>
@@ -292,25 +292,44 @@ export const Learn: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-secondary/5">
-      <div className="container mx-auto px-4 py-8">
+    <div className="min-h-screen relative overflow-hidden" style={{ background: 'var(--gradient-hero)' }}>
+      {/* Glowing background effects */}
+      <div className="absolute top-20 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl animate-pulse-slow" />
+      <div className="absolute bottom-20 right-1/4 w-80 h-80 bg-accent/10 rounded-full blur-3xl animate-pulse-slow" />
+      
+      <div className="container mx-auto px-4 py-8 relative z-10">
         <div className="max-w-4xl mx-auto">
           {/* Header */}
-          <div className="text-center mb-8">
-            <div className="flex items-center justify-center mb-4">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center">
-                <span className="text-white font-bold text-xl">T</span>
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center glow-primary">
+                <BookOpen className="h-6 w-6 text-primary-foreground" />
+              </div>
+              <div>
+                <h1 className="text-xl font-bold">שיעור פעיל</h1>
+                <p className="text-sm text-muted-foreground">{currentCategory}</p>
               </div>
             </div>
-            <h1 className="text-3xl font-bold text-center mb-2">שיעור: {currentCategory}</h1>
-            <Badge variant="secondary" className="text-lg px-4 py-2 bg-gradient-to-r from-secondary to-secondary/80">
-              {currentCategory}
+            <Badge className="glass-card border-primary/30 text-primary px-4 py-2">
+              <Sparkles className="h-4 w-4 mr-2" />
+              {categoryWords.length} / {currentIndex + 1} מילים
             </Badge>
+          </div>
+
+          {/* Progress */}
+          <div className="mb-6">
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-sm text-primary font-semibold">{Math.round(progress)}%</span>
+              <span className="text-sm text-muted-foreground">
+                מילה {currentIndex + 1} מתוך {categoryWords.length}
+              </span>
+            </div>
+            <Progress value={progress} className="h-2" />
           </div>
 
           {/* Daily Limit Banner for Free Users */}
           {!isPremium && (
-            <div className="mb-6 p-4 rounded-xl border border-primary/30 bg-primary/10">
+            <div className="mb-6 glass-card rounded-xl p-4 border-primary/30">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <Lock className="h-5 w-5 text-primary" />
@@ -321,7 +340,7 @@ export const Learn: React.FC = () => {
                 <Button 
                   size="sm" 
                   onClick={() => navigate('/pricing')}
-                  className="bg-gradient-to-r from-primary to-accent text-primary-foreground"
+                  className="bg-gradient-to-r from-primary to-primary/80 text-primary-foreground glow-primary"
                 >
                   <Crown className="h-4 w-4 ml-1" />
                   שדרג לפרימיום
@@ -332,10 +351,10 @@ export const Learn: React.FC = () => {
 
           {/* Speech Practice Mode Toggle */}
           {isSupported && (
-            <div className="mb-6 p-4 rounded-xl border border-accent/30 bg-accent/10">
+            <div className="mb-6 glass-card rounded-xl p-4 border-accent/30">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <Mic className="h-5 w-5 text-accent-foreground" />
+                  <Mic className="h-5 w-5 text-accent" />
                   <div>
                     <Label htmlFor="speech-mode" className="text-sm font-medium cursor-pointer">
                       מצב תרגול דיבור
@@ -361,76 +380,66 @@ export const Learn: React.FC = () => {
             </div>
           )}
 
-          {/* Progress */}
-          <div className="mb-8">
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-sm text-muted-foreground">
-                {currentIndex + 1} מתוך {categoryWords.length}
-              </span>
-              <span className="text-sm text-muted-foreground">
-                {learnedInCategory} מילים נלמדו
-              </span>
-            </div>
-            <Progress value={progress} className="h-3" />
-          </div>
-
           {/* Main Learning Card */}
-          <Card className="mb-6 shadow-2xl border-0 bg-gradient-to-br from-card via-card to-secondary/20">
+          <Card className="glass-card border-white/10 mb-6 overflow-hidden">
             <CardHeader className="text-center pb-4">
-              <CardTitle className="text-4xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent mb-4">
+              <Badge className="mx-auto mb-4 bg-primary/20 text-primary border-primary/30">
+                NEW DISCOVERY
+              </Badge>
+              <CardTitle className="text-5xl md:text-6xl font-bold text-foreground mb-6">
                 {currentWord.english_word}
               </CardTitle>
               <Button 
                 onClick={speakWord}
                 variant="outline" 
                 size="lg"
-                className="mx-auto border-primary/30 hover:border-primary hover:bg-primary/10 transition-all duration-300"
+                className="mx-auto glass-button border-white/20 hover:bg-white/10"
               >
                 <Volume2 className="h-5 w-5 ml-2" />
-                הקריאה
+                LISTEN NOW
               </Button>
             </CardHeader>
             
-            <CardContent className="text-center space-y-6">
-              <div className="bg-gradient-to-br from-secondary/30 to-secondary/10 rounded-xl p-6 border border-secondary/40">
-                <h3 className="text-2xl font-semibold text-secondary-foreground mb-2">
-                  תרגום לעברית
-                </h3>
-                <p className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                  {currentWord.hebrew_translation}
-                </p>
-              </div>
-
-              <div className="bg-gradient-to-br from-accent/20 to-accent/10 rounded-xl p-6 border border-accent/30">
-                <h3 className="text-lg font-semibold text-accent-foreground mb-3">
-                  דוגמה במשפט עם תרגום
-                </h3>
-                <div className="space-y-3">
-                  <p className="text-lg font-medium text-foreground">
+            <CardContent className="space-y-6 pb-8">
+              <div className="grid md:grid-cols-2 gap-4">
+                {/* Example sentence card */}
+                <div className="glass-card rounded-xl p-6 border-white/10">
+                  <p className="text-xs text-muted-foreground mb-2 uppercase tracking-wider">דוגמה לשימוש</p>
+                  <p className="text-lg font-medium text-foreground mb-2">
                     "{currentWord.example_sentence.split(' - ')[0]}"
                   </p>
-                  <p className="text-lg italic text-muted-foreground border-t border-accent/20 pt-3">
+                  <p className="text-sm text-muted-foreground italic">
                     "{currentWord.example_sentence.split(' - ')[1] || currentWord.example_sentence}"
+                  </p>
+                </div>
+
+                {/* Translation card */}
+                <div className="glass-card rounded-xl p-6 border-white/10">
+                  <p className="text-xs text-muted-foreground mb-2 uppercase tracking-wider">תרגום לעברית</p>
+                  <p className="text-3xl font-bold text-foreground">
+                    {currentWord.hebrew_translation}
                   </p>
                 </div>
               </div>
 
               {/* Speech Practice Section */}
               {speechPracticeMode && (
-                <div className="bg-gradient-to-br from-primary/20 to-primary/10 rounded-xl p-6 border border-primary/30">
+                <div className="glass-card rounded-xl p-6 border-primary/30">
                   <div className="flex flex-col items-center gap-4">
                     {speechSuccess ? (
                       <div className="flex flex-col items-center gap-2 animate-pulse">
                         <CheckCircle2 className="h-12 w-12 text-green-500" />
-                        <p className="text-lg font-semibold text-green-600">מצוין! עובר למילה הבאה...</p>
+                        <p className="text-lg font-semibold text-green-500">מצוין! עובר למילה הבאה...</p>
                       </div>
                     ) : (
                       <>
                         <Button
                           onClick={isListening ? stopListening : startListening}
                           size="lg"
-                          variant={isListening ? "destructive" : "default"}
-                          className={isListening ? "animate-pulse" : "bg-gradient-to-r from-primary to-accent"}
+                          className={isListening 
+                            ? "bg-destructive hover:bg-destructive/90 animate-pulse" 
+                            : "bg-gradient-to-r from-primary to-primary/80 glow-primary"
+                          }
                         >
                           {isListening ? (
                             <>
@@ -457,78 +466,69 @@ export const Learn: React.FC = () => {
                   </div>
                 </div>
               )}
-
-              <div className="flex justify-center gap-4 pt-4">
-                <Button 
-                  onClick={previousWord}
-                  variant="outline"
-                  disabled={currentIndex === 0}
-                  size="lg"
-                >
-                  <ArrowLeft className="h-5 w-5 ml-2" />
-                  קודם
-                </Button>
-
-                <Button 
-                  onClick={markAsLearned}
-                  size="lg"
-                  className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white px-8 shadow-lg hover:shadow-xl transition-all duration-300"
-                  disabled={learnedWords.has(currentWord.id)}
-                >
-                  <CheckCircle className="h-5 w-5 ml-2" />
-                  {learnedWords.has(currentWord.id) ? 'נלמד' : 'למדתי!'}
-                </Button>
-
-                {/* Hide Next button in speech mode unless success */}
-                {(!speechPracticeMode || showNextAfterSuccess) && (
-                  <Button 
-                    onClick={nextWord}
-                    variant="outline"
-                    disabled={currentIndex === categoryWords.length - 1}
-                    size="lg"
-                  >
-                    הבא
-                    <ArrowRight className="h-5 w-5 mr-2" />
-                  </Button>
-                )}
-              </div>
             </CardContent>
           </Card>
 
-          {/* Category Progress */}
-          <div className="text-center text-sm text-muted-foreground">
-            <p>
-              התקדמות בקטגוריה: {learnedInCategory} / {categoryWords.length} מילים
-            </p>
+          {/* Navigation buttons */}
+          <div className="flex items-center justify-between">
+            <Button 
+              onClick={previousWord}
+              variant="ghost"
+              disabled={currentIndex === 0}
+              className="text-muted-foreground hover:text-foreground"
+            >
+              <ArrowRight className="h-5 w-5 ml-2" />
+              Skip
+            </Button>
+
+            {(!speechPracticeMode || showNextAfterSuccess) && (
+              <Button 
+                onClick={markAsLearned}
+                size="lg"
+                className="bg-gradient-to-r from-accent to-accent/80 text-accent-foreground px-8 py-6 rounded-full glow-accent hover:scale-105 transition-transform"
+              >
+                <Sparkles className="h-5 w-5 ml-2" />
+                !MASTERED IT
+              </Button>
+            )}
+
+            <Button 
+              onClick={() => navigate('/learned')}
+              variant="ghost"
+              className="text-muted-foreground hover:text-foreground"
+            >
+              Back
+              <ArrowLeft className="h-5 w-5 mr-2" />
+            </Button>
+          </div>
+
+          {/* Tip banner */}
+          <div className="mt-8 text-center">
+            <Badge className="bg-accent/20 text-accent border-accent/30 px-4 py-2">
+              <Sparkles className="h-4 w-4 mr-2" />
+              TIP: PRACTICE MAKES PERFECT. REVIEW YOUR LEARNED WORDS REGULARLY
+            </Badge>
           </div>
         </div>
       </div>
 
       {/* Upgrade Dialog */}
       <AlertDialog open={showUpgradeDialog} onOpenChange={setShowUpgradeDialog}>
-        <AlertDialogContent className="max-w-md">
+        <AlertDialogContent className="glass-card border-white/10">
           <AlertDialogHeader>
-            <div className="flex justify-center mb-4">
-              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center">
-                <Crown className="h-8 w-8 text-white" />
-              </div>
-            </div>
-            <AlertDialogTitle className="text-center text-2xl">
-              הגעת למגבלה היומית!
+            <AlertDialogTitle className="flex items-center gap-2">
+              <Crown className="h-5 w-5 text-primary" />
+              הגעת למגבלה היומית
             </AlertDialogTitle>
-            <AlertDialogDescription className="text-center text-lg">
-              במנוי החינמי ניתן ללמוד עד {dailyLimit} מילים ביום.
-              <br />
-              <span className="font-semibold text-primary">שדרג לפרימיום</span> כדי ללמוד מילים ללא הגבלה!
+            <AlertDialogDescription>
+              למדת {dailyLimit} מילים היום! כדי להמשיך ללמוד ללא הגבלה, שדרג לחשבון פרימיום.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter className="flex-col sm:flex-row gap-2">
-            <AlertDialogCancel className="sm:w-1/2">
-              אולי מחר
-            </AlertDialogCancel>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="glass-button">אחר כך</AlertDialogCancel>
             <AlertDialogAction 
               onClick={() => navigate('/pricing')}
-              className="sm:w-1/2 bg-gradient-to-r from-primary to-accent text-primary-foreground"
+              className="bg-gradient-to-r from-primary to-primary/80 glow-primary"
             >
               <Crown className="h-4 w-4 ml-2" />
               שדרג עכשיו
