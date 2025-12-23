@@ -111,9 +111,14 @@ const Flashcards: React.FC = () => {
 
   return (
     <div className="min-h-screen relative overflow-hidden" style={{ background: 'var(--gradient-hero)' }}>
-      {/* Glowing background effects */}
-      <div className="absolute top-20 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl animate-pulse-slow" />
-      <div className="absolute bottom-20 right-1/4 w-80 h-80 bg-accent/10 rounded-full blur-3xl animate-pulse-slow" />
+      {/* Fixed background effect - Orange glow on right side (weaker than homepage) */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
+        <div 
+          className="absolute top-1/2 -translate-y-1/2 -right-[150px] w-[600px] h-[100vh] rounded-full blur-[180px]"
+          style={{ background: 'hsl(25 85% 45% / 0.35)' }}
+        />
+        <div className="absolute top-1/4 left-1/4 w-[300px] h-[300px] bg-primary/10 rounded-full blur-[120px]" />
+      </div>
       
       <div className="container mx-auto px-4 py-8 max-w-3xl relative z-10">
         <div className="text-center mb-8">
