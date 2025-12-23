@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Globe, Monitor, Smartphone, BookOpen, Target, Zap, Brain } from 'lucide-react';
+import { Globe, Monitor, Smartphone, BookOpen, Target, Zap, Brain, Sparkles } from 'lucide-react';
 
 const About = () => {
   useEffect(() => {
@@ -11,10 +11,18 @@ const About = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-secondary/5">
-      <div className="container mx-auto px-4 py-12">
+    <div className="min-h-screen relative overflow-hidden" style={{ background: 'var(--gradient-hero)' }}>
+      {/* Glowing background effects */}
+      <div className="absolute top-20 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl animate-pulse-slow" />
+      <div className="absolute bottom-20 right-1/4 w-80 h-80 bg-accent/10 rounded-full blur-3xl animate-pulse-slow" />
+      
+      <div className="container mx-auto px-4 py-12 relative z-10">
         {/* Header */}
         <div className="text-center mb-16">
+          <Badge className="mb-4 bg-primary/20 text-primary border-primary/30">
+            <Sparkles className="h-3 w-3 mr-1" />
+            OUR METHODOLOGY
+          </Badge>
           <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-6">
             השיטה שלנו
           </h1>
@@ -28,7 +36,7 @@ const About = () => {
           <h2 className="text-3xl font-bold text-center text-foreground mb-12">איך זה עובד?</h2>
           
           <div className="grid md:grid-cols-2 gap-8 mb-12">
-            <Card className="backdrop-blur-sm border-white/10 shadow-xl">
+            <Card className="glass-card border-white/10">
               <CardHeader className="text-center">
                 <div className="w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center mx-auto mb-4">
                   <BookOpen className="h-8 w-8 text-primary" />
@@ -43,7 +51,7 @@ const About = () => {
               </CardContent>
             </Card>
 
-            <Card className="backdrop-blur-sm border-white/10 shadow-xl">
+            <Card className="glass-card border-white/10">
               <CardHeader className="text-center">
                 <div className="w-16 h-16 bg-accent/20 rounded-full flex items-center justify-center mx-auto mb-4">
                   <Globe className="h-8 w-8 text-accent" />
@@ -65,7 +73,7 @@ const About = () => {
           <h2 className="text-3xl font-bold text-center text-foreground mb-12">מה עושה את השיטה כל כך יעילה?</h2>
           
           <div className="grid md:grid-cols-3 gap-8">
-            <Card className="backdrop-blur-sm border-white/10 shadow-xl">
+            <Card className="glass-card border-white/10">
               <CardContent className="p-6 text-center">
                 <Target className="h-12 w-12 text-primary mx-auto mb-4" />
                 <h3 className="text-lg font-semibold mb-3">תרגול בהקשר אמיתי</h3>
@@ -76,7 +84,7 @@ const About = () => {
               </CardContent>
             </Card>
 
-            <Card className="backdrop-blur-sm border-white/10 shadow-xl">
+            <Card className="glass-card border-white/10">
               <CardContent className="p-6 text-center">
                 <Brain className="h-12 w-12 text-accent mx-auto mb-4" />
                 <h3 className="text-lg font-semibold mb-3">למידה פסיבית</h3>
@@ -87,7 +95,7 @@ const About = () => {
               </CardContent>
             </Card>
 
-            <Card className="backdrop-blur-sm border-white/10 shadow-xl">
+            <Card className="glass-card border-white/10">
               <CardContent className="p-6 text-center">
                 <Zap className="h-12 w-12 text-primary mx-auto mb-4" />
                 <h3 className="text-lg font-semibold mb-3">תוצאות מהירות</h3>
@@ -105,7 +113,7 @@ const About = () => {
           <h2 className="text-3xl font-bold text-center text-foreground mb-12">איפה זה עובד?</h2>
           
           <div className="grid md:grid-cols-2 gap-8">
-            <Card className="backdrop-blur-sm border-white/10 shadow-xl">
+            <Card className="glass-card border-white/10">
               <CardContent className="p-6">
                 <div className="flex items-center mb-4">
                   <Globe className="h-8 w-8 text-primary ml-3" />
@@ -132,7 +140,7 @@ const About = () => {
               </CardContent>
             </Card>
 
-            <Card className="backdrop-blur-sm border-white/10 shadow-xl">
+            <Card className="glass-card border-white/10">
               <CardContent className="p-6">
                 <div className="flex items-center mb-4">
                   <Monitor className="h-8 w-8 text-accent ml-3" />
@@ -165,21 +173,21 @@ const About = () => {
         <div className="max-w-4xl mx-auto text-center">
           <h2 className="text-2xl font-bold text-foreground mb-8">בקרוב...</h2>
           <div className="flex justify-center gap-4 flex-wrap mb-8">
-            <Badge variant="secondary" className="text-base py-2 px-4">
+            <Badge className="glass-card border-white/20 text-base py-2 px-4">
               <Smartphone className="h-4 w-4 ml-2" />
               אפליקציית מובייל
             </Badge>
-            <Badge variant="secondary" className="text-base py-2 px-4">
+            <Badge className="glass-card border-white/20 text-base py-2 px-4">
               <Monitor className="h-4 w-4 ml-2" />
               תוכנת דסקטופ
             </Badge>
-            <Badge variant="secondary" className="text-base py-2 px-4">
+            <Badge className="glass-card border-white/20 text-base py-2 px-4">
               <BookOpen className="h-4 w-4 ml-2" />
               עוד קטגוריות מילים
             </Badge>
           </div>
           
-          <Card className="backdrop-blur-sm border-white/10 shadow-xl">
+          <Card className="glass-card border-white/10">
             <CardContent className="p-8">
               <h3 className="text-xl font-semibold mb-4 text-foreground">התחל היום</h3>
               <p className="text-muted-foreground mb-6">

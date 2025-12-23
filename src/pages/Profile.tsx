@@ -11,7 +11,7 @@ import { useAuth } from '@/components/AuthProvider';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Settings, Target, Crown, Languages, Lock } from 'lucide-react';
+import { Settings, Target, Crown, Languages, Lock, User, Shield, Trash2, KeyRound, LogOut } from 'lucide-react';
 import { PayPalCheckout } from '@/components/PayPalCheckout';
 import { useSubscription } from '@/components/SubscriptionGuard';
 import { Input } from '@/components/ui/input';
@@ -32,6 +32,7 @@ const Profile: React.FC = () => {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isGoogleUser, setIsGoogleUser] = useState(false);
+
   const englishLevels = [
     { id: "beginner", label: t('level.beginner') },
     { id: "elementary", label: t('level.elementary') },
@@ -241,6 +242,11 @@ const Profile: React.FC = () => {
     }
   };
 
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    navigate('/');
+  };
+
   const handleDeleteAccount = async () => {
     if (!user) return;
     
@@ -254,7 +260,6 @@ const Profile: React.FC = () => {
     
     setLoading(true);
     try {
-      // Call edge function to delete user account completely from Supabase
       const { data: sessionData } = await supabase.auth.getSession();
       const response = await supabase.functions.invoke('delete-account', {
         headers: {
@@ -266,7 +271,6 @@ const Profile: React.FC = () => {
         throw new Error(response.error.message);
       }
       
-      // Sign out locally
       await supabase.auth.signOut();
       
       toast({
@@ -288,80 +292,75 @@ const Profile: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen" style={{ background: 'var(--gradient-hero)' }}>
-      <div className="container mx-auto px-4 py-12 max-w-4xl">
+    <div className="min-h-screen relative overflow-hidden" style={{ background: 'var(--gradient-hero)' }}>
+      {/* Glowing background effects */}
+      <div className="absolute top-20 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl animate-pulse-slow" />
+      <div className="absolute bottom-20 right-1/4 w-80 h-80 bg-accent/10 rounded-full blur-3xl animate-pulse-slow" />
+      
+      <div className="container mx-auto px-4 py-12 max-w-6xl relative z-10">
+        {/* Header */}
         <div className="text-center mb-8">
-          <Badge className="mb-4 bg-primary/15 text-primary border-primary/20">
+          <Badge className="mb-4 bg-primary/20 text-primary border-primary/30">
             <Settings className="h-3 w-3 mr-1" />
-            {isRTL ? 'ניהול חשבון' : 'Account Management'}
+            ACCOUNT MANAGEMENT
           </Badge>
           <h1 className="text-4xl font-bold text-foreground">{t('profile.title')}</h1>
         </div>
         
-        <div className="grid md:grid-cols-2 gap-6">
-          {/* Progress Card */}
+        {/* Top row - 2 cards */}
+        <div className="grid md:grid-cols-2 gap-6 mb-6">
+          {/* Subscription Status Card */}
           <Card className="glass-card border-white/10">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Target className="h-5 w-5" />
-                {isRTL ? 'שלום' : 'Hello'}, {user?.user_metadata?.display_name || user?.email}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="flex justify-between text-sm text-muted-foreground">
-                  <span>{t('home.wordsLearned')}</span>
-                  <span>{learned} / {total}</span>
-                </div>
-                <Progress value={percent} className="h-3" />
-                <div className="flex gap-3 pt-2">
-                  <Button onClick={() => navigate('/learn')}>
-                    {isRTL ? 'המשך לשיעור' : 'Continue Lesson'}
-                  </Button>
-                  <Button variant="outline" onClick={() => navigate('/practice')}>
-                    {t('nav.practice')}
-                  </Button>
-                </div>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <span className="text-sm text-muted-foreground uppercase tracking-wider">Account Level</span>
+                <Crown className={`h-6 w-6 ${isActive ? 'text-primary' : 'text-muted-foreground'}`} />
               </div>
+              <h3 className="text-2xl font-bold mb-4">{isActive ? 'PREMIUM' : 'INACTIVE'}</h3>
+              <p className="text-sm text-muted-foreground mb-6">
+                {isRTL 
+                  ? 'שדרג לגישה מלאה לכל התכונות כולל כתוביות AI, מצב אופליין ומודולי למידה מתקדמים'
+                  : 'Unlock all features including AI subtitles, offline mode, and advanced learning modules'}
+              </p>
+              {!isActive && (
+                <Button 
+                  className="w-full bg-gradient-to-r from-primary to-primary/80 text-primary-foreground rounded-full glow-primary" 
+                  onClick={() => setShowUpgrade(!showUpgrade)}
+                >
+                  <Crown className="w-4 h-4 mr-2" />
+                  UPGRADE TO PRO
+                </Button>
+              )}
             </CardContent>
           </Card>
 
-          {/* Subscription Status */}
-          <Card className={`glass-card ${isActive ? 'border-green-500/50' : 'border-white/10'}`}>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Crown className={`h-5 w-5 ${isActive ? 'text-green-500' : isTrialing ? 'text-primary' : 'text-destructive'}`} />
-                {t('profile.subscription')}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <span className="text-muted-foreground">{isRTL ? 'סטטוס' : 'Status'}</span>
-                  <Badge variant={isActive ? "default" : "secondary"}>
-                    {isActive ? (isRTL ? "פרימיום" : "Premium") : (isRTL ? "חינמי" : "Free")}
-                  </Badge>
-                </div>
-                {isActive && daysRemaining > 0 && (
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">{isRTL ? 'ימים שנותרו' : 'Days Remaining'}</span>
-                    <Badge variant="outline">{daysRemaining}</Badge>
-                  </div>
-                )}
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">{isRTL ? 'אחוז השלמה' : 'Completion'}</span>
-                  <Badge className="bg-primary/20 text-primary">{Math.round(percent)}%</Badge>
-                </div>
-                
-                {!isActive && (
-                  <Button 
-                    className="w-full gap-2 bg-gradient-to-r from-[#4A8ECC] to-[#6BA3D6] hover:from-[#3A7EBC] hover:to-[#5B93C6] text-white border-0 font-semibold py-3 rounded-full" 
-                    onClick={() => setShowUpgrade(!showUpgrade)}
-                  >
-                    <Crown className="w-4 h-4" />
-                    {showUpgrade ? (isRTL ? "סגור" : "Close") : (isRTL ? "שדרג עכשיו" : "Upgrade Now")}
-                  </Button>
-                )}
+          {/* User Progress Card */}
+          <Card className="glass-card border-white/10">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <span className="text-sm text-muted-foreground uppercase tracking-wider">Authenticated User</span>
+                <User className="h-6 w-6 text-muted-foreground" />
+              </div>
+              <h3 className="text-2xl font-bold mb-4">{user?.user_metadata?.display_name || user?.email?.split('@')[0]}</h3>
+              <div className="flex items-center gap-2 mb-4">
+                <span className="text-3xl font-bold text-primary">{learned}</span>
+                <span className="text-muted-foreground">/ {total}</span>
+                <span className="text-sm text-muted-foreground ml-2">{isRTL ? 'מילים נלמדו' : 'words learned'}</span>
+              </div>
+              <div className="flex gap-3">
+                <Button 
+                  variant="outline" 
+                  className="flex-1 glass-button border-white/20"
+                  onClick={() => navigate('/practice')}
+                >
+                  {isRTL ? 'תרגול' : 'Practice'}
+                </Button>
+                <Button 
+                  className="flex-1 bg-gradient-to-r from-primary to-primary/80"
+                  onClick={() => navigate('/learn')}
+                >
+                  {isRTL ? 'המשך ללמוד' : 'Continue Learning'}
+                </Button>
               </div>
             </CardContent>
           </Card>
@@ -369,7 +368,7 @@ const Profile: React.FC = () => {
 
         {/* Upgrade Section */}
         {showUpgrade && (
-          <Card className="glass-card mt-6 border-primary/30">
+          <Card className="glass-card mb-6 border-primary/30">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Crown className="h-5 w-5 text-primary" />
@@ -388,250 +387,180 @@ const Profile: React.FC = () => {
           </Card>
         )}
 
-        {/* Language Settings */}
-        <Card className="glass-card border-white/10 mt-6">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Languages className="h-5 w-5" />
-              {isRTL ? 'הגדרות שפה ורמה' : 'Language & Level Settings'}
-            </CardTitle>
-            <CardDescription>
-              {isRTL ? 'ערוך את הגדרות הלמידה שלך' : 'Edit your learning settings'}
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            {/* UI Language Toggle */}
-            <div>
-              <Label className="text-sm font-medium mb-3 block">
-                {isRTL ? 'שפת ממשק:' : 'Interface Language:'}
-              </Label>
-              <div className="flex gap-2">
-                <Button
-                  variant={language === 'he' ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setLanguage('he')}
-                >
-                  🇮🇱 עברית
-                </Button>
-                <Button
-                  variant={language === 'en' ? 'default' : 'outline'}
-                  size="sm"
-                  onClick={() => setLanguage('en')}
-                >
-                  🇺🇸 English
-                </Button>
-              </div>
-            </div>
-
-            <div>
-              <Label className="text-sm font-medium mb-3 block">
-                {isRTL ? 'רמת השפה שלי:' : 'My Language Level:'}
-              </Label>
-              <RadioGroup value={englishLevel} onValueChange={setEnglishLevel} className="flex flex-wrap gap-2">
-                {englishLevels.map((level) => (
-                  <div
-                    key={level.id}
-                    className={`flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer transition-all ${
-                      englishLevel === level.id ? "border-primary bg-primary/5" : "border-border hover:border-primary/50"
-                    }`}
-                    onClick={() => setEnglishLevel(level.id)}
-                  >
-                    <RadioGroupItem value={level.id} id={`level-${level.id}`} className="sr-only" />
-                    <Label htmlFor={`level-${level.id}`} className="cursor-pointer text-sm">{level.label}</Label>
-                  </div>
-                ))}
-              </RadioGroup>
-            </div>
-            
-            <div className="grid sm:grid-cols-2 gap-4">
-              <div>
-                <Label className="text-sm font-medium mb-2 block">
-                  {isRTL ? 'שפת מקור:' : 'Source Language:'}
-                </Label>
-                <RadioGroup value={sourceLanguage} onValueChange={setSourceLanguage} className="flex gap-2">
-                  <div
-                    className={`flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer ${
-                      sourceLanguage === "hebrew" ? "border-primary bg-primary/5" : "border-border"
-                    }`}
-                    onClick={() => setSourceLanguage("hebrew")}
-                  >
-                    <span>🇮🇱</span>
-                    <span className="text-sm">{isRTL ? 'עברית' : 'Hebrew'}</span>
-                  </div>
-                  <div
-                    className={`flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer ${
-                      sourceLanguage === "english" ? "border-primary bg-primary/5" : "border-border"
-                    }`}
-                    onClick={() => setSourceLanguage("english")}
-                  >
-                    <span>🇺🇸</span>
-                    <span className="text-sm">{isRTL ? 'אנגלית' : 'English'}</span>
-                  </div>
-                </RadioGroup>
+        {/* Middle row - 2 cards */}
+        <div className="grid md:grid-cols-2 gap-6 mb-6">
+          {/* Security Card */}
+          <Card className="glass-card border-white/10">
+            <CardContent className="p-6">
+              <div className="flex items-center gap-2 mb-6">
+                <h3 className="text-lg font-semibold">Security</h3>
+                <Shield className="h-5 w-5 text-accent" />
               </div>
               
-              <div>
-                <Label className="text-sm font-medium mb-2 block">
-                  {isRTL ? 'שפת יעד:' : 'Target Language:'}
-                </Label>
-                <RadioGroup value={targetLanguage} onValueChange={setTargetLanguage} className="flex gap-2">
-                  <div
-                    className={`flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer ${
-                      targetLanguage === "english" ? "border-primary bg-primary/5" : "border-border"
-                    }`}
-                    onClick={() => setTargetLanguage("english")}
+              <div className="space-y-3">
+                {!isGoogleUser && (
+                  <Button 
+                    variant="outline" 
+                    className="w-full justify-start glass-button border-white/20"
+                    onClick={() => {
+                      // Show password reset modal or navigate
+                      toast({
+                        title: isRTL ? "איפוס סיסמה" : "Password Reset",
+                        description: isRTL ? "הזן סיסמה חדשה למטה" : "Enter new password below"
+                      });
+                    }}
                   >
-                    <span>🇺🇸</span>
-                    <span className="text-sm">{isRTL ? 'אנגלית' : 'English'}</span>
-                  </div>
-                  <div
-                    className={`flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer ${
-                      targetLanguage === "hebrew" ? "border-primary bg-primary/5" : "border-border"
-                    }`}
-                    onClick={() => setTargetLanguage("hebrew")}
-                  >
-                    <span>🇮🇱</span>
-                    <span className="text-sm">{isRTL ? 'עברית' : 'Hebrew'}</span>
-                  </div>
-                </RadioGroup>
-              </div>
-            </div>
-            
-            <Button onClick={saveLanguageSettings} disabled={loading} size="sm">
-              {loading ? (isRTL ? 'שומר...' : 'Saving...') : t('common.save')}
-            </Button>
-          </CardContent>
-        </Card>
-
-        {/* Topic Selection */}
-        <Card className="shadow-lg mt-6">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Settings className="h-5 w-5" />
-              {isRTL ? 'בחר נושאי לימוד' : 'Select Learning Topics'}
-            </CardTitle>
-            <p className="text-sm text-muted-foreground">
-              {isRTL ? 'בחר את הקטגוריות שמעניינות אותך כדי להתמקד בלמידת מילים רלוונטיות' : 'Choose categories that interest you to focus on relevant words'}
-            </p>
-          </CardHeader>
-          <CardContent>
-            <div className="grid md:grid-cols-2 gap-4 mb-6">
-              {availableTopics.map((topic) => (
-                <div key={topic.id} className="flex items-start space-x-3 rtl:space-x-reverse">
-                  <Checkbox
-                    id={topic.id}
-                    checked={selectedTopics.includes(topic.id)}
-                    onCheckedChange={() => handleTopicToggle(topic.id)}
-                    className="mt-1"
-                  />
-                  <div className="flex-1">
-                    <label htmlFor={topic.id} className="text-sm font-medium cursor-pointer">
-                      {topic.name}
-                    </label>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {topic.description}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-            
-            <div className="flex justify-between items-center">
-              <div className="text-sm text-muted-foreground">
-                {isRTL 
-                  ? `נבחרו ${selectedTopics.length} מתוך ${availableTopics.length} נושאים`
-                  : `${selectedTopics.length} of ${availableTopics.length} topics selected`}
-              </div>
-              <Button 
-                onClick={saveTopicPreferences} 
-                disabled={loading}
-                size="sm"
-              >
-                {loading ? (isRTL ? 'שומר...' : 'Saving...') : (isRTL ? 'שמור העדפות' : 'Save Preferences')}
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Password Update Section - for Google users or password change */}
-        <Card className="shadow-lg mt-6">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Lock className="h-5 w-5" />
-              {isRTL ? (isGoogleUser ? 'הגדר סיסמה' : 'עדכן סיסמה') : (isGoogleUser ? 'Set Password' : 'Update Password')}
-            </CardTitle>
-            <p className="text-sm text-muted-foreground">
-              {isRTL 
-                ? (isGoogleUser 
-                    ? 'הגדר סיסמה כדי להתחבר גם עם אימייל וסיסמה בנוסף לגוגל' 
-                    : 'שנה את הסיסמה שלך')
-                : (isGoogleUser 
-                    ? 'Set a password to also log in with email and password in addition to Google' 
-                    : 'Change your password')}
-            </p>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid gap-4 max-w-md">
-              <div className="space-y-2">
-                <Label htmlFor="new-password">{isRTL ? 'סיסמה חדשה' : 'New Password'}</Label>
-                <Input
-                  id="new-password"
-                  type="password"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  placeholder={isRTL ? 'הזן סיסמה חדשה' : 'Enter new password'}
-                  minLength={6}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="confirm-password">{isRTL ? 'אשר סיסמה' : 'Confirm Password'}</Label>
-                <Input
-                  id="confirm-password"
-                  type="password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  placeholder={isRTL ? 'אשר סיסמה' : 'Confirm password'}
-                  minLength={6}
-                />
-              </div>
-              <Button onClick={handlePasswordUpdate} disabled={loading} size="sm" className="w-fit">
-                {loading ? (isRTL ? 'שומר...' : 'Saving...') : (isRTL ? 'עדכן סיסמה' : 'Update Password')}
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Danger Zone */}
-        <Card className="shadow-lg mt-6 border-destructive">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-destructive">
-              <Settings className="h-5 w-5" />
-              {isRTL ? 'אזור מסוכן' : 'Danger Zone'}
-            </CardTitle>
-            <p className="text-sm text-muted-foreground">
-              {isRTL ? 'פעולות אלו הן בלתי הפיכות. נא להיזהר.' : 'These actions are irreversible. Please be careful.'}
-            </p>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              <div className="p-4 rounded-lg border border-destructive/20 bg-destructive/5">
-                <h3 className="font-medium text-destructive mb-2">
-                  {isRTL ? 'מחיקת חשבון' : 'Delete Account'}
-                </h3>
-                <p className="text-sm text-muted-foreground mb-4">
-                  {isRTL 
-                    ? 'מחיקת החשבון תמחק לצמיתות את כל הנתונים שלך, כולל ההתקדמות והמילים הנלמדות.'
-                    : 'Deleting your account will permanently delete all your data, including progress and learned words.'}
-                </p>
+                    <KeyRound className="h-4 w-4 mr-2" />
+                    Reset Password
+                  </Button>
+                )}
+                
                 <Button 
-                  variant="destructive" 
-                  size="sm"
+                  variant="outline" 
+                  className="w-full justify-start glass-button border-white/20"
+                  onClick={handleSignOut}
+                >
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Sign Out
+                </Button>
+              </div>
+              
+              <div className="mt-6 pt-4 border-t border-white/10">
+                <p className="text-xs text-muted-foreground mb-3 uppercase tracking-wider">Permanent Actions</p>
+                <Button 
+                  variant="ghost" 
+                  className="text-destructive hover:text-destructive hover:bg-destructive/10"
                   onClick={handleDeleteAccount}
                   disabled={loading}
                 >
-                  {loading ? (isRTL ? 'מוחק...' : 'Deleting...') : (isRTL ? 'מחק חשבון' : 'Delete Account')}
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Delete Account
                 </Button>
               </div>
+            </CardContent>
+          </Card>
+
+          {/* Language & Level Card */}
+          <Card className="glass-card border-white/10">
+            <CardContent className="p-6">
+              <div className="flex items-center gap-2 mb-6">
+                <h3 className="text-lg font-semibold">Language & Level</h3>
+                <Languages className="h-5 w-5 text-accent" />
+              </div>
+              
+              {/* UI Language Toggle */}
+              <div className="mb-6">
+                <Label className="text-xs text-muted-foreground mb-3 block uppercase tracking-wider">
+                  Interface Language
+                </Label>
+                <div className="flex gap-2">
+                  <Button
+                    variant={language === 'he' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setLanguage('he')}
+                    className={language === 'he' ? 'bg-primary' : 'glass-button border-white/20'}
+                  >
+                    🇮🇱 עברית
+                  </Button>
+                  <Button
+                    variant={language === 'en' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setLanguage('en')}
+                    className={language === 'en' ? 'bg-primary' : 'glass-button border-white/20'}
+                  >
+                    🇺🇸 English
+                  </Button>
+                </div>
+              </div>
+
+              {/* Level Selection */}
+              <div className="mb-6">
+                <Label className="text-xs text-muted-foreground mb-3 block uppercase tracking-wider">
+                  Target Proficiency
+                </Label>
+                <div className="flex flex-wrap gap-2">
+                  {englishLevels.map((level) => (
+                    <Button
+                      key={level.id}
+                      variant={englishLevel === level.id ? 'default' : 'outline'}
+                      size="sm"
+                      onClick={() => setEnglishLevel(level.id)}
+                      className={englishLevel === level.id 
+                        ? 'bg-primary' 
+                        : 'glass-button border-white/20'
+                      }
+                    >
+                      {level.label}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+
+              <Button 
+                onClick={saveLanguageSettings}
+                className="w-full bg-gradient-to-r from-primary to-primary/80"
+                disabled={loading}
+              >
+                Apply Settings
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Learning Interests Card */}
+        <Card className="glass-card border-white/10">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-2">
+                <h3 className="text-lg font-semibold">Learning Interests</h3>
+                <Target className="h-5 w-5 text-accent" />
+              </div>
+              <Button 
+                variant="outline"
+                onClick={saveTopicPreferences}
+                disabled={loading}
+                className="glass-button border-white/20"
+              >
+                Save Preferences
+              </Button>
+            </div>
+            
+            <p className="text-sm text-muted-foreground mb-6">
+              {isRTL ? 'בחר את הקטגוריות שמעניינות אותך ביותר בחיי היומיום' : 'Select the categories that matter most to your daily life'}
+            </p>
+            
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {availableTopics.map((topic) => (
+                <div
+                  key={topic.id}
+                  onClick={() => handleTopicToggle(topic.id)}
+                  className={`glass-card rounded-xl p-4 cursor-pointer transition-all hover:scale-105 ${
+                    selectedTopics.includes(topic.id) 
+                      ? 'border-primary/50 bg-primary/10' 
+                      : 'border-white/10'
+                  }`}
+                >
+                  <div className="flex items-center gap-2 mb-2">
+                    <Checkbox
+                      checked={selectedTopics.includes(topic.id)}
+                      onCheckedChange={() => handleTopicToggle(topic.id)}
+                      className="border-white/30"
+                    />
+                    <span className="text-2xl">
+                      {topic.id === 'basic' && '📚'}
+                      {topic.id === 'business' && '💼'}
+                      {topic.id === 'technology' && '💻'}
+                      {topic.id === 'travel' && '✈️'}
+                      {topic.id === 'food' && '🍕'}
+                      {topic.id === 'health' && '🏥'}
+                      {topic.id === 'education' && '📖'}
+                      {topic.id === 'entertainment' && '🎬'}
+                    </span>
+                  </div>
+                  <h4 className="font-semibold text-sm mb-1">{topic.name}</h4>
+                  <p className="text-xs text-muted-foreground">{topic.description}</p>
+                </div>
+              ))}
             </div>
           </CardContent>
         </Card>

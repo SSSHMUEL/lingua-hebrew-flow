@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/components/AuthProvider';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
-import { HelpCircle, CheckCircle2, XCircle, RefreshCw } from 'lucide-react';
+import { HelpCircle, CheckCircle2, XCircle, RefreshCw, Sparkles } from 'lucide-react';
 
 interface VocabularyWord {
   id: string;
@@ -29,7 +29,7 @@ const Quiz: React.FC = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    document.title = 'שאלון רב-ברירה | TOLKFIX';
+    document.title = 'שאלון רב-ברירה | TALK FIX';
     const meta = document.querySelector('meta[name="description"]');
     if (meta) meta.setAttribute('content', 'תרגלו שאלון רב-ברירה באנגלית-עברית עם משוב מידי וסימון מילים שנלמדו');
   }, []);
@@ -105,7 +105,7 @@ const Quiz: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--gradient-hero)' }}>
         <p className="text-muted-foreground">טוען שאלון...</p>
       </div>
     );
@@ -113,27 +113,38 @@ const Quiz: React.FC = () => {
 
   if (!current || options.length < 4) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--gradient-hero)' }}>
         <div className="text-center space-y-4">
           <HelpCircle className="w-12 h-12 text-primary mx-auto" />
           <p className="text-lg">אין מספיק מילים כדי ליצור שאלון (נדרשות לפחות 4)</p>
-          <Button onClick={() => navigate('/learn')}>חזרה ללמידה</Button>
+          <Button onClick={() => navigate('/learn')} className="glow-primary">חזרה ללמידה</Button>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-secondary/5">
-      <div className="container mx-auto px-4 py-8 max-w-3xl">
-        <div className="text-center mb-6">
+    <div className="min-h-screen relative overflow-hidden" style={{ background: 'var(--gradient-hero)' }}>
+      {/* Glowing background effects */}
+      <div className="absolute top-20 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl animate-pulse-slow" />
+      <div className="absolute bottom-20 right-1/4 w-80 h-80 bg-accent/10 rounded-full blur-3xl animate-pulse-slow" />
+      
+      <div className="container mx-auto px-4 py-8 max-w-3xl relative z-10">
+        <div className="text-center mb-8">
+          <Badge className="mb-4 bg-primary/20 text-primary border-primary/30">
+            <Sparkles className="h-3 w-3 mr-1" />
+            QUIZ MODE
+          </Badge>
           <h1 className="text-3xl font-bold">שאלון רב-ברירה</h1>
-          <Badge variant="secondary" className="mt-2">בחרו את התרגום הנכון</Badge>
+          <p className="text-muted-foreground mt-2">בחרו את התרגום הנכון</p>
         </div>
 
-        <Card className="shadow-2xl border-0">
-          <CardHeader>
-            <CardTitle className="text-3xl text-center">{current.english_word}</CardTitle>
+        <Card className="glass-card border-white/10 mb-6">
+          <CardHeader className="text-center">
+            <Badge className="mx-auto mb-4 bg-accent/20 text-accent border-accent/30">
+              {current.category}
+            </Badge>
+            <CardTitle className="text-4xl md:text-5xl font-bold">{current.english_word}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -144,8 +155,14 @@ const Quiz: React.FC = () => {
                 return (
                   <Button
                     key={opt}
-                    variant={isRight ? 'default' : 'outline'}
-                    className={isRight ? '' : ''}
+                    variant="outline"
+                    className={`glass-button border-white/20 py-6 text-lg transition-all ${
+                      isRight 
+                        ? 'bg-green-500/20 border-green-500/50 text-green-400' 
+                        : isWrong 
+                          ? 'bg-destructive/20 border-destructive/50 text-destructive' 
+                          : 'hover:bg-white/10'
+                    }`}
                     onClick={() => onSelect(opt)}
                     disabled={selected !== null}
                   >
@@ -155,26 +172,30 @@ const Quiz: React.FC = () => {
               })}
             </div>
 
-            <div className="flex items-center justify-between mt-6">
+            <div className="flex items-center justify-between mt-8">
               <span className="text-sm text-muted-foreground">{questionIndex + 1} / {words.length}</span>
               <div className="flex gap-3">
-                <Button variant="outline" onClick={restart}>
+                <Button variant="outline" onClick={restart} className="glass-button border-white/20">
                   <RefreshCw className="h-4 w-4 ml-2" /> אתחל
                 </Button>
-                <Button variant="outline" onClick={next} disabled={questionIndex === words.length - 1}>
+                <Button 
+                  onClick={next} 
+                  disabled={questionIndex === words.length - 1}
+                  className="bg-gradient-to-r from-primary to-primary/80 glow-primary"
+                >
                   הבא
                 </Button>
               </div>
             </div>
 
             {selected && (
-              <div className="mt-6 p-4 rounded-lg border bg-card">
+              <div className="mt-6 glass-card rounded-xl p-4 border-white/10">
                 {correct ? (
-                  <div className="flex items-center gap-2 text-green-600 animate-pulse">
+                  <div className="flex items-center gap-2 text-green-400">
                     <CheckCircle2 className="h-5 w-5" /> תשובה נכונה!
                   </div>
                 ) : (
-                  <div className="flex items-center gap-2 text-red-600 animate-pulse">
+                  <div className="flex items-center gap-2 text-destructive">
                     <XCircle className="h-5 w-5" /> תשובה שגויה. הנכון: {current.hebrew_translation}
                   </div>
                 )}
