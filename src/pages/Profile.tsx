@@ -326,7 +326,7 @@ const Profile: React.FC = () => {
                 <span className="text-sm text-muted-foreground uppercase tracking-wider">{t('profile.accountLevel')}</span>
                 <Crown className={`h-6 w-6 ${isActive ? 'text-primary' : 'text-muted-foreground'}`} />
               </div>
-              <h3 className="text-2xl font-bold mb-4">{isActive ? t('profile.premium') : t('profile.inactive')}</h3>
+              <h3 className="text-2xl font-bold mb-4">{isActive ? t('profile.premium') : (isRTL ? 'חינמית' : 'Free')}</h3>
               <p className="text-sm text-muted-foreground mb-6">
                 {t('profile.unlockFeatures')}
               </p>
@@ -407,7 +407,39 @@ const Profile: React.FC = () => {
               </div>
               
               <div className="space-y-3">
-                {!isGoogleUser && (
+                {isGoogleUser ? (
+                  <>
+                    <p className="text-xs text-muted-foreground mb-3">
+                      {isRTL 
+                        ? 'נרשמת באמצעות גוגל. תוכל ליצור סיסמה כדי להתחבר גם עם אימייל וסיסמה.' 
+                        : 'You signed up with Google. You can create a password to also log in with email and password.'}
+                    </p>
+                    <div className="space-y-2">
+                      <Input
+                        type="password"
+                        placeholder={isRTL ? "סיסמה חדשה" : "New password"}
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                        className="glass-input border-white/10"
+                      />
+                      <Input
+                        type="password"
+                        placeholder={isRTL ? "אימות סיסמה" : "Confirm password"}
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        className="glass-input border-white/10"
+                      />
+                      <Button 
+                        onClick={handlePasswordUpdate}
+                        disabled={loading}
+                        className="w-full bg-gradient-to-r from-primary to-primary/80"
+                      >
+                        <KeyRound className="h-4 w-4 mr-2" />
+                        {isRTL ? 'צור סיסמה' : 'Create Password'}
+                      </Button>
+                    </div>
+                  </>
+                ) : (
                   <Button 
                     variant="outline" 
                     className="w-full justify-start glass-button border-white/20"
