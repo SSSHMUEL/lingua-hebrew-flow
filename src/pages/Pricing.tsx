@@ -17,10 +17,15 @@ const Pricing = () => {
           <h1 className="text-3xl md:text-5xl font-bold text-foreground mb-4">
             {isHebrew ? 'בחר את התוכנית שלך' : 'Choose Your Plan'}
           </h1>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto mb-4">
             {isHebrew 
               ? 'התחל ללמוד אנגלית עם TalkFix - גישה מלאה לכל התכונות'
               : 'Start learning English with TalkFix - full access to all features'}
+          </p>
+          <p className="text-sm text-muted-foreground max-w-xl mx-auto bg-card/50 border border-border/50 rounded-lg p-3">
+            {isHebrew 
+              ? '🔒 התשלום מתבצע באופן מאובטח דרך PayPal. אנחנו לא שומרים פרטי אשראי - כל התשלום מועבר ישירות דרך PayPal.'
+              : '🔒 Payment is securely processed through PayPal. We never store credit card details - all payments go directly through PayPal.'}
           </p>
         </div>
 
