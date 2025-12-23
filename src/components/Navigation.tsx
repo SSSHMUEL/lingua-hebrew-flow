@@ -75,66 +75,32 @@ export const Navigation: React.FC = () => {
   return (
     <nav className="sticky top-0 z-50 border-b border-white/10 backdrop-blur-xl" style={{ background: 'linear-gradient(180deg, hsl(222 47% 10% / 0.95) 0%, hsl(222 47% 8% / 0.9) 100%)' }}>
       <div className="container mx-auto px-4 py-3">
-        <div className={`flex items-center justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
-          {/* Logo */}
-          <Link to="/" className="flex items-center gap-3 group">
-            <div className="relative">
-              <img 
-                src={logoImage} 
-                alt="TalkFix" 
-                className="w-10 h-10 rounded-xl shadow-lg transition-transform group-hover:scale-105"
-              />
-              <div className="absolute inset-0 rounded-xl bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity" />
-            </div>
-            <span className="text-xl font-bold text-foreground hidden sm:inline tracking-tight">
-              TALK<span className="text-primary">FIX</span>
-            </span>
-          </Link>
+        <div className="flex items-center justify-between">
+          {/* Left Side - Logo (right side in RTL) */}
+          <div className={`flex items-center ${isRTL ? 'order-last' : 'order-first'}`}>
+            <Link to="/" className={`flex items-center gap-3 group ${isRTL ? 'flex-row-reverse' : ''}`}>
+              <div className="relative">
+                <img 
+                  src={logoImage} 
+                  alt="TalkFix" 
+                  className="w-10 h-10 rounded-xl shadow-lg transition-transform group-hover:scale-105"
+                />
+                <div className="absolute inset-0 rounded-xl bg-primary/20 opacity-0 group-hover:opacity-100 transition-opacity" />
+              </div>
+              <span className={`text-xl font-bold text-foreground hidden sm:inline tracking-tight ${isRTL ? 'flex-row-reverse' : ''}`}>
+                TALK<span className="text-primary">FIX</span>
+              </span>
+            </Link>
+          </div>
           
-          {/* Desktop Navigation */}
-          <div className="hidden lg:flex items-center gap-1">
+          {/* Desktop Navigation - Center */}
+          <div className={`hidden lg:flex items-center gap-1 ${isRTL ? 'flex-row-reverse' : ''}`}>
             <NavLinks />
           </div>
 
-          {/* Right Side */}
-          <div className="flex items-center gap-3">
-            {/* Language Toggle */}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setLanguage(language === 'he' ? 'en' : 'he')}
-              className="text-muted-foreground hover:text-foreground hover:bg-white/5"
-            >
-              {language === 'he' ? '🇺🇸' : '🇮🇱'}
-            </Button>
-
-            {/* Auth Buttons - Desktop */}
-            {user ? (
-              <div className="hidden sm:flex items-center gap-3">
-                <span className="text-sm text-primary font-medium px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20">
-                  {isRTL ? 'שלום' : 'Hello'}, {user.user_metadata?.display_name || user.email?.split('@')[0]}
-                </span>
-                <Button onClick={handleLogout} variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground hover:bg-white/5">
-                  <LogOut className="h-4 w-4 mx-1" />
-                  {t('nav.logout')}
-                </Button>
-              </div>
-            ) : (
-              <div className="hidden sm:flex items-center gap-2">
-                <Link to="/auth">
-                  <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
-                    {t('nav.login')}
-                  </Button>
-                </Link>
-                <Link to="/auth?tab=signup">
-                  <Button size="sm" className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-full px-4">
-                    {t('auth.signup')}
-                  </Button>
-                </Link>
-              </div>
-            )}
-
-            {/* Mobile Menu Button */}
+          {/* Right Side - Auth & Controls (left side in RTL) */}
+          <div className={`flex items-center gap-3 ${isRTL ? 'order-first flex-row-reverse' : 'order-last'}`}>
+            {/* Mobile Menu Button - Always visible on mobile */}
             <Sheet open={isOpen} onOpenChange={setIsOpen}>
               <SheetTrigger asChild className="lg:hidden">
                 <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
@@ -176,6 +142,42 @@ export const Navigation: React.FC = () => {
                 </div>
               </SheetContent>
             </Sheet>
+
+            {/* Language Toggle */}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setLanguage(language === 'he' ? 'en' : 'he')}
+              className="text-muted-foreground hover:text-foreground hover:bg-white/5"
+            >
+              {language === 'he' ? '🇺🇸' : '🇮🇱'}
+            </Button>
+
+            {/* Auth Buttons - Desktop */}
+            {user ? (
+              <div className={`hidden sm:flex items-center gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
+                <Button onClick={handleLogout} variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground hover:bg-white/5">
+                  <LogOut className="h-4 w-4 mx-1" />
+                  {t('nav.logout')}
+                </Button>
+                <span className="text-sm text-primary font-medium px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20">
+                  {isRTL ? 'שלום' : 'Hello'}, {user.user_metadata?.display_name || user.email?.split('@')[0]}
+                </span>
+              </div>
+            ) : (
+              <div className={`hidden sm:flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
+                <Link to="/auth?tab=signup">
+                  <Button size="sm" className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-full px-4">
+                    {t('auth.signup')}
+                  </Button>
+                </Link>
+                <Link to="/auth">
+                  <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
+                    {t('nav.login')}
+                  </Button>
+                </Link>
+              </div>
+            )}
           </div>
         </div>
       </div>
