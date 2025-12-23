@@ -112,7 +112,7 @@ export const Navigation: React.FC = () => {
             {user ? (
               <div className="hidden sm:flex items-center gap-3">
                 <span className="text-sm text-primary font-medium px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20">
-                  {user.user_metadata?.display_name || user.email?.split('@')[0]}
+                  {isRTL ? 'שלום' : 'Hello'}, {user.user_metadata?.display_name || user.email?.split('@')[0]}
                 </span>
                 <Button onClick={handleLogout} variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground hover:bg-white/5">
                   <LogOut className="h-4 w-4 mx-1" />
@@ -141,7 +141,7 @@ export const Navigation: React.FC = () => {
                   <Menu className="h-5 w-5" />
                 </Button>
               </SheetTrigger>
-              <SheetContent side={isRTL ? "right" : "left"} className="w-[300px] border-white/10 bg-card/95 backdrop-blur-xl">
+              <SheetContent side="left" className="w-[300px] border-white/10 bg-card/95 backdrop-blur-xl">
                 <div className="flex flex-col gap-6 mt-6">
                   <div className="flex flex-col gap-2">
                     <NavLinks />
