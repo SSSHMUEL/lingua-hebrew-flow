@@ -54,25 +54,26 @@ const Index = () => {
     <div className="min-h-screen" style={{ background: 'var(--gradient-hero)' }}>
       {/* Hero Section */}
       <div className="relative overflow-hidden">
-        {/* Enhanced Background Effects with lighter blue and orange */}
+        {/* Enhanced Background Effects with lighter blue and stronger orange */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-10 left-1/4 w-[500px] h-[500px] bg-primary/15 rounded-full blur-[120px] animate-pulse-slow" />
-          <div className="absolute bottom-10 right-1/4 w-[400px] h-[400px] bg-accent/12 rounded-full blur-[100px] animate-pulse-slow" style={{ animationDelay: '2s' }} />
-          <div className="absolute top-1/2 right-1/3 w-72 h-72 bg-primary/8 rounded-full blur-[80px]" />
+          <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-primary/20 rounded-full blur-[150px] animate-pulse-slow" />
+          <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-accent/18 rounded-full blur-[130px] animate-pulse-slow" style={{ animationDelay: '2s' }} />
+          <div className="absolute top-1/3 right-1/3 w-96 h-96 bg-primary/10 rounded-full blur-[100px]" />
+          <div className="absolute bottom-1/3 left-1/3 w-80 h-80 bg-accent/15 rounded-full blur-[100px]" style={{ animationDelay: '3s' }} />
         </div>
 
         <div className="container mx-auto px-4 py-12 md:py-20 relative z-10">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             {/* Left Content */}
-            <div className={`text-${isRTL ? 'right' : 'left'}`}>
-              <div className="inline-flex items-center gap-2 bg-primary/15 text-primary px-4 py-2 rounded-full mb-6 backdrop-blur-sm border border-primary/20">
+            <div className={`text-${isRTL ? 'right' : 'left'} animate-fade-in`}>
+              <div className="inline-flex items-center gap-2 bg-primary/15 text-primary px-4 py-2 rounded-full mb-6 backdrop-blur-sm border border-primary/20 animate-fade-in" style={{ animationDelay: '0.1s' }}>
                 <Sparkles className="h-4 w-4" />
                 <span className="text-sm font-medium">
                   {isRTL ? 'פלטפורמת הלימוד המתקדמת בישראל' : 'The Most Advanced Learning Platform'}
                 </span>
               </div>
               
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground mb-6 leading-tight">
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground mb-6 leading-tight animate-fade-in" style={{ animationDelay: '0.2s' }}>
                 {isRTL ? 'למד אנגלית' : 'Learn English'}
                 <br />
                 <span className="bg-gradient-to-r from-primary via-blue-400 to-primary bg-clip-text text-transparent">
@@ -80,26 +81,26 @@ const Index = () => {
                 </span>
               </h1>
               
-              <p className="text-lg text-muted-foreground mb-8 max-w-xl leading-relaxed">
+              <p className="text-lg text-muted-foreground mb-8 max-w-xl leading-relaxed animate-fade-in" style={{ animationDelay: '0.3s' }}>
                 {t('home.description')}
               </p>
 
-              <div className="flex flex-wrap gap-4 mb-8">
+              <div className="flex flex-wrap gap-4 mb-8 animate-fade-in" style={{ animationDelay: '0.4s' }}>
                 <Link to={user ? "/learn" : "/auth"}>
-                  <Button size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-full px-8 shadow-lg glow-primary">
+                  <Button size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-full px-8 shadow-lg glow-primary transition-transform hover:scale-105">
                     {isRTL ? 'התחל עכשיו' : 'Start Now'}
                     <ArrowIcon className="h-5 w-5 mx-2" />
                   </Button>
                 </Link>
                 <Link to="/downloads">
-                  <Button size="lg" variant="outline" className="rounded-full px-8 border-white/20 bg-white/5 hover:bg-white/10 backdrop-blur-sm">
+                  <Button size="lg" variant="outline" className="rounded-full px-8 border-white/20 bg-white/5 hover:bg-white/10 backdrop-blur-sm transition-transform hover:scale-105">
                     {isRTL ? 'הורד תוסף' : 'Download Extension'}
                   </Button>
                 </Link>
               </div>
 
               {/* Feature Pills */}
-              <div className="flex flex-wrap gap-3">
+              <div className="flex flex-wrap gap-3 animate-fade-in" style={{ animationDelay: '0.5s' }}>
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <CheckCircle2 className="h-4 w-4 text-primary" />
                   {isRTL ? 'מונע AI' : 'AI-Powered'}
@@ -116,7 +117,7 @@ const Index = () => {
             </div>
 
             {/* Right - Hero Card/Image */}
-            <div className="relative">
+            <div className="relative animate-scale-in" style={{ animationDelay: '0.3s' }}>
               <div className="glass-card rounded-3xl p-6 shadow-2xl animate-float">
                 <div className="aspect-video rounded-2xl bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center mb-4 overflow-hidden relative">
                   <img src={logoImage} alt="TalkFix" className="w-32 h-32 opacity-80" />
@@ -135,11 +136,11 @@ const Index = () => {
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4 mt-4">
-                  <div className="glass-card rounded-xl p-3 text-center">
+                  <div className="glass-card rounded-xl p-3 text-center transition-transform hover:scale-105">
                     <div className="text-xl font-bold text-foreground">24</div>
                     <div className="text-xs text-muted-foreground">{isRTL ? 'שיעורים' : 'Lessons'}</div>
                   </div>
-                  <div className="glass-card rounded-xl p-3 text-center">
+                  <div className="glass-card rounded-xl p-3 text-center transition-transform hover:scale-105">
                     <div className="text-xl font-bold text-foreground">0</div>
                     <div className="text-xs text-muted-foreground">{isRTL ? 'מילים' : 'Words'}</div>
                   </div>
@@ -151,18 +152,23 @@ const Index = () => {
       </div>
 
       {/* How It Works Section */}
-      <div className="container mx-auto px-4 py-16">
-        <div className="text-center mb-12">
-          <Badge className="mb-4 bg-primary/15 text-primary border-primary/20">
+      <div className="container mx-auto px-4 py-16 relative">
+        {/* Section background glow */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] bg-accent/10 rounded-full blur-[150px]" />
+        </div>
+        
+        <div className="text-center mb-12 relative z-10">
+          <Badge className="mb-4 bg-primary/15 text-primary border-primary/20 animate-fade-in">
             {isRTL ? 'המתודולוגיה שלנו' : 'Our Methodology'}
           </Badge>
-          <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">
+          <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4 animate-fade-in" style={{ animationDelay: '0.1s' }}>
             {t('home.howItWorks')}
           </h2>
         </div>
 
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
-          <Card className="glass-card border-white/10 hover:border-primary/30 transition-all duration-300 group">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto relative z-10">
+          <Card className="glass-card border-white/10 hover:border-primary/30 transition-all duration-300 group animate-fade-in" style={{ animationDelay: '0.2s' }}>
             <CardContent className="p-6 text-center">
               <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary to-primary/50 flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
                 <Star className="h-7 w-7 text-primary-foreground" />
@@ -175,7 +181,7 @@ const Index = () => {
             </CardContent>
           </Card>
 
-          <Card className="glass-card border-white/10 hover:border-accent/30 transition-all duration-300 group">
+          <Card className="glass-card border-white/10 hover:border-accent/30 transition-all duration-300 group animate-fade-in" style={{ animationDelay: '0.3s' }}>
             <CardContent className="p-6 text-center">
               <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-accent to-accent/50 flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
                 <Globe className="h-7 w-7 text-accent-foreground" />
@@ -188,7 +194,7 @@ const Index = () => {
             </CardContent>
           </Card>
 
-          <Card className="glass-card border-white/10 hover:border-primary/30 transition-all duration-300 group sm:col-span-2 lg:col-span-1">
+          <Card className="glass-card border-white/10 hover:border-primary/30 transition-all duration-300 group sm:col-span-2 lg:col-span-1 animate-fade-in" style={{ animationDelay: '0.4s' }}>
             <CardContent className="p-6 text-center">
               <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary to-accent flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
                 <Brain className="h-7 w-7 text-primary-foreground" />
