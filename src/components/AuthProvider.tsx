@@ -30,12 +30,54 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Helper function to sync Google profile data
+    const syncGoogleProfile = async (user: User) => {
+      if (user.app_metadata?.provider === 'google' || user.identities?.some(i => i.provider === 'google')) {
+        const googleName = user.user_metadata?.full_name || user.user_metadata?.name;
+        if (googleName) {
+          // Update user metadata with display_name if not set
+          if (!user.user_metadata?.display_name) {
+            await supabase.auth.updateUser({
+              data: { display_name: googleName }
+            });
+          }
+          
+          // Update profile in database
+          setTimeout(async () => {
+            const { data: existingProfile } = await supabase
+              .from('profiles')
+              .select('display_name')
+              .eq('user_id', user.id)
+              .single();
+            
+            if (!existingProfile) {
+              // Create profile
+              await supabase.from('profiles').insert({
+                user_id: user.id,
+                display_name: googleName,
+              });
+            } else if (!existingProfile.display_name) {
+              // Update display_name if empty
+              await supabase.from('profiles').update({
+                display_name: googleName
+              }).eq('user_id', user.id);
+            }
+          }, 0);
+        }
+      }
+    };
+
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
+        
+        // Sync Google profile on sign in
+        if (event === 'SIGNED_IN' && session?.user) {
+          syncGoogleProfile(session.user);
+        }
       }
     );
 

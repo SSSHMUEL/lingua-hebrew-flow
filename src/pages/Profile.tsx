@@ -11,9 +11,10 @@ import { useAuth } from '@/components/AuthProvider';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Settings, Target, Crown, Languages } from 'lucide-react';
+import { Settings, Target, Crown, Languages, Lock } from 'lucide-react';
 import { PayPalCheckout } from '@/components/PayPalCheckout';
 import { useSubscription } from '@/components/SubscriptionGuard';
+import { Input } from '@/components/ui/input';
 
 const Profile: React.FC = () => {
   const { user } = useAuth();
@@ -28,7 +29,9 @@ const Profile: React.FC = () => {
   const [sourceLanguage, setSourceLanguage] = useState("hebrew");
   const [targetLanguage, setTargetLanguage] = useState("english");
   const [showUpgrade, setShowUpgrade] = useState(false);
-
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [isGoogleUser, setIsGoogleUser] = useState(false);
   const englishLevels = [
     { id: "beginner", label: t('level.beginner') },
     { id: "elementary", label: t('level.elementary') },
@@ -59,6 +62,12 @@ const Profile: React.FC = () => {
       navigate('/auth');
       return;
     }
+    
+    // Check if user signed in with Google
+    const checkGoogleUser = user.app_metadata?.provider === 'google' || 
+                            user.identities?.some(i => i.provider === 'google');
+    setIsGoogleUser(checkGoogleUser || false);
+    
     (async () => {
       const { count: learnedCount } = await supabase
         .from('learned_words')
@@ -170,6 +179,61 @@ const Profile: React.FC = () => {
       toast({
         title: t('common.error'),
         description: isRTL ? "לא ניתן לשמור את ההגדרות. נסה שוב." : "Could not save settings. Try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handlePasswordUpdate = async () => {
+    if (!newPassword || !confirmPassword) {
+      toast({
+        title: t('common.error'),
+        description: isRTL ? "אנא מלא את כל השדות" : "Please fill in all fields",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    if (newPassword !== confirmPassword) {
+      toast({
+        title: t('common.error'),
+        description: isRTL ? "הסיסמאות אינן תואמות" : "Passwords do not match",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    if (newPassword.length < 6) {
+      toast({
+        title: t('common.error'),
+        description: isRTL ? "הסיסמה חייבת להכיל לפחות 6 תווים" : "Password must be at least 6 characters",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword
+      });
+      
+      if (error) throw error;
+      
+      toast({
+        title: isRTL ? "הצלחה!" : "Success!",
+        description: isRTL ? "הסיסמה עודכנה בהצלחה" : "Password updated successfully",
+      });
+      
+      setNewPassword('');
+      setConfirmPassword('');
+    } catch (error: any) {
+      console.error('Error updating password:', error);
+      toast({
+        title: t('common.error'),
+        description: error.message || (isRTL ? "לא ניתן לעדכן את הסיסמה. נסה שוב." : "Could not update password. Try again."),
         variant: "destructive"
       });
     } finally {
@@ -469,6 +533,54 @@ const Profile: React.FC = () => {
                 size="sm"
               >
                 {loading ? (isRTL ? 'שומר...' : 'Saving...') : (isRTL ? 'שמור העדפות' : 'Save Preferences')}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Password Update Section - for Google users or password change */}
+        <Card className="shadow-lg mt-6">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Lock className="h-5 w-5" />
+              {isRTL ? (isGoogleUser ? 'הגדר סיסמה' : 'עדכן סיסמה') : (isGoogleUser ? 'Set Password' : 'Update Password')}
+            </CardTitle>
+            <p className="text-sm text-muted-foreground">
+              {isRTL 
+                ? (isGoogleUser 
+                    ? 'הגדר סיסמה כדי להתחבר גם עם אימייל וסיסמה בנוסף לגוגל' 
+                    : 'שנה את הסיסמה שלך')
+                : (isGoogleUser 
+                    ? 'Set a password to also log in with email and password in addition to Google' 
+                    : 'Change your password')}
+            </p>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid gap-4 max-w-md">
+              <div className="space-y-2">
+                <Label htmlFor="new-password">{isRTL ? 'סיסמה חדשה' : 'New Password'}</Label>
+                <Input
+                  id="new-password"
+                  type="password"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  placeholder={isRTL ? 'הזן סיסמה חדשה' : 'Enter new password'}
+                  minLength={6}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="confirm-password">{isRTL ? 'אשר סיסמה' : 'Confirm Password'}</Label>
+                <Input
+                  id="confirm-password"
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder={isRTL ? 'אשר סיסמה' : 'Confirm password'}
+                  minLength={6}
+                />
+              </div>
+              <Button onClick={handlePasswordUpdate} disabled={loading} size="sm" className="w-fit">
+                {loading ? (isRTL ? 'שומר...' : 'Saving...') : (isRTL ? 'עדכן סיסמה' : 'Update Password')}
               </Button>
             </div>
           </CardContent>
