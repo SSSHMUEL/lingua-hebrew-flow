@@ -288,13 +288,19 @@ const Profile: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-secondary/5">
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
-        <h1 className="text-3xl font-bold text-center mb-8">{t('profile.title')}</h1>
+    <div className="min-h-screen" style={{ background: 'var(--gradient-hero)' }}>
+      <div className="container mx-auto px-4 py-12 max-w-4xl">
+        <div className="text-center mb-8">
+          <Badge className="mb-4 bg-primary/15 text-primary border-primary/20">
+            <Settings className="h-3 w-3 mr-1" />
+            {isRTL ? 'ניהול חשבון' : 'Account Management'}
+          </Badge>
+          <h1 className="text-4xl font-bold text-foreground">{t('profile.title')}</h1>
+        </div>
         
         <div className="grid md:grid-cols-2 gap-6">
           {/* Progress Card */}
-          <Card className="shadow-lg">
+          <Card className="glass-card border-white/10">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Target className="h-5 w-5" />
@@ -321,7 +327,7 @@ const Profile: React.FC = () => {
           </Card>
 
           {/* Subscription Status */}
-          <Card className={`shadow-lg ${isActive ? 'border-green-500' : 'border-border'}`}>
+          <Card className={`glass-card ${isActive ? 'border-green-500/50' : 'border-white/10'}`}>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Crown className={`h-5 w-5 ${isActive ? 'text-green-500' : isTrialing ? 'text-primary' : 'text-destructive'}`} />
@@ -363,7 +369,7 @@ const Profile: React.FC = () => {
 
         {/* Upgrade Section */}
         {showUpgrade && (
-          <Card className="shadow-lg mt-6 border-primary">
+          <Card className="glass-card mt-6 border-primary/30">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Crown className="h-5 w-5 text-primary" />
@@ -383,7 +389,7 @@ const Profile: React.FC = () => {
         )}
 
         {/* Language Settings */}
-        <Card className="shadow-lg mt-6">
+        <Card className="glass-card border-white/10 mt-6">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Languages className="h-5 w-5" />
