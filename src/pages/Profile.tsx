@@ -276,11 +276,11 @@ const Profile: React.FC = () => {
                 
                 {!isActive && (
                   <Button 
-                    className="w-full gap-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white border-0" 
+                    className="w-full gap-2 bg-gradient-to-r from-[#4A8ECC] to-[#6BA3D6] hover:from-[#3A7EBC] hover:to-[#5B93C6] text-white border-0 font-semibold py-3 rounded-full" 
                     onClick={() => setShowUpgrade(!showUpgrade)}
                   >
                     <Crown className="w-4 h-4" />
-                    {showUpgrade ? (isRTL ? "סגור" : "Close") : (isRTL ? "שדרג לפרימיום" : "Upgrade to Premium")}
+                    {showUpgrade ? (isRTL ? "סגור" : "Close") : (isRTL ? "שדרג עכשיו" : "Upgrade Now")}
                   </Button>
                 )}
               </div>
