@@ -16,8 +16,17 @@ const Practice: React.FC = () => {
   }, [isRTL]);
 
   return (
-    <div className="min-h-screen" style={{ background: 'var(--gradient-hero)' }}>
-      <div className="container mx-auto px-4 py-12 max-w-4xl">
+    <div className="min-h-screen relative" style={{ background: 'var(--gradient-hero)' }}>
+      {/* Fixed background effect - Orange glow on right side (weaker than homepage) */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
+        <div 
+          className="absolute top-1/2 -translate-y-1/2 -right-[150px] w-[600px] h-[100vh] rounded-full blur-[180px]"
+          style={{ background: 'hsl(25 85% 45% / 0.35)' }}
+        />
+        <div className="absolute top-1/4 left-1/4 w-[300px] h-[300px] bg-primary/10 rounded-full blur-[120px]" />
+      </div>
+      
+      <div className="container mx-auto px-4 py-12 max-w-4xl relative z-10">
         {/* Header */}
         <div className="text-center mb-12">
           <Badge className="mb-4 bg-primary/15 text-primary border-primary/20">
