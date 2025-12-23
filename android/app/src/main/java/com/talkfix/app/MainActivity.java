@@ -1,8 +1,10 @@
 package com.talkfix.app;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Settings;
@@ -12,17 +14,22 @@ import android.util.Log;
 import android.app.AlertDialog;
 import android.view.View;
 import android.widget.ImageButton;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import com.getcapacitor.BridgeActivity;
 import android.widget.FrameLayout;
 import android.view.Gravity;
 import android.graphics.drawable.GradientDrawable;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
+import android.webkit.PermissionRequest;
+import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 
 public class MainActivity extends BridgeActivity {
     private static final String TAG = "MainActivity";
     private static final String SETTINGS_BTN_TAG = "tlk_settings_btn";
+    private static final int PERMISSION_REQUEST_MICROPHONE = 123;
     // Onboarding prefs keys (shared with SettingsManager)
     private static final String PREFS_NAME = "tlkfix_prefs";
     private static final String KEY_ONBOARD_SHOWN = "onboard_shown";
@@ -36,6 +43,32 @@ public class MainActivity extends BridgeActivity {
 
         super.onCreate(savedInstanceState);
 
+        // Configure WebView for Speech Recognition
+        try {
+            WebView webView = getBridge().getWebView();
+            if (webView != null) {
+                // Allow media playback without user gesture
+                webView.getSettings().setMediaPlaybackRequiresUserGesture(false);
+                
+                // Handle permission requests from web content
+                webView.setWebChromeClient(new WebChromeClient() {
+                    @Override
+                    public void onPermissionRequest(PermissionRequest request) {
+                        String[] resources = request.getResources();
+                        for (String resource : resources) {
+                            if (PermissionRequest.RESOURCE_AUDIO_CAPTURE.equals(resource)) {
+                                request.grant(new String[]{PermissionRequest.RESOURCE_AUDIO_CAPTURE});
+                                return;
+                            }
+                        }
+                        super.onPermissionRequest(request);
+                    }
+                });
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error configuring WebView for speech recognition", e);
+        }
+
         // Run first-run onboarding to offer enabling captions (user must consent)
         runOnUiThread(this::runOnboardingIfNeeded);
 
@@ -48,6 +81,21 @@ public class MainActivity extends BridgeActivity {
         Intent intent = getIntent();
         if (intent != null && intent.getData() != null) {
             Log.d(TAG, "onCreate: Launched with URI: " + intent.getData().toString());
+        }
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        checkAndRequestMicrophonePermission();
+    }
+
+    private void checkAndRequestMicrophonePermission() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) 
+                != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.RECORD_AUDIO},
+                    PERMISSION_REQUEST_MICROPHONE);
         }
     }
 

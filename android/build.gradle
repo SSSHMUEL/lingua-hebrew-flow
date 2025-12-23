@@ -25,6 +25,43 @@ allprojects {
     }
 }
 
+// This block forces all subprojects (including capacitor plugins in node_modules)
+// to use specific versions of libraries to ensure compatibility.
+subprojects {
+    afterEvaluate { project ->
+        if (project.hasProperty("android")) {
+            android {
+                compileOptions {
+                    sourceCompatibility JavaVersion.VERSION_17
+                    targetCompatibility JavaVersion.VERSION_17
+                }
+            }
+        }
+        
+        // Force Kotlin tasks to use JVM target 17 to match Java compatibility
+        project.tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
+            kotlinOptions {
+                jvmTarget = "17"
+            }
+        }
+
+        project.configurations.all {
+            resolutionStrategy.eachDependency { details ->
+                // Force kotlin-stdlib version to match project kotlin version
+                if (details.requested.group == 'org.jetbrains.kotlin' && details.requested.name.startsWith('kotlin-stdlib')) {
+                    details.useVersion rootProject.ext.kotlin_version
+                }
+                
+                // Force kotlinx-coroutines to a version compatible with Kotlin 1.9
+                // Version 1.10.x requires Kotlin 2.0+, causing metadata errors.
+                if (details.requested.group == 'org.jetbrains.kotlinx' && details.requested.name.startsWith('kotlinx-coroutines')) {
+                    details.useVersion '1.8.1'
+                }
+            }
+        }
+    }
+}
+
 task clean(type: Delete) {
     delete rootProject.buildDir
 }
