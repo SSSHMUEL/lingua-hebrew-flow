@@ -26,12 +26,13 @@ const Flashcards: React.FC = () => {
   const [showBack, setShowBack] = useState(false);
   const [loading, setLoading] = useState(true);
   const current = words[index];
+  const isRTL = true; // Can be connected to language context later
 
   useEffect(() => {
-    document.title = 'כרטיסיות אוצר מילים | TOLKFIX';
+    document.title = isRTL ? 'כרטיסיות אוצר מילים | TALK FIX' : 'Vocabulary Flashcards | TALK FIX';
     const meta = document.querySelector('meta[name="description"]');
-    if (meta) meta.setAttribute('content', 'תרגלו כרטיסיות באנגלית-עברית: למידה מהירה עם הגייה, דוגמאות והתקדמות אישית');
-  }, []);
+    if (meta) meta.setAttribute('content', isRTL ? 'תרגלו כרטיסיות באנגלית-עברית: למידה מהירה עם הגייה, דוגמאות והתקדמות אישית' : 'Practice English-Hebrew flashcards: fast learning with pronunciation, examples and personal progress');
+  }, [isRTL]);
 
   useEffect(() => {
     if (!user) {
