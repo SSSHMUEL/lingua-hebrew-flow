@@ -22,38 +22,46 @@ export const useDailyLimit = (userId: string | undefined) => {
 
   const checkSubscriptionStatus = useCallback(async (): Promise<boolean> => {
     if (!userId) return false;
-    
-    const { data } = await supabase
-      .from('subscriptions')
-      .select('status, current_period_end')
-      .eq('user_id', userId)
-      .single();
-    
-    if (!data) return false;
-    
-    // User is premium if status is 'active' and period hasn't ended
-    if (data.status === 'active' && data.current_period_end) {
-      const endDate = new Date(data.current_period_end);
-      return endDate > new Date();
+
+    try {
+      const { data, error } = await supabase
+        .from('subscriptions')
+        .select('status, current_period_end')
+        .eq('user_id', userId)
+        .maybeSingle(); // maybeSingle instead of single to avoid error on empty
+
+      if (error) {
+        console.error('Subscription check error:', error);
+        return false;
+      }
+
+      if (!data) return false;
+
+      if (data.status === 'active' && data.current_period_end) {
+        const endDate = new Date(data.current_period_end);
+        return endDate > new Date();
+      }
+    } catch (err) {
+      console.error('Failed to check subscription:', err);
     }
-    
+
     return false;
   }, [userId]);
 
   const countWordsLearnedToday = useCallback(async (): Promise<number> => {
     if (!userId) return 0;
-    
+
     // Get today's start in UTC
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const todayISO = today.toISOString();
-    
+
     const { count } = await supabase
       .from('learned_words')
       .select('*', { count: 'exact', head: true })
       .eq('user_id', userId)
       .gte('learned_at', todayISO);
-    
+
     return count || 0;
   }, [userId]);
 

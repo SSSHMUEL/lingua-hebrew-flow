@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/components/AuthProvider';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { Volume2, ArrowLeft, ArrowRight, CheckCircle, FlipHorizontal2, Sparkles } from 'lucide-react';
 
 interface VocabularyWord {
@@ -21,18 +22,25 @@ interface VocabularyWord {
 const Flashcards: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { language, isRTL, t } = useLanguage();
+  const isHebrew = language === 'he';
+
   const [words, setWords] = useState<VocabularyWord[]>([]);
   const [index, setIndex] = useState(0);
   const [showBack, setShowBack] = useState(false);
   const [loading, setLoading] = useState(true);
   const current = words[index];
-  const isRTL = true;
 
   useEffect(() => {
-    document.title = isRTL ? 'כרטיסיות אוצר מילים | TALK FIX' : 'Vocabulary Flashcards | TALK FIX';
+    document.title = isHebrew ? 'כרטיסיות אוצר מילים | TALK FIX' : 'Vocabulary Flashcards | TALK FIX';
     const meta = document.querySelector('meta[name="description"]');
-    if (meta) meta.setAttribute('content', isRTL ? 'תרגלו כרטיסיות באנגלית-עברית: למידה מהירה עם הגייה, דוגמאות והתקדמות אישית' : 'Practice English-Hebrew flashcards: fast learning with pronunciation, examples and personal progress');
-  }, [isRTL]);
+    if (meta) {
+      meta.setAttribute('content', isHebrew
+        ? 'תרגלו כרטיסיות באנגלית-עברית: למידה מהירה עם הגייה, דוגמאות והתקדמות אישית'
+        : 'Practice English-Hebrew flashcards: fast learning with pronunciation, examples and personal progress'
+      );
+    }
+  }, [isHebrew]);
 
   useEffect(() => {
     if (!user) {
@@ -41,19 +49,31 @@ const Flashcards: React.FC = () => {
     }
     (async () => {
       setLoading(true);
+      // Fetch ALL words for practice, regardless of learned status
       const { data, error } = await supabase
         .from('vocabulary_words')
         .select('*')
         .order('category', { ascending: true })
         .order('created_at', { ascending: true });
+
       if (error) {
-        toast({ title: 'שגיאה', description: 'טעינת הכרטיסיות נכשלה', variant: 'destructive' });
+        console.error('Error fetching words:', error);
+        toast({
+          title: isHebrew ? 'שגיאה' : 'Error',
+          description: isHebrew ? 'טעינת הכרטיסיות נכשלה' : 'Failed to load flashcards',
+          variant: 'destructive'
+        });
       } else {
-        setWords(data || []);
+        if (data && data.length > 0) {
+          setWords(data);
+        } else {
+          // If no words found, maybe fetch some defaults or show specific message
+          console.log('No words found in database');
+        }
       }
       setLoading(false);
     })();
-  }, [user, navigate]);
+  }, [user, navigate, isHebrew]);
 
   const speak = () => {
     if (current && 'speechSynthesis' in window) {
@@ -72,9 +92,16 @@ const Flashcards: React.FC = () => {
       word_pair: current.word_pair || `${current.hebrew_translation} - ${current.english_word}`,
     });
     if (error) {
-      toast({ title: 'שגיאה', description: 'לא ניתן לסמן כנלמד', variant: 'destructive' });
+      toast({
+        title: isHebrew ? 'שגיאה' : 'Error',
+        description: isHebrew ? 'לא ניתן לסמן כנלמד' : 'Could not mark as learned',
+        variant: 'destructive'
+      });
     } else {
-      toast({ title: 'נשמר', description: 'המילה נוספה למילים הנלמדות' });
+      toast({
+        title: isHebrew ? 'נשמר' : 'Saved',
+        description: isHebrew ? 'המילה נוספה למילים הנלמדות' : 'The word was added to learned words'
+      });
     }
   };
 
@@ -92,7 +119,7 @@ const Flashcards: React.FC = () => {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--gradient-hero)' }}>
-        <p className="text-muted-foreground">טוען כרטיסיות...</p>
+        <p className="text-muted-foreground">{isHebrew ? 'טוען כרטיסיות...' : 'Loading flashcards...'}</p>
       </div>
     );
   }
@@ -102,8 +129,10 @@ const Flashcards: React.FC = () => {
       <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--gradient-hero)' }}>
         <div className="text-center space-y-4">
           <CheckCircle className="w-12 h-12 text-primary mx-auto" />
-          <p className="text-lg">אין כרטיסיות להצגה כעת</p>
-          <Button onClick={() => navigate('/learn')} className="glow-primary">חזרה ללמידה</Button>
+          <p className="text-lg">{isHebrew ? 'אין כרטיסיות להצגה כעת' : 'No flashcards to display at this time'}</p>
+          <Button onClick={() => navigate('/learn')} className="glow-primary">
+            {isHebrew ? 'חזרה ללמידה' : 'Back to Learning'}
+          </Button>
         </div>
       </div>
     );
@@ -113,23 +142,23 @@ const Flashcards: React.FC = () => {
     <div className="min-h-screen relative overflow-hidden" style={{ background: 'var(--gradient-hero)' }}>
       {/* Fixed background effect - Orange glow on right, Cyan on left */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
-        <div 
+        <div
           className="absolute top-1/2 -translate-y-1/2 -right-[150px] w-[600px] h-[100vh] rounded-full blur-[180px]"
           style={{ background: 'hsl(25 85% 45% / 0.3)' }}
         />
-        <div 
+        <div
           className="absolute top-1/2 -translate-y-1/2 -left-[150px] w-[500px] h-[90vh] rounded-full blur-[180px]"
           style={{ background: 'hsl(190 85% 55% / 0.25)' }}
         />
       </div>
-      
+
       <div className="container mx-auto px-4 py-8 max-w-3xl relative z-10">
         <div className="text-center mb-8">
           <Badge className="mb-4 bg-primary/20 text-primary border-primary/30">
-            <Sparkles className="h-3 w-3 mr-1" />
+            <Sparkles className={`h-3 w-3 ${isRTL ? 'ml-1' : 'mr-1'}`} />
             FLASHCARDS
           </Badge>
-          <h1 className="text-3xl font-bold">כרטיסיות אוצר מילים</h1>
+          <h1 className="text-3xl font-bold">{isHebrew ? 'כרטיסיות אוצר מילים' : 'Vocabulary Flashcards'}</h1>
           <Badge className="mt-2 glass-card border-white/20">{current.category}</Badge>
         </div>
 
@@ -140,29 +169,29 @@ const Flashcards: React.FC = () => {
             </CardTitle>
           </CardHeader>
           <CardContent className="text-center space-y-6">
-            <div className="flex justify-center gap-3 flex-wrap">
-              <Button 
-                variant="outline" 
+            <div className={`flex justify-center gap-3 flex-wrap ${isRTL ? 'flex-row' : 'flex-row'}`}>
+              <Button
+                variant="outline"
                 onClick={() => setShowBack((v) => !v)}
                 className="glass-button border-white/20"
               >
-                <FlipHorizontal2 className="h-5 w-5 ml-2" />
-                היפוך
+                <FlipHorizontal2 className={`h-5 w-5 ${isRTL ? 'ml-2' : 'mr-2'}`} />
+                {isHebrew ? 'היפוך' : 'Flip'}
               </Button>
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 onClick={speak}
                 className="glass-button border-white/20"
               >
-                <Volume2 className="h-5 w-5 ml-2" />
-                השמעה
+                <Volume2 className={`h-5 w-5 ${isRTL ? 'ml-2' : 'mr-2'}`} />
+                {isHebrew ? 'השמעה' : 'Speak'}
               </Button>
-              <Button 
+              <Button
                 onClick={markLearned}
                 className="bg-gradient-to-r from-accent to-accent/80 glow-accent"
               >
-                <CheckCircle className="h-5 w-5 ml-2" />
-                סמן כנלמד
+                <CheckCircle className={`h-5 w-5 ${isRTL ? 'ml-2' : 'mr-2'}`} />
+                {isHebrew ? 'סמן כנלמד' : 'Mark as Learned'}
               </Button>
             </div>
 
@@ -170,23 +199,25 @@ const Flashcards: React.FC = () => {
               <p className="text-muted-foreground">{current.example_sentence}</p>
             </div>
 
-            <div className="flex justify-between items-center">
-              <Button 
-                variant="outline" 
-                onClick={prev} 
+            <div className={`flex justify-between items-center ${isRTL ? 'flex-row' : 'flex-row-reverse'}`}>
+              <Button
+                variant="outline"
+                onClick={prev}
                 disabled={index === 0}
                 className="glass-button border-white/20"
               >
-                <ArrowLeft className="h-5 w-5 ml-2" /> קודם
+                <ArrowLeft className={`h-5 w-5 ${isRTL ? 'ml-2' : 'mr-2'}`} />
+                {isHebrew ? 'קודם' : 'Prev'}
               </Button>
               <span className="text-sm text-muted-foreground">{index + 1} / {words.length}</span>
-              <Button 
-                variant="outline" 
-                onClick={next} 
+              <Button
+                variant="outline"
+                onClick={next}
                 disabled={index === words.length - 1}
                 className="glass-button border-white/20"
               >
-                הבא <ArrowRight className="h-5 w-5 mr-2" />
+                {isHebrew ? 'הבא' : 'Next'}
+                <ArrowRight className={`h-5 w-5 ${isRTL ? 'mr-2' : 'ml-2'}`} />
               </Button>
             </div>
           </CardContent>
@@ -195,5 +226,6 @@ const Flashcards: React.FC = () => {
     </div>
   );
 };
+
 
 export default Flashcards;

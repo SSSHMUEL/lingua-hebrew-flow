@@ -21,7 +21,7 @@ const hebrewTranslations: Translations = {
   'nav.subtitles': 'כתוביות AI',
   'nav.login': 'התחברות',
   'nav.logout': 'התנתקות',
-  
+
   // Common
   'common.loading': 'טוען...',
   'common.error': 'שגיאה',
@@ -35,14 +35,14 @@ const hebrewTranslations: Translations = {
   'common.finish': 'סיום',
   'common.search': 'חיפוש',
   'common.noResults': 'לא נמצאו תוצאות',
-  
+
   // Auth
   'auth.login': 'התחברות',
   'auth.signup': 'הרשמה',
   'auth.email': 'אימייל',
   'auth.password': 'סיסמה',
   'auth.forgotPassword': 'שכחת סיסמה?',
-  
+
   // Home
   'home.title': 'למד אנגלית',
   'home.subtitle': 'ברמה מקצועית',
@@ -60,7 +60,7 @@ const hebrewTranslations: Translations = {
   'home.nextLesson': 'השיעור הבא המומלץ',
   'home.dailyExercises': 'תרגילים יומיים',
   'home.startLesson': 'התחל שיעור',
-  
+
   // Learn
   'learn.title': 'שיעור',
   'learn.lesson': 'שיעור',
@@ -78,7 +78,7 @@ const hebrewTranslations: Translations = {
   'learn.progress': 'התקדמות',
   'learn.outOf': 'מתוך',
   'learn.wordsLearned': 'מילים נלמדו',
-  
+
   // Learned
   'learned.title': 'מילים נלמדות',
   'learned.noWords': 'עוד לא למדת מילים',
@@ -90,7 +90,7 @@ const hebrewTranslations: Translations = {
   'learned.removed': 'הוסר',
   'learned.wordRemoved': 'המילה הוסרה מהרשימה',
   'learned.continueLearning': 'המשך ללמוד',
-  
+
   // Practice
   'practice.title': 'מרכז התרגול',
   'practice.flashcardsTitle': 'כרטיסיות אוצר מילים',
@@ -99,14 +99,14 @@ const hebrewTranslations: Translations = {
   'practice.quizDesc': 'בדקו את עצמכם עם שאלות רב-ברירה',
   'practice.toFlashcards': 'לכרטיסיות',
   'practice.toQuiz': 'לשאלון',
-  
+
   // Flashcards
   'flashcards.title': 'כרטיסיות אוצר מילים',
   'flashcards.flip': 'היפוך',
   'flashcards.listen': 'השמעה',
   'flashcards.markLearned': 'סמן כנלמד',
   'flashcards.noCards': 'אין כרטיסיות להצגה כעת',
-  
+
   // Quiz
   'quiz.title': 'שאלון רב-ברירה',
   'quiz.chooseCorrect': 'בחרו את התרגום הנכון',
@@ -116,7 +116,7 @@ const hebrewTranslations: Translations = {
   'quiz.restart': 'אתחל',
   'quiz.notEnoughWords': 'אין מספיק מילים כדי ליצור שאלון',
   'quiz.needAtLeast': 'נדרשות לפחות 4 מילים',
-  
+
   // Onboarding
   'onboarding.languageTitle': 'באיזה כיוון תרצה ללמוד?',
   'onboarding.languageDesc': 'בחר את כיוון הלמידה המועדף עליך',
@@ -133,7 +133,7 @@ const hebrewTranslations: Translations = {
   'onboarding.complete': 'בואו נתחיל!',
   'onboarding.welcome': 'ברוך הבא!',
   'onboarding.signupComplete': 'ההרשמה הושלמה בהצלחה',
-  
+
   // Levels
   'level.beginner': 'מתחיל',
   'level.beginnerDesc': 'אני רק מתחיל ללמוד',
@@ -145,7 +145,7 @@ const hebrewTranslations: Translations = {
   'level.upperIntermediateDesc': 'אני מבין רוב התוכן אבל צריך לשפר',
   'level.advanced': 'מתקדם',
   'level.advancedDesc': 'אני שולט בשפה ברמה גבוהה',
-  
+
   // Topics
   'topic.business': 'עסקים',
   'topic.travel': 'טיולים',
@@ -157,7 +157,7 @@ const hebrewTranslations: Translations = {
   'topic.health': 'בריאות',
   'topic.education': 'חינוך',
   'topic.shopping': 'קניות',
-  
+
   // Profile
   'profile.title': 'פרופיל',
   'profile.settings': 'הגדרות',
@@ -167,8 +167,8 @@ const hebrewTranslations: Translations = {
   'profile.topics': 'נושאים',
   'profile.accountLevel': 'רמת חשבון',
   'profile.premium': 'פרימיום',
-  'profile.inactive': 'לא פעיל',
-  'profile.upgradeToPro': 'שדרג לפרו',
+  'profile.inactive': 'חינמית',
+  'profile.upgradeToPro': 'שדרג עכשיו',
   'profile.authenticatedUser': 'משתמש מחובר',
   'profile.wordsLearned': 'מילים נלמדו',
   'profile.practice': 'תרגול',
@@ -204,7 +204,7 @@ const englishTranslations: Translations = {
   'nav.subtitles': 'AI Subtitles',
   'nav.login': 'Login',
   'nav.logout': 'Logout',
-  
+
   // Common
   'common.loading': 'Loading...',
   'common.error': 'Error',
@@ -218,14 +218,14 @@ const englishTranslations: Translations = {
   'common.finish': 'Finish',
   'common.search': 'Search',
   'common.noResults': 'No results found',
-  
+
   // Auth
   'auth.login': 'Login',
   'auth.signup': 'Sign Up',
   'auth.email': 'Email',
   'auth.password': 'Password',
   'auth.forgotPassword': 'Forgot password?',
-  
+
   // Home
   'home.title': 'Learn Hebrew',
   'home.subtitle': 'Like a Pro',
@@ -243,7 +243,7 @@ const englishTranslations: Translations = {
   'home.nextLesson': 'Recommended Next Lesson',
   'home.dailyExercises': 'Daily Exercises',
   'home.startLesson': 'Start Lesson',
-  
+
   // Learn
   'learn.title': 'Lesson',
   'learn.lesson': 'Lesson',
@@ -261,7 +261,7 @@ const englishTranslations: Translations = {
   'learn.progress': 'Progress',
   'learn.outOf': 'of',
   'learn.wordsLearned': 'words learned',
-  
+
   // Learned
   'learned.title': 'Learned Words',
   'learned.noWords': 'You haven\'t learned any words yet',
@@ -273,7 +273,7 @@ const englishTranslations: Translations = {
   'learned.removed': 'Removed',
   'learned.wordRemoved': 'Word removed from list',
   'learned.continueLearning': 'Continue Learning',
-  
+
   // Practice
   'practice.title': 'Practice Center',
   'practice.flashcardsTitle': 'Vocabulary Flashcards',
@@ -282,14 +282,14 @@ const englishTranslations: Translations = {
   'practice.quizDesc': 'Test yourself with multiple choice questions',
   'practice.toFlashcards': 'To Flashcards',
   'practice.toQuiz': 'To Quiz',
-  
+
   // Flashcards
   'flashcards.title': 'Vocabulary Flashcards',
   'flashcards.flip': 'Flip',
   'flashcards.listen': 'Listen',
   'flashcards.markLearned': 'Mark as Learned',
   'flashcards.noCards': 'No flashcards to display',
-  
+
   // Quiz
   'quiz.title': 'Multiple Choice Quiz',
   'quiz.chooseCorrect': 'Choose the correct translation',
@@ -299,7 +299,7 @@ const englishTranslations: Translations = {
   'quiz.restart': 'Restart',
   'quiz.notEnoughWords': 'Not enough words to create a quiz',
   'quiz.needAtLeast': 'At least 4 words required',
-  
+
   // Onboarding
   'onboarding.languageTitle': 'Which direction do you want to learn?',
   'onboarding.languageDesc': 'Choose your preferred learning direction',
@@ -316,7 +316,7 @@ const englishTranslations: Translations = {
   'onboarding.complete': 'Let\'s Start!',
   'onboarding.welcome': 'Welcome!',
   'onboarding.signupComplete': 'Registration completed successfully',
-  
+
   // Levels
   'level.beginner': 'Beginner',
   'level.beginnerDesc': 'I\'m just starting to learn',
@@ -328,7 +328,7 @@ const englishTranslations: Translations = {
   'level.upperIntermediateDesc': 'I understand most content but need improvement',
   'level.advanced': 'Advanced',
   'level.advancedDesc': 'I have high proficiency in the language',
-  
+
   // Topics
   'topic.business': 'Business',
   'topic.travel': 'Travel',
@@ -340,7 +340,7 @@ const englishTranslations: Translations = {
   'topic.health': 'Health',
   'topic.education': 'Education',
   'topic.shopping': 'Shopping',
-  
+
   // Profile
   'profile.title': 'Profile',
   'profile.settings': 'Settings',
@@ -350,8 +350,8 @@ const englishTranslations: Translations = {
   'profile.topics': 'Topics',
   'profile.accountLevel': 'Account Level',
   'profile.premium': 'Premium',
-  'profile.inactive': 'Inactive',
-  'profile.upgradeToPro': 'Upgrade to Pro',
+  'profile.inactive': 'Free',
+  'profile.upgradeToPro': 'Upgrade Now',
   'profile.authenticatedUser': 'Authenticated User',
   'profile.wordsLearned': 'words learned',
   'profile.practice': 'Practice',
@@ -411,7 +411,7 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
     const detectLocation = async () => {
       // Skip if already initialized or user is logged in (will use profile settings)
       if (initialized || user) return;
-      
+
       const savedLang = localStorage.getItem('ui-language');
       if (savedLang) {
         setInitialized(true);
@@ -422,7 +422,7 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
         // Use a free geolocation API
         const response = await fetch('https://ipapi.co/json/');
         const data = await response.json();
-        
+
         // If user is in Israel, use Hebrew; otherwise use English
         const detectedLang: LanguageCode = data.country_code === 'IL' ? 'he' : 'en';
         setLanguageState(detectedLang);
@@ -430,7 +430,7 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
       } catch (error) {
         console.log('Could not detect location, defaulting to Hebrew');
       }
-      
+
       setInitialized(true);
     };
 
@@ -451,10 +451,10 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
       if (profile) {
         const sourceLang = profile.source_language === 'english' ? 'en' : 'he';
         const targetLang = profile.target_language === 'english' ? 'en' : 'he';
-        
+
         setSourceLanguage(sourceLang);
         setTargetLanguage(targetLang);
-        
+
         // If user's source language is English, show the UI in English
         setLanguageState(sourceLang);
         localStorage.setItem('ui-language', sourceLang);
@@ -471,7 +471,7 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
     // Update document direction
     document.documentElement.dir = lang === 'he' ? 'rtl' : 'ltr';
     document.documentElement.lang = lang;
-    
+
     // Save to profile if user is logged in (fire and forget)
     if (user) {
       (async () => {
@@ -519,14 +519,14 @@ export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }
   }, [language, isRTL]);
 
   return (
-    <LanguageContext.Provider value={{ 
-      language, 
-      sourceLanguage, 
-      targetLanguage, 
-      setLanguage, 
+    <LanguageContext.Provider value={{
+      language,
+      sourceLanguage,
+      targetLanguage,
+      setLanguage,
       setLearningDirection,
-      t, 
-      isRTL 
+      t,
+      isRTL
     }}>
       {children}
     </LanguageContext.Provider>

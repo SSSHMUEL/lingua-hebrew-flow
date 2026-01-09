@@ -11,6 +11,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { useDailyLimit } from '@/hooks/use-daily-limit';
 import { useSpeechRecognition, fuzzyMatch } from '@/hooks/use-speech-recognition';
+import { useLanguage } from '@/contexts/LanguageContext';
 import { BookOpen, Volume2, CheckCircle, ArrowLeft, ArrowRight, Crown, Lock, Mic, MicOff, CheckCircle2, Sparkles } from 'lucide-react';
 import {
   AlertDialog,
@@ -36,6 +37,9 @@ interface VocabularyWord {
 export const Learn: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { language, isRTL, t } = useLanguage();
+  const isHebrew = language === 'he';
+
   const [currentWord, setCurrentWord] = useState<VocabularyWord | null>(null);
   const [categoryWords, setCategoryWords] = useState<VocabularyWord[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -43,7 +47,7 @@ export const Learn: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [currentCategory, setCurrentCategory] = useState<string>('');
   const [showUpgradeDialog, setShowUpgradeDialog] = useState(false);
-  
+
   // Speech Practice Mode states
   const [speechPracticeMode, setSpeechPracticeMode] = useState(false);
   const [speechSuccess, setSpeechSuccess] = useState(false);
@@ -54,18 +58,20 @@ export const Learn: React.FC = () => {
   // Speech recognition hook
   const handleSpeechResult = useCallback((transcript: string) => {
     if (!currentWord || !speechPracticeMode) return;
-    
+
     const isMatch = fuzzyMatch(transcript, currentWord.english_word);
-    
+
     if (isMatch) {
       setSpeechSuccess(true);
       setShowNextAfterSuccess(true);
-      
+
       toast({
-        title: "Correct! 🎉",
-        description: `You said "${transcript}" - Perfect pronunciation!`,
+        title: isHebrew ? "מצוין! 🎉" : "Correct! 🎉",
+        description: isHebrew
+          ? `אמרת "${transcript}" - הגייה מושלמת!`
+          : `You said "${transcript}" - Perfect pronunciation!`,
       });
-      
+
       // Auto-advance after 1.5 seconds
       setTimeout(() => {
         if (speechPracticeMode) {
@@ -75,15 +81,15 @@ export const Learn: React.FC = () => {
         }
       }, 1500);
     }
-  }, [currentWord, speechPracticeMode]);
+  }, [currentWord, speechPracticeMode, isHebrew]);
 
   const handleSpeechError = useCallback((error: string) => {
     toast({
-      title: "Speech Error",
+      title: isHebrew ? "שגיאת דיבור" : "Speech Error",
       description: error,
       variant: "destructive",
     });
-  }, []);
+  }, [isHebrew]);
 
   const {
     isListening,
@@ -109,13 +115,13 @@ export const Learn: React.FC = () => {
       navigate('/auth');
       return;
     }
-    
+
     loadLearningData();
   }, [user, navigate]);
 
   const loadLearningData = async () => {
     setLoading(true);
-    
+
     try {
       // Get user's learned words
       const { data: learnedData } = await supabase
@@ -136,15 +142,15 @@ export const Learn: React.FC = () => {
       if (wordsData) {
         // Group words by category
         const categories = [...new Set(wordsData.map(word => word.category))];
-        
+
         // Find first category with unlearned words
         let targetCategory = '';
         let targetWords: VocabularyWord[] = [];
-        
+
         for (const category of categories) {
           const categoryWordsData = wordsData.filter(word => word.category === category);
           const unlearnedInCategory = categoryWordsData.filter(word => !learnedSet.has(word.id));
-          
+
           if (unlearnedInCategory.length > 0) {
             targetCategory = category;
             targetWords = categoryWordsData;
@@ -160,19 +166,19 @@ export const Learn: React.FC = () => {
 
         setCurrentCategory(targetCategory);
         setCategoryWords(targetWords);
-        
+
         // Find first unlearned word in category
         const firstUnlearnedIndex = targetWords.findIndex(word => !learnedSet.has(word.id));
         const startIndex = firstUnlearnedIndex >= 0 ? firstUnlearnedIndex : 0;
-        
+
         setCurrentIndex(startIndex);
         setCurrentWord(targetWords[startIndex]);
       }
     } catch (error) {
       console.error('Error loading learning data:', error);
       toast({
-        title: "שגיאה",
-        description: "לא ניתן לטעון את נתוני הלמידה",
+        title: isHebrew ? "שגיאה" : "Error",
+        description: isHebrew ? "לא ניתן לטעון את נתוני הלמידה" : "Could not load learning data",
         variant: "destructive"
       });
     } finally {
@@ -201,13 +207,15 @@ export const Learn: React.FC = () => {
       if (error) throw error;
 
       setLearnedWords(prev => new Set([...prev, currentWord.id]));
-      
+
       // Refresh daily limit count
       await refreshDailyLimit();
-      
+
       toast({
-        title: "מעולה!",
-        description: `למדת את המילה "${currentWord.english_word}"`
+        title: isHebrew ? "מעולה!" : "Excellent!",
+        description: isHebrew
+          ? `למדת את המילה "${currentWord.english_word}"`
+          : `You've learned the word "${currentWord.english_word}"`
       });
 
       // Move to next word
@@ -215,13 +223,15 @@ export const Learn: React.FC = () => {
     } catch (error: any) {
       if (error.code === '23505') {
         toast({
-          title: "כבר למדת",
-          description: "המילה הזאת כבר נמצאת ברשימת המילים הנלמדות שלך"
+          title: isHebrew ? "כבר למדת" : "Already learned",
+          description: isHebrew
+            ? "המילה הזאת כבר נמצאת ברשימת המילים הנלמדות שלך"
+            : "This word is already in your learned words list"
         });
       } else {
         toast({
-          title: "שגיאה",
-          description: "לא ניתן לסמן את המילה כנלמדת",
+          title: isHebrew ? "שגיאה" : "Error",
+          description: isHebrew ? "לא ניתן לסמן את המילה כנלמדת" : "Could not mark word as learned",
           variant: "destructive"
         });
       }
@@ -236,8 +246,10 @@ export const Learn: React.FC = () => {
     } else {
       // Finished category
       toast({
-        title: "כל הכבוד!",
-        description: `סיימת את הקטגוריה "${currentCategory}". עובר לקטגוריה הבאה...`
+        title: isHebrew ? "כל הכבוד!" : "Well done!",
+        description: isHebrew
+          ? `סיימת את הקטגוריה "${currentCategory}". עובר לקטגוריה הבאה...`
+          : `You've finished the category "${currentCategory}". Moving to the next one...`
       });
       setTimeout(() => {
         loadLearningData(); // Load next category
@@ -270,7 +282,7 @@ export const Learn: React.FC = () => {
       <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--gradient-hero)' }}>
         <div className="text-center">
           <BookOpen className="h-12 w-12 text-primary mx-auto mb-4 animate-pulse" />
-          <p className="text-lg text-muted-foreground">טוען את שיעור הלמידה...</p>
+          <p className="text-lg text-muted-foreground">{isHebrew ? 'טוען את שיעור הלמידה...' : 'Loading learning lesson...'}</p>
         </div>
       </div>
     );
@@ -281,10 +293,10 @@ export const Learn: React.FC = () => {
       <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--gradient-hero)' }}>
         <div className="text-center">
           <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold mb-2">כל הכבוד!</h2>
-          <p className="text-muted-foreground mb-4">למדת את כל המילים</p>
+          <h2 className="text-2xl font-bold mb-2">{isHebrew ? 'כל הכבוד!' : 'Well done!'}</h2>
+          <p className="text-muted-foreground mb-4">{isHebrew ? 'למדת את כל המילים' : 'You have learned all the words'}</p>
           <Button onClick={() => navigate('/learned')} className="glow-primary">
-            צפה במילים שלמדת
+            {isHebrew ? 'צפה במילים שלמדת' : 'View learned words'}
           </Button>
         </div>
       </div>
@@ -295,16 +307,16 @@ export const Learn: React.FC = () => {
     <div className="min-h-screen relative overflow-hidden" style={{ background: 'var(--gradient-hero)' }}>
       {/* Fixed background effect - Orange glow on right, Cyan on left */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
-        <div 
+        <div
           className="absolute top-1/2 -translate-y-1/2 -right-[150px] w-[600px] h-[100vh] rounded-full blur-[180px]"
           style={{ background: 'hsl(25 85% 45% / 0.3)' }}
         />
-        <div 
+        <div
           className="absolute top-1/2 -translate-y-1/2 -left-[150px] w-[500px] h-[90vh] rounded-full blur-[180px]"
           style={{ background: 'hsl(190 85% 55% / 0.25)' }}
         />
       </div>
-      
+
       <div className="container mx-auto px-4 py-8 relative z-10">
         <div className="max-w-4xl mx-auto">
           {/* Header */}
@@ -313,14 +325,14 @@ export const Learn: React.FC = () => {
               <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center glow-primary">
                 <BookOpen className="h-6 w-6 text-primary-foreground" />
               </div>
-              <div>
-                <h1 className="text-xl font-bold">שיעור פעיל</h1>
+              <div className={isRTL ? 'text-right' : 'text-left'}>
+                <h1 className="text-xl font-bold">{isHebrew ? 'שיעור פעיל' : 'Active Lesson'}</h1>
                 <p className="text-sm text-muted-foreground">{currentCategory}</p>
               </div>
             </div>
             <Badge className="glass-card border-primary/30 text-primary px-4 py-2">
-              <Sparkles className="h-4 w-4 mr-2" />
-              {categoryWords.length} / {currentIndex + 1} מילים
+              <Sparkles className={`h-4 w-4 ${isRTL ? 'ml-2' : 'mr-2'}`} />
+              {categoryWords.length} / {currentIndex + 1} {isHebrew ? 'מילים' : 'words'}
             </Badge>
           </div>
 
@@ -329,7 +341,9 @@ export const Learn: React.FC = () => {
             <div className="flex justify-between items-center mb-2">
               <span className="text-sm text-primary font-semibold">{Math.round(progress)}%</span>
               <span className="text-sm text-muted-foreground">
-                מילה {currentIndex + 1} מתוך {categoryWords.length}
+                {isHebrew
+                  ? `מילה ${currentIndex + 1} מתוך ${categoryWords.length}`
+                  : `Word ${currentIndex + 1} of ${categoryWords.length}`}
               </span>
             </div>
             <Progress value={progress} className="h-2" />
@@ -337,21 +351,23 @@ export const Learn: React.FC = () => {
 
           {/* Daily Limit Banner for Free Users */}
           {!isPremium && (
-            <div className="mb-6 glass-card rounded-xl p-4 border-primary/30">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
+            <div className="mb-6 glass-card rounded-[2rem] p-4 border-primary/30">
+              <div className="flex flex-row items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
                   <Lock className="h-5 w-5 text-primary" />
                   <span className="text-sm font-medium">
-                    מנוי חינמי: נותרו לך {remainingWords} מילים היום מתוך {dailyLimit}
+                    {isHebrew
+                      ? `מנוי חינמי: נותרו לך ${remainingWords} מילים היום מתוך ${dailyLimit}`
+                      : `Free Plan: You have ${remainingWords} words left today out of ${dailyLimit}`}
                   </span>
                 </div>
-                <Button 
-                  size="sm" 
+                <Button
+                  size="sm"
                   onClick={() => navigate('/pricing')}
-                  className="bg-gradient-to-r from-primary to-primary/80 text-primary-foreground glow-primary"
+                  className="bg-gradient-to-r from-primary to-primary/80 text-primary-foreground glow-primary shrink-0"
                 >
-                  <Crown className="h-4 w-4 ml-1" />
-                  שדרג לפרימיום
+                  <Crown className={`h-4 w-4 ${isRTL ? 'ml-1' : 'mr-1'}`} />
+                  {isHebrew ? 'שדרג לפרימיום' : 'Upgrade to Premium'}
                 </Button>
               </div>
             </div>
@@ -359,21 +375,23 @@ export const Learn: React.FC = () => {
 
           {/* Speech Practice Mode Toggle */}
           {isSupported && (
-            <div className="mb-6 glass-card rounded-xl p-4 border-accent/30">
-              <div className="flex items-center justify-between">
+            <div className="mb-6 glass-card rounded-[2rem] p-4 border-accent/30">
+              <div className="flex flex-row items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
                   <Mic className="h-5 w-5 text-accent" />
                   <div>
-                    <Label htmlFor="speech-mode" className="text-sm font-medium cursor-pointer">
-                      מצב תרגול דיבור
+                    <Label htmlFor="speech-mode" className="text-sm font-bold cursor-pointer text-foreground block">
+                      {isHebrew ? 'מצב תרגול דיבור' : 'Speech Practice Mode'}
                     </Label>
                     <p className="text-xs text-muted-foreground">
-                      אמור את המילה באנגלית כדי להתקדם
+                      {isHebrew ? 'אמור את המילה באנגלית כדי להתקדם' : 'Say the word in English to proceed'}
                     </p>
                   </div>
                 </div>
+
                 <Switch
                   id="speech-mode"
+                  dir={isRTL ? "rtl" : "ltr"}
                   checked={speechPracticeMode}
                   onCheckedChange={(checked) => {
                     setSpeechPracticeMode(checked);
@@ -383,6 +401,7 @@ export const Learn: React.FC = () => {
                       setShowNextAfterSuccess(false);
                     }
                   }}
+                  className="data-[state=checked]:bg-accent shadow-sm"
                 />
               </div>
             </div>
@@ -392,27 +411,28 @@ export const Learn: React.FC = () => {
           <Card className="glass-card border-white/10 mb-6 overflow-hidden">
             <CardHeader className="text-center pb-4">
               <Badge className="mx-auto mb-4 bg-primary/20 text-primary border-primary/30">
-                NEW DISCOVERY
+                {isHebrew ? 'מילה חדשה' : 'NEW DISCOVERY'}
               </Badge>
               <CardTitle className="text-5xl md:text-6xl font-bold text-foreground mb-6">
                 {currentWord.english_word}
               </CardTitle>
-              <Button 
+              <Button
                 onClick={speakWord}
-                variant="outline" 
+                variant="outline"
                 size="lg"
                 className="mx-auto glass-button border-white/20 hover:bg-white/10"
+                aria-label={isHebrew ? "השמעת המילה באנגלית" : "Speak English word"}
               >
-                <Volume2 className="h-5 w-5 ml-2" />
-                LISTEN NOW
+                <Volume2 className={`h-5 w-5 ${isRTL ? 'ml-2' : 'mr-2'}`} />
+                {isHebrew ? 'האזן עכשיו' : 'LISTEN NOW'}
               </Button>
             </CardHeader>
-            
+
             <CardContent className="space-y-6 pb-8">
               <div className="grid md:grid-cols-2 gap-4">
                 {/* Example sentence card */}
-                <div className="glass-card rounded-xl p-6 border-white/10">
-                  <p className="text-xs text-muted-foreground mb-2 uppercase tracking-wider">דוגמה לשימוש</p>
+                <div className={`glass-card rounded-[2rem] p-6 border-white/10 ${isRTL ? 'text-right' : 'text-left'}`}>
+                  <p className="text-xs text-muted-foreground mb-2 uppercase tracking-wider">{isHebrew ? 'דוגמה לשימוש' : 'Usage Example'}</p>
                   <p className="text-lg font-medium text-foreground mb-2">
                     "{currentWord.example_sentence.split(' - ')[0]}"
                   </p>
@@ -422,8 +442,8 @@ export const Learn: React.FC = () => {
                 </div>
 
                 {/* Translation card */}
-                <div className="glass-card rounded-xl p-6 border-white/10">
-                  <p className="text-xs text-muted-foreground mb-2 uppercase tracking-wider">תרגום לעברית</p>
+                <div className={`glass-card rounded-[2rem] p-6 border-white/10 ${isRTL ? 'text-right' : 'text-left'}`}>
+                  <p className="text-xs text-muted-foreground mb-2 uppercase tracking-wider">{isHebrew ? 'תרגום לעברית' : 'Hebrew Translation'}</p>
                   <p className="text-3xl font-bold text-foreground">
                     {currentWord.hebrew_translation}
                   </p>
@@ -437,37 +457,43 @@ export const Learn: React.FC = () => {
                     {speechSuccess ? (
                       <div className="flex flex-col items-center gap-2 animate-pulse">
                         <CheckCircle2 className="h-12 w-12 text-green-500" />
-                        <p className="text-lg font-semibold text-green-500">מצוין! עובר למילה הבאה...</p>
+                        <p className="text-lg font-semibold text-green-500">{isHebrew ? 'מצוין! עובר למילה הבאה...' : 'Excellent! Moving to next word...'}</p>
                       </div>
                     ) : (
                       <>
                         <Button
                           onClick={isListening ? stopListening : startListening}
                           size="lg"
-                          className={isListening 
-                            ? "bg-destructive hover:bg-destructive/90 animate-pulse" 
+                          className={isListening
+                            ? "bg-destructive hover:bg-destructive/90 animate-pulse"
                             : "bg-gradient-to-r from-primary to-primary/80 glow-primary"
+                          }
+                          aria-label={isListening
+                            ? (isHebrew ? "עצור הקלטה" : "Stop recording")
+                            : (isHebrew ? "התחל להקליט כדי לתרגל הגייה" : "Start recording for pronunciation practice")
                           }
                         >
                           {isListening ? (
                             <>
-                              <MicOff className="h-5 w-5 ml-2" />
-                              עצור הקלטה
+                              <MicOff className={`h-5 w-5 ${isRTL ? 'ml-2' : 'mr-2'}`} />
+                              {isHebrew ? 'עצור הקלטה' : 'Stop Recording'}
                             </>
                           ) : (
                             <>
-                              <Mic className="h-5 w-5 ml-2" />
-                              התחל להקליט
+                              <Mic className={`h-5 w-5 ${isRTL ? 'ml-2' : 'mr-2'}`} />
+                              {isHebrew ? 'התחל להקליט' : 'Start Recording'}
                             </>
                           )}
                         </Button>
                         {transcript && (
                           <p className="text-sm text-muted-foreground">
-                            שמעתי: <span className="font-medium text-foreground">"{transcript}"</span>
+                            {isHebrew ? 'שמעתי: ' : 'I heard: '} <span className="font-medium text-foreground">"{transcript}"</span>
                           </p>
                         )}
                         <p className="text-xs text-muted-foreground">
-                          אמור את המילה "{currentWord.english_word}" בקול רם
+                          {isHebrew
+                            ? `אמור את המילה "${currentWord.english_word}" בקול רם`
+                            : `Say the word "${currentWord.english_word}" out loud`}
                         </p>
                       </>
                     )}
@@ -479,42 +505,42 @@ export const Learn: React.FC = () => {
 
           {/* Navigation buttons */}
           <div className="flex items-center justify-between">
-            <Button 
+            <Button
               onClick={previousWord}
               variant="ghost"
               disabled={currentIndex === 0}
               className="text-muted-foreground hover:text-foreground"
             >
-              <ArrowRight className="h-5 w-5 ml-2" />
-              Skip
+              <ArrowRight className={`h-5 w-5 ${isRTL ? 'ml-2' : 'mr-2'}`} />
+              {isHebrew ? 'דלג' : 'Skip'}
             </Button>
 
             {(!speechPracticeMode || showNextAfterSuccess) && (
-              <Button 
+              <Button
                 onClick={markAsLearned}
                 size="lg"
                 className="bg-gradient-to-r from-accent to-accent/80 text-accent-foreground px-8 py-6 rounded-full glow-accent hover:scale-105 transition-transform"
               >
-                <Sparkles className="h-5 w-5 ml-2" />
-                !MASTERED IT
+                <Sparkles className={`h-5 w-5 ${isRTL ? 'ml-2' : 'mr-2'}`} />
+                {isHebrew ? 'הבנתי!' : 'MASTERED IT!'}
               </Button>
             )}
 
-            <Button 
+            <Button
               onClick={() => navigate('/learned')}
               variant="ghost"
               className="text-muted-foreground hover:text-foreground"
             >
-              Back
-              <ArrowLeft className="h-5 w-5 mr-2" />
+              {isHebrew ? 'חזרה' : 'Back'}
+              <ArrowLeft className={`h-5 w-5 ${isRTL ? 'mr-2' : 'ml-2'}`} />
             </Button>
           </div>
 
           {/* Tip banner */}
           <div className="mt-8 text-center">
             <Badge className="bg-accent/20 text-accent border-accent/30 px-4 py-2">
-              <Sparkles className="h-4 w-4 mr-2" />
-              TIP: PRACTICE MAKES PERFECT. REVIEW YOUR LEARNED WORDS REGULARLY
+              <Sparkles className={`h-4 w-4 ${isRTL ? 'ml-2' : 'mr-2'}`} />
+              {isHebrew ? 'טיפ: תרגול הופך למושלם. חזור על המילים שלמדת באופן קבוע' : 'TIP: PRACTICE MAKES PERFECT. REVIEW YOUR LEARNED WORDS REGULARLY'}
             </Badge>
           </div>
         </div>
@@ -526,20 +552,22 @@ export const Learn: React.FC = () => {
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2">
               <Crown className="h-5 w-5 text-primary" />
-              הגעת למגבלה היומית
+              {isHebrew ? 'הגעת למגבלה היומית' : 'Daily Limit Reached'}
             </AlertDialogTitle>
-            <AlertDialogDescription>
-              למדת {dailyLimit} מילים היום! כדי להמשיך ללמוד ללא הגבלה, שדרג לחשבון פרימיום.
+            <AlertDialogDescription className={isRTL ? 'text-right' : 'text-left'}>
+              {isHebrew
+                ? `למדת ${dailyLimit} מילים היום! כדי להמשיך ללמוד ללא הגבלה, שדרג לחשבון פרימיום.`
+                : `You've learned ${dailyLimit} words today! To continue learning without limits, upgrade to a Premium account.`}
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel className="glass-button">אחר כך</AlertDialogCancel>
-            <AlertDialogAction 
+          <AlertDialogFooter className={isRTL ? 'flex-row-reverse' : ''}>
+            <AlertDialogCancel className="glass-button">{isHebrew ? 'אחר כך' : 'Later'}</AlertDialogCancel>
+            <AlertDialogAction
               onClick={() => navigate('/pricing')}
               className="bg-gradient-to-r from-primary to-primary/80 glow-primary"
             >
-              <Crown className="h-4 w-4 ml-2" />
-              שדרג עכשיו
+              <Crown className={`h-4 w-4 ${isRTL ? 'ml-2' : 'mr-2'}`} />
+              {isHebrew ? 'שדרג עכשיו' : 'Upgrade Now'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

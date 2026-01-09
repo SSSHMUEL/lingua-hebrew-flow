@@ -8,19 +8,23 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/components/AuthProvider';
 import { toast } from '@/hooks/use-toast';
-import { Mail, Lock, User, ArrowRight } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { Mail, Lock, User, ArrowRight, ArrowLeft } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 
 export const Auth: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { language, isRTL } = useLanguage();
+  const isHebrew = language === 'he';
+
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
   const [resetEmail, setResetEmail] = useState('');
-  
+
   const urlParams = new URLSearchParams(window.location.search);
   const initialTab = urlParams.get('tab') === 'signup' ? 'signup' : 'signin';
 
@@ -38,10 +42,10 @@ export const Auth: React.FC = () => {
         redirectTo: `${window.location.origin}/onboarding`
       }
     });
-    
+
     if (error) {
       toast({
-        title: "שגיאת התחברות",
+        title: isHebrew ? "שגיאת התחברות" : "Login Error",
         description: error.message,
         variant: "destructive"
       });
@@ -53,7 +57,7 @@ export const Auth: React.FC = () => {
     e.preventDefault();
     setLoading(true);
     const redirectUrl = `${window.location.origin}/onboarding`;
-    
+
     try {
       const { data, error } = await supabase.auth.signUp({
         email,
@@ -65,10 +69,10 @@ export const Auth: React.FC = () => {
           }
         }
       });
-      
+
       if (error) {
         toast({
-          title: "שגיאת הרשמה",
+          title: isHebrew ? "שגיאת הרשמה" : "Sign Up Error",
           description: error.message,
           variant: "destructive"
         });
@@ -82,21 +86,21 @@ export const Auth: React.FC = () => {
             user_id: data.user.id,
             display_name: displayName,
           });
-        
+
         if (profileError && !profileError.message.includes('duplicate')) {
           console.error('Error creating profile:', profileError);
         }
-        
+
         toast({
-          title: "נרשמת בהצלחה! 🎉",
-          description: "כעת תעבור למסך ההכרות"
+          title: isHebrew ? "נרשמת בהצלחה! 🎉" : "Signed up successfully! 🎉",
+          description: isHebrew ? "כעת תעבור למסך ההכרות" : "Now moving to onboarding screen"
         });
-        
+
         navigate('/onboarding');
       }
     } catch (err: any) {
       toast({
-        title: "שגיאה",
+        title: isHebrew ? "שגיאה" : "Error",
         description: err.message,
         variant: "destructive"
       });
@@ -115,56 +119,56 @@ export const Auth: React.FC = () => {
     setLoading(false);
     if (error) {
       toast({
-        title: "שגיאת התחברות",
+        title: isHebrew ? "שגיאת התחברות" : "Login Error",
         description: error.message,
         variant: "destructive"
       });
     } else {
       toast({
-        title: "התחברת בהצלחה!",
-        description: "ברוך השב ללמידת אנגלית"
+        title: isHebrew ? "התחברת בהצלחה!" : "Log in successful!",
+        description: isHebrew ? "ברוך השב ללמידת אנגלית" : "Welcome back to learning"
       });
       navigate('/');
     }
   };
-  
+
   const handlePasswordReset = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!resetEmail) {
       toast({
-        title: "שגיאה",
-        description: "אנא הכנס כתובת אימייל",
+        title: isHebrew ? "שגיאה" : "Error",
+        description: isHebrew ? "אנא הכנס כתובת אימייל" : "Please enter an email address",
         variant: "destructive"
       });
       return;
     }
-    
+
     setLoading(true);
     const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
       redirectTo: `${window.location.origin}/reset-password`
     });
-    
+
     setLoading(false);
-    
+
     if (error) {
       toast({
-        title: "שגיאה",
+        title: isHebrew ? "שגיאה" : "Error",
         description: error.message,
         variant: "destructive"
       });
     } else {
       toast({
-        title: "נשלח בהצלחה!",
-        description: "בדוק את האימייל שלך לקישור איפוס הסיסמה"
+        title: isHebrew ? "נשלח בהצלחה!" : "Sent successfully!",
+        description: isHebrew ? "בדוק את האימייל שלך לקישור איפוס הסיסמה" : "Check your email for the password reset link"
       });
       setResetEmail('');
     }
   };
 
   const GoogleButton = ({ text }: { text: string }) => (
-    <Button 
-      type="button" 
-      variant="outline" 
+    <Button
+      type="button"
+      variant="outline"
       className="w-full flex items-center justify-center gap-2 glass-button border-white/20"
       onClick={handleGoogleSignIn}
       disabled={googleLoading}
@@ -175,77 +179,83 @@ export const Auth: React.FC = () => {
         <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
         <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
       </svg>
-      {googleLoading ? 'מתחבר...' : text}
+      {googleLoading ? (isHebrew ? 'מתחבר...' : 'Connecting...') : text}
     </Button>
   );
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden" style={{ background: 'var(--gradient-hero)' }}>
+    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden" style={{ background: 'var(--gradient-hero)' }} dir={isRTL ? 'rtl' : 'ltr'}>
       {/* Fixed background effect - Orange glow on right, Cyan on left */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
-        <div 
+        <div
           className="absolute top-1/2 -translate-y-1/2 -right-[150px] w-[600px] h-[100vh] rounded-full blur-[180px]"
           style={{ background: 'hsl(25 85% 45% / 0.3)' }}
         />
-        <div 
+        <div
           className="absolute top-1/2 -translate-y-1/2 -left-[150px] w-[500px] h-[90vh] rounded-full blur-[180px]"
           style={{ background: 'hsl(190 85% 55% / 0.25)' }}
         />
       </div>
-      
+
       <div className="w-full max-w-md relative z-10">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-primary mb-2">ברוכים הבאים לTALK FIX</h1>
-          <p className="text-muted-foreground">למדו אנגלית בצורה חכמה ומהנה</p>
+          <h1 className="text-3xl font-bold text-primary mb-2">
+            {isHebrew ? 'ברוכים הבאים לTALK FIX' : 'Welcome to TALK FIX'}
+          </h1>
+          <p className="text-muted-foreground">
+            {isHebrew ? 'למדו אנגלית בצורה חכמה ומהנה' : 'Learn English in a smart and fun way'}
+          </p>
         </div>
 
         <Card className="glass-card border-white/10">
           <Tabs defaultValue={initialTab} className="w-full">
             <TabsList className="grid w-full grid-cols-3 bg-white/5">
-              <TabsTrigger value="signin">התחברות</TabsTrigger>
-              <TabsTrigger value="signup">הרשמה</TabsTrigger>
-              <TabsTrigger value="reset">איפוס סיסמה</TabsTrigger>
+              <TabsTrigger value="signin">{isHebrew ? 'התחברות' : 'Login'}</TabsTrigger>
+              <TabsTrigger value="signup">{isHebrew ? 'הרשמה' : 'Sign Up'}</TabsTrigger>
+              <TabsTrigger value="reset">{isHebrew ? 'איפוס סיסמה' : 'Reset'}</TabsTrigger>
             </TabsList>
 
             <TabsContent value="signin">
               <CardHeader>
-                <CardTitle className="text-right">התחברות לחשבון</CardTitle>
-                <CardDescription className="text-right">
-                  הכנס את פרטי ההתחברות שלך כדי להמשיך ללמוד
+                <CardTitle className={isRTL ? 'text-right' : 'text-left'}>
+                  {isHebrew ? 'התחברות לחשבון' : 'Account Login'}
+                </CardTitle>
+                <CardDescription className={isRTL ? 'text-right' : 'text-left'}>
+                  {isHebrew ? 'הכנס את פרטי ההתחברות שלך כדי להמשיך ללמוד' : 'Enter your login details to continue learning'}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <GoogleButton text="התחבר עם גוגל" />
-                
+                <GoogleButton text={isHebrew ? 'התחבר עם גוגל' : 'Sign in with Google'} />
+
                 <div className="relative">
                   <div className="absolute inset-0 flex items-center">
                     <Separator className="w-full bg-white/10" />
                   </div>
                   <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-card px-2 text-muted-foreground">או</span>
+                    <span className="bg-card px-2 text-muted-foreground">{isHebrew ? 'או' : 'OR'}</span>
                   </div>
                 </div>
 
                 <form onSubmit={handleSignIn} className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="signin-email" className="text-right block">
-                      <Mail className="inline h-4 w-4 ml-2" />
-                      כתובת אימייל
+                    <Label htmlFor="signin-email" className={`block ${isRTL ? 'text-right' : 'text-left'}`}>
+                      <Mail className={`inline h-4 w-4 ${isRTL ? 'ml-2' : 'mr-2'}`} />
+                      {isHebrew ? 'כתובת אימייל' : 'Email Address'}
                     </Label>
-                    <Input id="signin-email" type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="your.email@example.com" required className="text-right glass-input border-white/10" dir="ltr" />
+                    <Input id="signin-email" type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="your.email@example.com" required className="glass-input border-white/10" dir="ltr" />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="signin-password" className="text-right block">
-                      <Lock className="inline h-4 w-4 ml-2" />
-                      סיסמה
+                    <Label htmlFor="signin-password" className={`block ${isRTL ? 'text-right' : 'text-left'}`}>
+                      <Lock className={`inline h-4 w-4 ${isRTL ? 'ml-2' : 'mr-2'}`} />
+                      {isHebrew ? 'סיסמה' : 'Password'}
                     </Label>
-                    <Input id="signin-password" type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="הכנס סיסמה" required className="text-right glass-input border-white/10" />
+                    <Input id="signin-password" type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder={isHebrew ? "הכנס סיסמה" : "Enter password"} required className="glass-input border-white/10" />
                   </div>
 
                   <Button type="submit" className="w-full bg-gradient-to-r from-primary to-primary/80 glow-primary" disabled={loading}>
-                    {loading ? 'מתחבר...' : 'התחבר'}
-                    <ArrowRight className="h-4 w-4 mr-2" />
+                    {loading ? (isHebrew ? 'מתחבר...' : 'Logging in...') : (isHebrew ? 'התחבר' : 'Login')}
+                    {isRTL ? <ArrowRight className="h-4 w-4 mr-2" /> : <ArrowLeft className="h-4 w-4 ml-2" />}
                   </Button>
                 </form>
               </CardContent>
@@ -253,51 +263,53 @@ export const Auth: React.FC = () => {
 
             <TabsContent value="signup">
               <CardHeader>
-                <CardTitle className="text-right">יצירת חשבון חדש</CardTitle>
-                <CardDescription className="text-right">
-                  הצטרף אלינו והתחל את המסע שלך בלמידת אנגלית
+                <CardTitle className={isRTL ? 'text-right' : 'text-left'}>
+                  {isHebrew ? 'יצירת חשבון חדש' : 'Create New Account'}
+                </CardTitle>
+                <CardDescription className={isRTL ? 'text-right' : 'text-left'}>
+                  {isHebrew ? 'הצטרף אלינו והתחל את המסע שלך בלמידת אנגלית' : 'Join us and start your English learning journey'}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <GoogleButton text="הירשם עם גוגל" />
-                
+                <GoogleButton text={isHebrew ? 'הירשם עם גוגל' : 'Sign up with Google'} />
+
                 <div className="relative">
                   <div className="absolute inset-0 flex items-center">
                     <Separator className="w-full bg-white/10" />
                   </div>
                   <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-card px-2 text-muted-foreground">או</span>
+                    <span className="bg-card px-2 text-muted-foreground">{isHebrew ? 'או' : 'OR'}</span>
                   </div>
                 </div>
 
                 <form onSubmit={handleSignUp} className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="signup-name" className="text-right block">
-                      <User className="inline h-4 w-4 ml-2" />
-                      שם לתצוגה
+                    <Label htmlFor="signup-name" className={`block ${isRTL ? 'text-right' : 'text-left'}`}>
+                      <User className={`inline h-4 w-4 ${isRTL ? 'ml-2' : 'mr-2'}`} />
+                      {isHebrew ? 'שם לתצוגה' : 'Display Name'}
                     </Label>
-                    <Input id="signup-name" type="text" value={displayName} onChange={e => setDisplayName(e.target.value)} placeholder="השם שלך" required className="text-right glass-input border-white/10" />
+                    <Input id="signup-name" type="text" value={displayName} onChange={e => setDisplayName(e.target.value)} placeholder={isHebrew ? "השם שלך" : "Your name"} required className="glass-input border-white/10" />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="signup-email" className="text-right block">
-                      <Mail className="inline h-4 w-4 ml-2" />
-                      כתובת אימייל
+                    <Label htmlFor="signup-email" className={`block ${isRTL ? 'text-right' : 'text-left'}`}>
+                      <Mail className={`inline h-4 w-4 ${isRTL ? 'ml-2' : 'mr-2'}`} />
+                      {isHebrew ? 'כתובת אימייל' : 'Email Address'}
                     </Label>
-                    <Input id="signup-email" type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="your.email@example.com" required className="text-right glass-input border-white/10" dir="ltr" />
+                    <Input id="signup-email" type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="your.email@example.com" required className="glass-input border-white/10" dir="ltr" />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="signup-password" className="text-right block">
-                      <Lock className="inline h-4 w-4 ml-2" />
-                      סיסמה
+                    <Label htmlFor="signup-password" className={`block ${isRTL ? 'text-right' : 'text-left'}`}>
+                      <Lock className={`inline h-4 w-4 ${isRTL ? 'ml-2' : 'mr-2'}`} />
+                      {isHebrew ? 'סיסמה' : 'Password'}
                     </Label>
-                    <Input id="signup-password" type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="בחר סיסמה חזקה" required className="text-right glass-input border-white/10" minLength={6} />
+                    <Input id="signup-password" type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder={isHebrew ? "בחר סיסמה חזקה" : "Choose a strong password"} required className="glass-input border-white/10" minLength={6} />
                   </div>
 
                   <Button type="submit" className="w-full bg-gradient-to-r from-primary to-primary/80 glow-primary" disabled={loading}>
-                    {loading ? 'נרשם...' : 'הירשם'}
-                    <ArrowRight className="h-4 w-4 mr-2" />
+                    {loading ? (isHebrew ? 'נרשם...' : 'Signing up...') : (isHebrew ? 'הירשם' : 'Sign Up')}
+                    {isRTL ? <ArrowRight className="h-4 w-4 mr-2" /> : <ArrowLeft className="h-4 w-4 ml-2" />}
                   </Button>
                 </form>
               </CardContent>
@@ -305,33 +317,35 @@ export const Auth: React.FC = () => {
 
             <TabsContent value="reset">
               <CardHeader>
-                <CardTitle className="text-right">איפוס סיסמה</CardTitle>
-                <CardDescription className="text-right">
-                  הכנס את כתובת האימייל שלך כדי לקבל קישור לאיפוס סיסמה
+                <CardTitle className={isRTL ? 'text-right' : 'text-left'}>
+                  {isHebrew ? 'איפוס סיסמה' : 'Reset Password'}
+                </CardTitle>
+                <CardDescription className={isRTL ? 'text-right' : 'text-left'}>
+                  {isHebrew ? 'הכנס את כתובת האימייל שלך כדי לקבל קישור לאיפוס סיסמה' : 'Enter your email address to receive a password reset link'}
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <form onSubmit={handlePasswordReset} className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="reset-email" className="text-right block">
-                      <Mail className="inline h-4 w-4 ml-2" />
-                      כתובת אימייל
+                    <Label htmlFor="reset-email" className={`block ${isRTL ? 'text-right' : 'text-left'}`}>
+                      <Mail className={`inline h-4 w-4 ${isRTL ? 'ml-2' : 'mr-2'}`} />
+                      {isHebrew ? 'כתובת אימייל' : 'Email Address'}
                     </Label>
-                    <Input 
-                      id="reset-email" 
-                      type="email" 
-                      value={resetEmail} 
-                      onChange={(e) => setResetEmail(e.target.value)} 
-                      placeholder="your.email@example.com" 
-                      required 
-                      className="text-right glass-input border-white/10" 
-                      dir="ltr" 
+                    <Input
+                      id="reset-email"
+                      type="email"
+                      value={resetEmail}
+                      onChange={(e) => setResetEmail(e.target.value)}
+                      placeholder="your.email@example.com"
+                      required
+                      className="glass-input border-white/10"
+                      dir="ltr"
                     />
                   </div>
 
                   <Button type="submit" className="w-full bg-gradient-to-r from-primary to-primary/80 glow-primary" disabled={loading}>
-                    {loading ? 'שולח...' : 'שלח קישור איפוס'}
-                    <ArrowRight className="h-4 w-4 mr-2" />
+                    {loading ? (isHebrew ? 'שולח...' : 'Sending...') : (isHebrew ? 'שלח קישור איפוס' : 'Send Reset Link')}
+                    {isRTL ? <ArrowRight className="h-4 w-4 mr-2" /> : <ArrowLeft className="h-4 w-4 ml-2" />}
                   </Button>
                 </form>
               </CardContent>
@@ -340,7 +354,9 @@ export const Auth: React.FC = () => {
         </Card>
 
         <p className="text-center text-sm text-muted-foreground mt-6">
-          על ידי הרשמה, אתה מסכים לתנאי השימוש ומדיניות הפרטיות שלנו
+          {isHebrew
+            ? 'על ידי הרשמה, אתה מסכים לתנאי השימוש ומדיניות הפרטיות שלנו'
+            : 'By signing up, you agree to our Terms of Use and Privacy Policy'}
         </p>
       </div>
     </div>

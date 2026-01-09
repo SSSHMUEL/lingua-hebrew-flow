@@ -5,22 +5,22 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { useAuth } from '@/components/AuthProvider';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Settings, Target, Crown, Languages, Lock, User, Shield, Trash2, KeyRound, LogOut } from 'lucide-react';
+import { Settings, Target, Crown, Languages, User, Shield, Trash2, KeyRound, LogOut, CheckCircle2 } from 'lucide-react';
 import { PayPalCheckout } from '@/components/PayPalCheckout';
 import { useSubscription } from '@/components/SubscriptionGuard';
 import { Input } from '@/components/ui/input';
 
 const Profile: React.FC = () => {
   const { user } = useAuth();
-  const { t, isRTL, setLanguage, language } = useLanguage();
+  const { isRTL, setLanguage, language, t } = useLanguage();
+  const isHebrew = language === 'he';
   const navigate = useNavigate();
-  const { isTrialing, isActive, isExpired, daysRemaining } = useSubscription();
+  const { isActive } = useSubscription();
   const [learned, setLearned] = useState(0);
   const [total, setTotal] = useState(0);
   const [selectedTopics, setSelectedTopics] = useState<string[]>([]);
@@ -34,41 +34,38 @@ const Profile: React.FC = () => {
   const [isGoogleUser, setIsGoogleUser] = useState(false);
 
   const englishLevels = [
-    { id: "beginner", label: t('level.beginner') },
-    { id: "elementary", label: t('level.elementary') },
-    { id: "intermediate", label: t('level.intermediate') },
-    { id: "upper-intermediate", label: t('level.upperIntermediate') },
-    { id: "advanced", label: t('level.advanced') },
+    { id: "beginner", label: isHebrew ? "מתחיל" : "Beginner" },
+    { id: "elementary", label: isHebrew ? "בסיסי" : "Elementary" },
+    { id: "intermediate", label: isHebrew ? "בינוני" : "Intermediate" },
+    { id: "upper-intermediate", label: isHebrew ? "מתקדם בינוני" : "Upper-Intermediate" },
+    { id: "advanced", label: isHebrew ? "מתקדם" : "Advanced" },
   ];
 
   const availableTopics = [
-    { id: 'basic', name: isRTL ? 'מילים בסיסיות' : 'Basic Words', description: isRTL ? 'מילים חיוניות לשיחה יומיומית' : 'Essential words for daily conversation' },
-    { id: 'business', name: t('topic.business'), description: isRTL ? 'מונחים עסקיים ומקצועיים' : 'Business and professional terms' },
-    { id: 'technology', name: t('topic.technology'), description: isRTL ? 'מילים מעולם הטכנולוגיה והמחשבים' : 'Words from the tech world' },
-    { id: 'travel', name: t('topic.travel'), description: isRTL ? 'מילים שימושיות לנסיעות בחו"ל' : 'Useful words for travel abroad' },
-    { id: 'food', name: t('topic.food'), description: isRTL ? 'מילים הקשורות למזון ובישול' : 'Words related to food and cooking' },
-    { id: 'health', name: t('topic.health'), description: isRTL ? 'מונחים רפואיים ובריאותיים' : 'Medical and health terms' },
-    { id: 'education', name: t('topic.education'), description: isRTL ? 'מילים הקשורות לחינוך ולמידה' : 'Words related to education and learning' },
-    { id: 'entertainment', name: isRTL ? 'בידור' : 'Entertainment', description: isRTL ? 'מילים מעולם הבידור והתרבות' : 'Words from entertainment and culture' }
+    { id: 'basic', name: isHebrew ? 'מילים בסיסיות' : 'Basic Words', description: isHebrew ? 'מילים חיוניות לשיחה יומיומית' : 'Essential words for daily conversation' },
+    { id: 'business', name: isHebrew ? 'עסקים' : 'Business', description: isHebrew ? 'מונחים עסקיים ומקצועיים' : 'Business and professional terms' },
+    { id: 'technology', name: isHebrew ? 'טכנולוגיה' : 'Technology', description: isHebrew ? 'מילים מעולם הטכנולוגיה והמחשבים' : 'Words from the tech world' },
+    { id: 'travel', name: isHebrew ? 'טיולים' : 'Travel', description: isHebrew ? 'מילים שימושיות לנסיעות בחו"ל' : 'Useful words for travel abroad' },
+    { id: 'food', name: isHebrew ? 'אוכל' : 'Food', description: isHebrew ? 'מילים הקשורות למזון ובישול' : 'Words related to food and cooking' },
+    { id: 'health', name: isHebrew ? 'בריאות' : 'Health', description: isHebrew ? 'מונחים רפואיים ובריאותיים' : 'Medical and health terms' },
+    { id: 'education', name: isHebrew ? 'חינוך' : 'Education', description: isHebrew ? 'מילים הקשורות לחינוך ולמידה' : 'Words related to education and learning' },
+    { id: 'entertainment', name: isHebrew ? 'בידור' : 'Entertainment', description: isHebrew ? 'מילים מעולם הבידור והתרבות' : 'Words from entertainment and culture' }
   ];
 
   useEffect(() => {
-    document.title = isRTL ? 'פרופיל | TALK FIX' : 'Profile | TALK FIX';
-    const meta = document.querySelector('meta[name="description"]');
-    if (meta) meta.setAttribute('content', isRTL ? 'פרופיל המשתמש והתקדמות בלמידה' : 'User profile and learning progress');
-  }, [isRTL]);
+    document.title = isHebrew ? `פרופיל | TALK FIX` : `Profile | TALK FIX`;
+  }, [isHebrew]);
 
   useEffect(() => {
     if (!user) {
       navigate('/auth');
       return;
     }
-    
-    // Check if user signed in with Google
-    const checkGoogleUser = user.app_metadata?.provider === 'google' || 
-                            user.identities?.some(i => i.provider === 'google');
+
+    const checkGoogleUser = user.app_metadata?.provider === 'google' ||
+      user.identities?.some(i => i.provider === 'google');
     setIsGoogleUser(checkGoogleUser || false);
-    
+
     (async () => {
       const { count: learnedCount } = await supabase
         .from('learned_words')
@@ -79,22 +76,22 @@ const Profile: React.FC = () => {
         .select('*', { count: 'exact', head: true });
       setLearned(learnedCount || 0);
       setTotal(totalCount || 0);
-      
+
       const { data: preferences } = await supabase
-        .from('user_topic_preferences' as any)
+        .from('user_topic_preferences')
         .select('topic_id')
         .eq('user_id', user.id);
-      
+
       if (preferences) {
         setSelectedTopics(preferences.map((p: any) => p.topic_id));
       }
-      
+
       const { data: profile } = await supabase
         .from('profiles')
         .select('english_level, source_language, target_language')
         .eq('user_id', user.id)
         .single();
-      
+
       if (profile) {
         setEnglishLevel(profile.english_level || "");
         setSourceLanguage(profile.source_language || "hebrew");
@@ -106,8 +103,8 @@ const Profile: React.FC = () => {
   const percent = total > 0 ? (learned / total) * 100 : 0;
 
   const handleTopicToggle = (topicId: string) => {
-    setSelectedTopics(prev => 
-      prev.includes(topicId) 
+    setSelectedTopics(prev =>
+      prev.includes(topicId)
         ? prev.filter(id => id !== topicId)
         : [...prev, topicId]
     );
@@ -115,38 +112,20 @@ const Profile: React.FC = () => {
 
   const saveTopicPreferences = async () => {
     if (!user) return;
-    
     setLoading(true);
     try {
-      await supabase
-        .from('user_topic_preferences' as any)
-        .delete()
-        .eq('user_id', user.id);
-      
+      await supabase.from('user_topic_preferences').delete().eq('user_id', user.id);
       if (selectedTopics.length > 0) {
         const preferences = selectedTopics.map(topicId => ({
           user_id: user.id,
           topic_id: topicId
         }));
-        
-        const { error } = await supabase
-          .from('user_topic_preferences' as any)
-          .insert(preferences);
-        
+        const { error } = await supabase.from('user_topic_preferences').insert(preferences);
         if (error) throw error;
       }
-      
-      toast({
-        title: isRTL ? "הצלחה!" : "Success!",
-        description: isRTL ? "העדפות הנושאים נשמרו בהצלחה" : "Topic preferences saved successfully",
-      });
+      toast({ title: isHebrew ? "הצלחה!" : "Success!", description: isHebrew ? "העדפות הנושאים נשמרו" : "Topic preferences saved" });
     } catch (error) {
-      console.error('Error saving preferences:', error);
-      toast({
-        title: t('common.error'),
-        description: isRTL ? "לא ניתן לשמור את ההעדפות. נסה שוב." : "Could not save preferences. Try again.",
-        variant: "destructive"
-      });
+      toast({ title: isHebrew ? "שגיאה" : "Error", variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -154,89 +133,36 @@ const Profile: React.FC = () => {
 
   const saveLanguageSettings = async () => {
     if (!user) return;
-    
     setLoading(true);
     try {
-      const { error } = await supabase
-        .from('profiles')
-        .update({
-          english_level: englishLevel,
-          source_language: sourceLanguage,
-          target_language: targetLanguage,
-        })
-        .eq('user_id', user.id);
-      
+      const { error } = await supabase.from('profiles').update({
+        english_level: englishLevel,
+        source_language: sourceLanguage,
+        target_language: targetLanguage,
+      }).eq('user_id', user.id);
       if (error) throw error;
-      
-      // Update UI language based on source language
       setLanguage(sourceLanguage === 'english' ? 'en' : 'he');
-      
-      toast({
-        title: isRTL ? "הצלחה!" : "Success!",
-        description: isRTL ? "הגדרות השפה נשמרו בהצלחה" : "Language settings saved successfully",
-      });
+      toast({ title: isHebrew ? "הצלחה!" : "Success!", description: isHebrew ? "ההגדרות נשמרו" : "Settings saved" });
     } catch (error) {
-      console.error('Error saving language settings:', error);
-      toast({
-        title: t('common.error'),
-        description: isRTL ? "לא ניתן לשמור את ההגדרות. נסה שוב." : "Could not save settings. Try again.",
-        variant: "destructive"
-      });
+      toast({ title: isHebrew ? "שגיאה" : "Error", variant: "destructive" });
     } finally {
       setLoading(false);
     }
   };
 
   const handlePasswordUpdate = async () => {
-    if (!newPassword || !confirmPassword) {
-      toast({
-        title: t('common.error'),
-        description: isRTL ? "אנא מלא את כל השדות" : "Please fill in all fields",
-        variant: "destructive"
-      });
-      return;
-    }
-    
     if (newPassword !== confirmPassword) {
-      toast({
-        title: t('common.error'),
-        description: isRTL ? "הסיסמאות אינן תואמות" : "Passwords do not match",
-        variant: "destructive"
-      });
+      toast({ title: isHebrew ? "הסיסמאות אינן תואמות" : "Passwords do not match", variant: "destructive" });
       return;
     }
-    
-    if (newPassword.length < 6) {
-      toast({
-        title: t('common.error'),
-        description: isRTL ? "הסיסמה חייבת להכיל לפחות 6 תווים" : "Password must be at least 6 characters",
-        variant: "destructive"
-      });
-      return;
-    }
-    
     setLoading(true);
     try {
-      const { error } = await supabase.auth.updateUser({
-        password: newPassword
-      });
-      
+      const { error } = await supabase.auth.updateUser({ password: newPassword });
       if (error) throw error;
-      
-      toast({
-        title: isRTL ? "הצלחה!" : "Success!",
-        description: isRTL ? "הסיסמה עודכנה בהצלחה" : "Password updated successfully",
-      });
-      
-      setNewPassword('');
-      setConfirmPassword('');
+      toast({ title: isHebrew ? "הסיסמה עודכנה" : "Password updated" });
+      setNewPassword(''); setConfirmPassword('');
     } catch (error: any) {
-      console.error('Error updating password:', error);
-      toast({
-        title: t('common.error'),
-        description: error.message || (isRTL ? "לא ניתן לעדכן את הסיסמה. נסה שוב." : "Could not update password. Try again."),
-        variant: "destructive"
-      });
+      toast({ title: error.message, variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -248,126 +174,99 @@ const Profile: React.FC = () => {
   };
 
   const handleDeleteAccount = async () => {
-    if (!user) return;
-    
-    const confirmed = window.confirm(
-      isRTL 
-        ? 'האם אתה בטוח שברצונך למחוק את החשבון? פעולה זו בלתי הפיכה ותמחק את כל הנתונים שלך.'
-        : 'Are you sure you want to delete your account? This action is irreversible and will delete all your data.'
-    );
-    
-    if (!confirmed) return;
-    
+    if (!window.confirm(isHebrew ? 'האם למחוק את החשבון?' : 'Delete account?')) return;
     setLoading(true);
     try {
       const { data: sessionData } = await supabase.auth.getSession();
-      const response = await supabase.functions.invoke('delete-account', {
-        headers: {
-          Authorization: `Bearer ${sessionData.session?.access_token}`
-        }
-      });
-      
-      if (response.error) {
-        throw new Error(response.error.message);
-      }
-      
+      await supabase.functions.invoke('delete-account', { headers: { Authorization: `Bearer ${sessionData.session?.access_token}` } });
       await supabase.auth.signOut();
-      
-      toast({
-        title: isRTL ? "החשבון נמחק" : "Account Deleted",
-        description: isRTL ? "להתראות! אנחנו מקווים לראות אותך שוב" : "Goodbye! We hope to see you again",
-      });
-      
+      toast({ title: isHebrew ? "החשבון נמחק" : "Account Deleted" });
       navigate('/');
     } catch (error) {
-      console.error('Error deleting account:', error);
-      toast({
-        title: t('common.error'),
-        description: isRTL ? "לא ניתן למחוק את החשבון. נסה שוב מאוחר יותר." : "Could not delete account. Try again later.",
-        variant: "destructive"
-      });
+      toast({ title: isHebrew ? "שגיאה" : "Error", variant: "destructive" });
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen relative overflow-hidden" style={{ background: 'var(--gradient-hero)' }}>
-      {/* Fixed background effect - Orange glow on right side, Cyan on left (weaker than homepage) */}
+    <div className="min-h-screen relative overflow-hidden pb-20" style={{ background: 'var(--gradient-hero)' }} dir={isRTL ? 'rtl' : 'ltr'}>
+      {/* Background Glows */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
-        {/* Orange glow on right */}
-        <div 
-          className="absolute top-1/2 -translate-y-1/2 -right-[150px] w-[600px] h-[100vh] rounded-full blur-[180px]"
-          style={{ background: 'hsl(25 85% 45% / 0.3)' }}
-        />
-        {/* Cyan/Light blue glow on left side */}
-        <div 
-          className="absolute top-1/2 -translate-y-1/2 -left-[150px] w-[500px] h-[90vh] rounded-full blur-[180px]"
-          style={{ background: 'hsl(190 85% 55% / 0.25)' }}
-        />
+        <div className="absolute top-1/2 -translate-y-1/2 -right-[150px] w-[600px] h-[100vh] rounded-full blur-[180px]" style={{ background: 'hsl(25 85% 45% / 0.2)' }} />
+        <div className="absolute top-1/2 -translate-y-1/2 -left-[150px] w-[500px] h-[90vh] rounded-full blur-[180px]" style={{ background: 'hsl(190 85% 55% / 0.15)' }} />
       </div>
-      
+
       <div className="container mx-auto px-4 py-12 max-w-6xl relative z-10">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <Badge className="mb-4 bg-primary/20 text-primary border-primary/30">
-            <Settings className="h-3 w-3 mr-1" />
+        <div className="text-center mb-12">
+          <Badge className="mb-4 bg-primary/15 text-primary border-primary/20 backdrop-blur-md px-4 py-1.5 rounded-full text-[10px] tracking-widest uppercase font-bold">
+            <Settings className={`h-3 w-3 ${isRTL ? 'ml-2' : 'mr-2'}`} />
             {t('profile.accountManagement')}
           </Badge>
-          <h1 className="text-4xl font-bold text-foreground">{t('profile.title')}</h1>
+          <h1 className="text-5xl font-black text-foreground tracking-tighter italic">
+            {t('profile.title')}
+          </h1>
         </div>
-        
-        {/* Top row - 2 cards */}
-        <div className="grid md:grid-cols-2 gap-6 mb-6">
-          {/* Subscription Status Card */}
-          <Card className="backdrop-blur-2xl bg-card/40 border-white/5 shadow-2xl">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <span className="text-sm text-muted-foreground uppercase tracking-wider">{t('profile.accountLevel')}</span>
-                <Crown className={`h-6 w-6 ${isActive ? 'text-primary' : 'text-muted-foreground'}`} />
+
+        <div className="grid md:grid-cols-2 gap-8 mb-8">
+          {/* Access Level Card */}
+          <Card className="glass-card overflow-hidden group rounded-[2.5rem]">
+            <CardContent className="p-8">
+              <div className="flex items-center justify-between mb-8">
+                <div>
+                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] mb-1">{t('profile.accountLevel')}</p>
+                  <h3 className="text-3xl font-black italic tracking-tight">{isActive ? t('profile.premium') : t('profile.inactive')}</h3>
+                </div>
+                <div className="w-12 h-12 rounded-2xl bg-primary/20 flex items-center justify-center border border-primary/30 group-hover:scale-110 transition-transform">
+                  <Crown className="h-6 w-6 text-primary" />
+                </div>
               </div>
-              <h3 className="text-2xl font-bold mb-4">{isActive ? t('profile.premium') : (isRTL ? 'חינמית' : 'Free')}</h3>
-              <p className="text-sm text-muted-foreground mb-6">
-                {t('profile.unlockFeatures')}
-              </p>
+
+              <div className="bg-white/5 rounded-2xl p-6 border border-white/5 mb-8">
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  {t('profile.unlockFeatures')}
+                </p>
+              </div>
+
               {!isActive && (
-                <Button 
-                  className="w-full text-white font-semibold rounded-full shadow-lg transition-all hover:scale-105 hover:shadow-xl" 
-                  style={{ background: 'linear-gradient(135deg, hsl(25 90% 55%) 0%, hsl(200 100% 55%) 100%)' }}
-                  onClick={() => setShowUpgrade(!showUpgrade)}
+                <Button
+                  className="w-full bg-gradient-to-r from-primary to-orange-400 text-white font-bold py-7 rounded-2xl shadow-xl shadow-primary/20 transition-all hover:scale-[1.02]"
+                  onClick={() => navigate('/pricing')}
                 >
-                  <Crown className="w-4 h-4 mr-2" />
-                  {isRTL ? 'שדרג עכשיו' : 'Upgrade Now'}
+                  {t('profile.upgradeToPro')} <Crown className={`w-4 h-4 ${isRTL ? 'mr-3' : 'ml-3'}`} />
                 </Button>
               )}
             </CardContent>
           </Card>
 
-          {/* User Progress Card */}
-          <Card className="backdrop-blur-2xl bg-card/40 border-white/5 shadow-2xl">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between mb-4">
-                <span className="text-sm text-muted-foreground uppercase tracking-wider">{t('profile.authenticatedUser')}</span>
-                <User className="h-6 w-6 text-muted-foreground" />
+          {/* User Status Card */}
+          <Card className="glass-card group rounded-[2.5rem]">
+            <CardContent className="p-8">
+              <div className="flex items-center justify-between mb-8">
+                <div>
+                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] mb-1">{t('profile.authenticatedUser')}</p>
+                  <h3 className="text-3xl font-black italic tracking-tight">{user?.user_metadata?.display_name || 'USERNAME'}</h3>
+                </div>
+                <div className="w-12 h-12 rounded-full bg-blue-500/20 flex items-center justify-center border border-blue-500/30">
+                  <User className="h-6 w-6 text-blue-400" />
+                </div>
               </div>
-              <h3 className="text-2xl font-bold mb-4">{user?.user_metadata?.display_name || user?.email?.split('@')[0]}</h3>
-              <div className="flex items-center gap-2 mb-4">
-                <span className="text-3xl font-bold text-primary">{learned}</span>
-                <span className="text-muted-foreground">/ {total}</span>
-                <span className="text-sm text-muted-foreground ml-2">{t('profile.wordsLearned')}</span>
+
+              <div className="mb-10">
+                <div className="flex justify-between items-end mb-4">
+                  <span className="text-4xl font-black italic text-primary">{learned} / {total}</span>
+                  <span className="text-[10px] font-bold text-muted-foreground tracking-widest uppercase mb-1">{t('profile.wordsLearned')}</span>
+                </div>
+                <div className="h-3 w-full bg-white/5 rounded-full overflow-hidden border border-white/5 p-[1.5px]">
+                  <div className="h-full bg-primary rounded-full shadow-[0_0_15px_rgba(30,144,255,0.5)] transition-all duration-1000" style={{ width: `${percent}%` }} />
+                </div>
               </div>
-              <div className="flex gap-3">
-                <Button 
-                  variant="outline" 
-                  className="flex-1 backdrop-blur-sm bg-white/5 border-white/10"
-                  onClick={() => navigate('/practice')}
-                >
+
+              <div className="grid grid-cols-2 gap-4">
+                <Button variant="ghost" className="bg-white/5 hover:bg-white/10 text-white font-bold py-6 rounded-2xl border border-white/5" onClick={() => navigate('/practice')}>
                   {t('profile.practice')}
                 </Button>
-                <Button 
-                  className="flex-1 bg-gradient-to-r from-primary to-primary/80"
-                  onClick={() => navigate('/learn')}
-                >
+                <Button className="bg-primary hover:bg-primary/90 text-white font-bold py-6 rounded-2xl shadow-lg shadow-primary/20" onClick={() => navigate('/learn')}>
                   {t('profile.continueLearning')}
                 </Button>
               </div>
@@ -375,172 +274,91 @@ const Profile: React.FC = () => {
           </Card>
         </div>
 
-        {/* Upgrade Section */}
-        {showUpgrade && (
-          <Card className="backdrop-blur-2xl bg-card/40 border-white/5 shadow-2xl mb-6">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Crown className="h-5 w-5 text-primary" />
-                {t('profile.upgradePremium')}
-              </CardTitle>
-              <CardDescription>
-                {t('profile.choosePlan')}
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <PayPalCheckout onSuccess={() => {
-                setShowUpgrade(false);
-                window.location.reload();
-              }} />
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Middle row - 2 cards */}
-        <div className="grid md:grid-cols-2 gap-6 mb-6">
-          {/* Security Card */}
-          <Card className="backdrop-blur-2xl bg-card/40 border-white/5 shadow-2xl">
-            <CardContent className="p-6">
-              <div className="flex items-center gap-2 mb-6">
-                <h3 className="text-lg font-semibold">{t('profile.security')}</h3>
-                <Shield className="h-5 w-5 text-accent" />
+        <div className="grid md:grid-cols-5 gap-8 mb-8">
+          {/* Security Card - Column 2/5 */}
+          <Card className="glass-card md:col-span-2 rounded-[2.5rem]">
+            <CardContent className="p-8">
+              <div className="flex items-center gap-4 mb-8">
+                <h3 className="text-2xl font-black italic tracking-tighter">{t('profile.security')}</h3>
+                <Shield className="h-6 w-6 text-orange-400" />
               </div>
-              
-              <div className="space-y-3">
-                {isGoogleUser ? (
-                  <>
-                    <p className="text-xs text-muted-foreground mb-3">
-                      {isRTL 
-                        ? 'נרשמת באמצעות גוגל. תוכל ליצור סיסמה כדי להתחבר גם עם אימייל וסיסמה.' 
-                        : 'You signed up with Google. You can create a password to also log in with email and password.'}
-                    </p>
-                    <div className="space-y-2">
-                      <Input
-                        type="password"
-                        placeholder={isRTL ? "סיסמה חדשה" : "New password"}
-                        value={newPassword}
-                        onChange={(e) => setNewPassword(e.target.value)}
-                        className="glass-input border-white/10"
-                      />
-                      <Input
-                        type="password"
-                        placeholder={isRTL ? "אימות סיסמה" : "Confirm password"}
-                        value={confirmPassword}
-                        onChange={(e) => setConfirmPassword(e.target.value)}
-                        className="glass-input border-white/10"
-                      />
-                      <Button 
-                        onClick={handlePasswordUpdate}
-                        disabled={loading}
-                        className="w-full bg-gradient-to-r from-primary to-primary/80"
-                      >
-                        <KeyRound className="h-4 w-4 mr-2" />
-                        {isRTL ? 'צור סיסמה' : 'Create Password'}
-                      </Button>
-                    </div>
-                  </>
-                ) : (
-                  <Button 
-                    variant="outline" 
-                    className="w-full justify-start glass-button border-white/20"
-                    onClick={() => {
-                      toast({
-                        title: t('profile.resetPassword'),
-                        description: isRTL ? "הזן סיסמה חדשה למטה" : "Enter new password below"
-                      });
-                    }}
-                  >
-                    <KeyRound className="h-4 w-4 mr-2" />
-                    {t('profile.resetPassword')}
-                  </Button>
-                )}
-                
-                <Button 
-                  variant="outline" 
-                  className="w-full justify-start glass-button border-white/20"
+
+              <div className="space-y-4">
+                <Button
+                  variant="ghost"
+                  className="w-full justify-between bg-white/5 hover:bg-white/10 font-bold py-6 rounded-2xl border border-white/5"
+                  onClick={() => setShowUpgrade(u => !u)}
+                >
+                  <span>{t('profile.resetPassword')}</span>
+                  <Settings className="h-4 w-4 opacity-40" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  className="w-full justify-between bg-white/5 hover:bg-white/10 font-bold py-6 rounded-2xl border border-white/5"
                   onClick={handleSignOut}
                 >
-                  <LogOut className="h-4 w-4 mr-2" />
-                  {t('profile.signOut')}
+                  <span>{t('profile.signOut')}</span>
+                  <LogOut className="h-4 w-4 opacity-40" />
                 </Button>
-              </div>
-              
-              <div className="mt-6 pt-4 border-t border-white/10">
-                <p className="text-xs text-muted-foreground mb-3 uppercase tracking-wider">{t('profile.permanentActions')}</p>
-                <Button 
-                  variant="ghost" 
-                  className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                  onClick={handleDeleteAccount}
-                  disabled={loading}
-                >
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  {t('profile.deleteAccount')}
-                </Button>
+
+                <div className="pt-8">
+                  <p className="text-[10px] font-bold text-muted-foreground tracking-[0.2em] mb-4 uppercase">{t('profile.permanentActions')}</p>
+                  <Button
+                    variant="ghost"
+                    className="text-red-500 hover:text-red-400 hover:bg-red-500/10 font-bold px-0"
+                    onClick={handleDeleteAccount}
+                  >
+                    {t('profile.deleteAccount')} <Trash2 className={`h-4 w-4 ${isRTL ? 'mr-3' : 'ml-3'}`} />
+                  </Button>
+                </div>
               </div>
             </CardContent>
           </Card>
 
-          {/* Language & Level Card */}
-          <Card className="backdrop-blur-2xl bg-card/40 border-white/5 shadow-2xl">
-            <CardContent className="p-6">
-              <div className="flex items-center gap-2 mb-6">
-                <h3 className="text-lg font-semibold">{t('profile.languageAndLevel')}</h3>
-                <Languages className="h-5 w-5 text-accent" />
-              </div>
-              
-              {/* UI Language Toggle */}
-              <div className="mb-6">
-                <Label className="text-xs text-muted-foreground mb-3 block uppercase tracking-wider">
-                  {t('profile.interfaceLanguage')}
-                </Label>
-                <div className="flex gap-2">
-                  <Button
-                    variant={language === 'he' ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => setLanguage('he')}
-                    className={language === 'he' ? 'bg-primary' : 'glass-button border-white/20'}
-                  >
-                    🇮🇱 עברית
-                  </Button>
-                  <Button
-                    variant={language === 'en' ? 'default' : 'outline'}
-                    size="sm"
-                    onClick={() => setLanguage('en')}
-                    className={language === 'en' ? 'bg-primary' : 'glass-button border-white/20'}
-                  >
-                    🇺🇸 English
-                  </Button>
-                </div>
+          {/* Language & Level Card - Column 3/5 */}
+          <Card className="glass-card md:col-span-3 rounded-[2.5rem]">
+            <CardContent className="p-8">
+              <div className="flex items-center gap-4 mb-8">
+                <h3 className="text-2xl font-black italic tracking-tighter">{t('profile.languageAndLevel')}</h3>
+                <Languages className="h-6 w-6 text-primary" />
               </div>
 
-              {/* Level Selection */}
-              <div className="mb-6">
-                <Label className="text-xs text-muted-foreground mb-3 block uppercase tracking-wider">
-                  {t('profile.targetProficiency')}
-                </Label>
-                <div className="flex flex-wrap gap-2">
-                  {englishLevels.map((level) => (
+              <div className="grid md:grid-cols-2 gap-8">
+                <div>
+                  <p className="text-[10px] font-bold text-muted-foreground tracking-[0.2em] mb-4 uppercase">{t('profile.interfaceLanguage')}</p>
+                  <div className="flex gap-2">
                     <Button
-                      key={level.id}
-                      variant={englishLevel === level.id ? 'default' : 'outline'}
-                      size="sm"
-                      onClick={() => setEnglishLevel(level.id)}
-                      className={englishLevel === level.id 
-                        ? 'bg-primary' 
-                        : 'glass-button border-white/20'
-                      }
+                      className={`flex-1 font-bold py-4 rounded-xl transition-all ${language === 'he' ? 'bg-primary text-white shadow-lg' : 'bg-white/5 text-muted-foreground'}`}
+                      onClick={() => { setLanguage('he'); setSourceLanguage('hebrew'); }}
                     >
-                      {level.label}
+                      עברית
                     </Button>
-                  ))}
+                    <Button
+                      className={`flex-1 font-bold py-4 rounded-xl transition-all ${language === 'en' ? 'bg-primary text-white shadow-lg' : 'bg-white/5 text-muted-foreground'}`}
+                      onClick={() => { setLanguage('en'); setSourceLanguage('english'); }}
+                    >
+                      us English
+                    </Button>
+                  </div>
+                </div>
+
+                <div>
+                  <p className="text-[10px] font-bold text-muted-foreground tracking-[0.2em] mb-4 uppercase">{t('profile.targetProficiency')}</p>
+                  <div className="flex flex-wrap gap-2">
+                    {englishLevels.map(lvl => (
+                      <Button
+                        key={lvl.id}
+                        className={`font-bold px-4 py-2 text-xs rounded-xl transition-all ${englishLevel === lvl.id ? 'bg-primary text-white' : 'bg-white/5 text-muted-foreground'}`}
+                        onClick={() => setEnglishLevel(lvl.id)}
+                      >
+                        {lvl.label}
+                      </Button>
+                    ))}
+                  </div>
                 </div>
               </div>
 
-              <Button 
-                onClick={saveLanguageSettings}
-                className="w-full bg-gradient-to-r from-primary to-primary/80"
-                disabled={loading}
-              >
+              <Button onClick={saveLanguageSettings} className="w-full mt-10 bg-primary hover:bg-primary/90 text-white font-bold py-7 rounded-2xl shadow-xl shadow-primary/20">
                 {t('profile.applySettings')}
               </Button>
             </CardContent>
@@ -548,46 +366,36 @@ const Profile: React.FC = () => {
         </div>
 
         {/* Learning Interests Card */}
-        <Card className="backdrop-blur-2xl bg-card/40 border-white/5 shadow-2xl">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center gap-2">
-                <h3 className="text-lg font-semibold">{t('profile.learningInterests')}</h3>
-                <Target className="h-5 w-5 text-accent" />
-              </div>
-              <Button 
-                variant="outline"
+        <Card className="glass-card rounded-[2.5rem]">
+          <CardContent className="p-8">
+            <div className="flex items-center justify-between mb-8">
+              <h3 className="text-3xl font-black italic tracking-tighter">{t('profile.learningInterests')}</h3>
+              <Button
+                className="bg-primary/10 border border-primary/20 text-primary hover:bg-primary/20 font-bold px-8 rounded-xl"
                 onClick={saveTopicPreferences}
-                disabled={loading}
-                className="glass-button border-white/20"
               >
                 {t('profile.savePreferences')}
               </Button>
             </div>
-            
-            <p className="text-sm text-muted-foreground mb-6">
+            <p className="text-muted-foreground text-sm font-medium mb-10 opacity-70">
               {t('profile.selectCategories')}
             </p>
-            
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {availableTopics.map((topic) => (
+
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+              {availableTopics.map(topic => (
                 <div
                   key={topic.id}
                   onClick={() => handleTopicToggle(topic.id)}
-                  className={`glass-card rounded-xl p-4 cursor-pointer transition-all hover:scale-105 ${
-                    selectedTopics.includes(topic.id) 
-                      ? 'border-primary/50 bg-primary/10' 
-                      : 'border-white/10'
-                  }`}
+                  className={`relative p-8 rounded-[2.5rem] border-2 transition-all cursor-pointer group hover:scale-[1.03] ${selectedTopics.includes(topic.id) ? 'border-primary bg-primary/20 shadow-2xl shadow-primary/20' : 'border-white/5 bg-white/5'}`}
                 >
-                  <div className="flex items-center gap-2 mb-2">
-                    <Checkbox
-                      checked={selectedTopics.includes(topic.id)}
-                      onCheckedChange={() => handleTopicToggle(topic.id)}
-                      className="border-white/30"
-                    />
-                    <span className="text-2xl">
-                      {topic.id === 'basic' && '📚'}
+                  {selectedTopics.includes(topic.id) && (
+                    <div className="absolute top-4 right-4 bg-primary rounded-full p-1 border-2 border-background">
+                      <CheckCircle2 className="h-3 w-3 text-white" />
+                    </div>
+                  )}
+                  <div className="flex flex-col items-center text-center gap-4">
+                    <div className={`w-12 h-12 rounded-full flex items-center justify-center text-2xl transition-all duration-500 ${selectedTopics.includes(topic.id) ? 'bg-primary/30 scale-110' : 'bg-white/10 opacity-40'}`}>
+                      {topic.id === 'basic' && '⭐'}
                       {topic.id === 'business' && '💼'}
                       {topic.id === 'technology' && '💻'}
                       {topic.id === 'travel' && '✈️'}
@@ -595,10 +403,14 @@ const Profile: React.FC = () => {
                       {topic.id === 'health' && '🏥'}
                       {topic.id === 'education' && '📖'}
                       {topic.id === 'entertainment' && '🎬'}
-                    </span>
+                    </div>
+                    <div>
+                      <h4 className={`text-lg font-black tracking-tight italic ${selectedTopics.includes(topic.id) ? 'text-white' : 'text-muted-foreground'}`}>{topic.name}</h4>
+                      <p className="text-[10px] font-bold opacity-30 uppercase tracking-widest mt-1 hidden md:block">
+                        {topic.description.split(' ').slice(0, 3).join(' ')}
+                      </p>
+                    </div>
                   </div>
-                  <h4 className="font-semibold text-sm mb-1">{topic.name}</h4>
-                  <p className="text-xs text-muted-foreground">{topic.description}</p>
                 </div>
               ))}
             </div>

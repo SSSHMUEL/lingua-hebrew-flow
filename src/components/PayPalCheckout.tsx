@@ -6,6 +6,7 @@ import { Check, Sparkles, Loader2, PartyPopper } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useSubscription } from "@/components/SubscriptionGuard";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface PayPalCheckoutProps {
   onSuccess?: () => void;
@@ -91,6 +92,8 @@ const plans = [
 
 export const PayPalCheckout = ({ onSuccess }: PayPalCheckoutProps) => {
   const { toast } = useToast();
+  const { language, isRTL } = useLanguage();
+  const isHebrew = language === 'he';
   const { refreshSubscription, isActive } = useSubscription();
   const [isLoading, setIsLoading] = useState(true);
   const [userId, setUserId] = useState<string>("");
@@ -109,11 +112,11 @@ export const PayPalCheckout = ({ onSuccess }: PayPalCheckoutProps) => {
   const pollForSubscriptionUpdate = useCallback(async () => {
     const maxAttempts = 10;
     const pollInterval = 2000;
-    
+
     for (let i = 0; i < maxAttempts; i++) {
       await new Promise(resolve => setTimeout(resolve, pollInterval));
       await refreshSubscription();
-      
+
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
         const { data } = await supabase
@@ -121,12 +124,12 @@ export const PayPalCheckout = ({ onSuccess }: PayPalCheckoutProps) => {
           .select("status")
           .eq("user_id", user.id)
           .maybeSingle();
-        
+
         if (data?.status === "active") {
           setShowSuccess(true);
           toast({
-            title: "🎉 תודה על הרכישה!",
-            description: "המנוי שלך פעיל עכשיו. תהנה מגישה מלאה לכל התכנים!",
+            title: isHebrew ? "🎉 תודה על הרכישה!" : "🎉 Thank you for your purchase!",
+            description: isHebrew ? "המנוי שלך פעיל עכשיו. תהנה מגישה מלאה לכל התכנים!" : "Your subscription is now active. Enjoy full access to all content!",
           });
           onSuccess?.();
           return true;
@@ -134,7 +137,7 @@ export const PayPalCheckout = ({ onSuccess }: PayPalCheckoutProps) => {
       }
     }
     return false;
-  }, [refreshSubscription, toast, onSuccess]);
+  }, [refreshSubscription, toast, onSuccess, isHebrew]);
 
   useEffect(() => {
     const fetchPayPalConfig = async () => {
@@ -154,7 +157,7 @@ export const PayPalCheckout = ({ onSuccess }: PayPalCheckoutProps) => {
       } catch (error: any) {
         console.error("Failed to fetch PayPal config:", error);
 
-        let description = "לא ניתן לטעון את מערכת התשלומים";
+        let description = isHebrew ? "לא ניתן לטעון את מערכת התשלומים" : "Could not load the payment system";
         try {
           const ctx = error?.context;
           if (ctx && typeof ctx.json === "function") {
@@ -166,7 +169,7 @@ export const PayPalCheckout = ({ onSuccess }: PayPalCheckoutProps) => {
         }
 
         toast({
-          title: "שגיאה",
+          title: isHebrew ? "שגיאה" : "Error",
           description,
           variant: "destructive",
         });
@@ -185,7 +188,7 @@ export const PayPalCheckout = ({ onSuccess }: PayPalCheckoutProps) => {
 
     fetchPayPalConfig();
     getUser();
-  }, [toast]);
+  }, [toast, isHebrew]);
 
   useEffect(() => {
     if (!paypalConfig?.clientId) return;
@@ -232,8 +235,8 @@ export const PayPalCheckout = ({ onSuccess }: PayPalCheckoutProps) => {
     script.onerror = () => {
       console.error("Failed to load PayPal SDK");
       toast({
-        title: "שגיאה",
-        description: "לא ניתן לטעון את מערכת התשלומים",
+        title: isHebrew ? "שגיאה" : "Error",
+        description: isHebrew ? "לא ניתן לטעון את מערכת התשלומים" : "Could not load the payment system",
         variant: "destructive",
       });
     };
@@ -242,7 +245,7 @@ export const PayPalCheckout = ({ onSuccess }: PayPalCheckoutProps) => {
     return () => {
       // Don't remove script as it might be needed later
     };
-  }, [paypalConfig, toast]);
+  }, [paypalConfig, toast, isHebrew]);
 
   useEffect(() => {
     // Wait for userId to be available before rendering buttons
@@ -251,11 +254,11 @@ export const PayPalCheckout = ({ onSuccess }: PayPalCheckoutProps) => {
     plans.forEach((plan) => {
       const containerId = `paypal-button-${plan.id}`;
       const container = document.getElementById(containerId);
-      
+
       if (!container || buttonsRendered[plan.id]) return;
 
-      const planId = plan.id === "monthly" 
-        ? paypalConfig.monthlyPlanId 
+      const planId = plan.id === "monthly"
+        ? paypalConfig.monthlyPlanId
         : paypalConfig.yearlyPlanId;
 
       // Validate that planId exists
@@ -284,10 +287,10 @@ export const PayPalCheckout = ({ onSuccess }: PayPalCheckoutProps) => {
           },
           onApprove: async (data: { subscriptionID?: string }) => {
             console.log("PayPal subscription approved:", data.subscriptionID);
-            
+
             toast({
-              title: "מעבד את התשלום...",
-              description: "אנא המתן רגע",
+              title: isHebrew ? "מעבד את התשלום..." : "Processing payment...",
+              description: isHebrew ? "אנא המתן רגע" : "Please wait a moment",
             });
 
             // Notify our backend about the subscription
@@ -317,10 +320,10 @@ export const PayPalCheckout = ({ onSuccess }: PayPalCheckoutProps) => {
                 : err?.message || err?.details?.[0]?.issue || err?.name || "";
 
             toast({
-              title: "שגיאה",
+              title: isHebrew ? "שגיאה" : "Error",
               description: errMsg
-                ? `אירעה שגיאה בתשלום: ${errMsg}`
-                : "אירעה שגיאה בתשלום. נסה שוב.",
+                ? (isHebrew ? `אירעה שגיאה בתשלום: ${errMsg}` : `Payment error: ${errMsg}`)
+                : (isHebrew ? "אירעה שגיאה בתשלום. נסה שוב." : "Payment error. Please try again."),
               variant: "destructive",
             });
             setSelectedPlan(null);
@@ -333,7 +336,7 @@ export const PayPalCheckout = ({ onSuccess }: PayPalCheckoutProps) => {
         // Render Google Pay button if available
         const googlePayContainerId = `googlepay-button-${plan.id}`;
         const googlePayContainer = document.getElementById(googlePayContainerId);
-        
+
         if (googlePayContainer && window.paypal?.FUNDING?.GOOGLEPAY) {
           const googlePayButton = window.paypal!.Buttons({
             fundingSource: window.paypal!.FUNDING.GOOGLEPAY,
@@ -352,10 +355,10 @@ export const PayPalCheckout = ({ onSuccess }: PayPalCheckoutProps) => {
             },
             onApprove: async (data: { subscriptionID?: string }) => {
               console.log("Google Pay subscription approved:", data.subscriptionID);
-              
+
               toast({
-                title: "מעבד את התשלום...",
-                description: "אנא המתן רגע",
+                title: isHebrew ? "מעבד את התשלום..." : "Processing payment...",
+                description: isHebrew ? "אנא המתן רגע" : "Please wait a moment",
               });
 
               try {
@@ -384,10 +387,10 @@ export const PayPalCheckout = ({ onSuccess }: PayPalCheckoutProps) => {
                   : err?.message || err?.details?.[0]?.issue || err?.name || "";
 
               toast({
-                title: "שגיאה",
+                title: isHebrew ? "שגיאה" : "Error",
                 description: errMsg
-                  ? `אירעה שגיאה בתשלום: ${errMsg}`
-                  : "אירעה שגיאה בתשלום. נסה שוב.",
+                  ? (isHebrew ? `אירעה שגיאה בתשלום: ${errMsg}` : `Payment error: ${errMsg}`)
+                  : (isHebrew ? "אירעה שגיאה בתשלום. נסה שוב." : "Payment error. Please try again."),
                 variant: "destructive",
               });
               setSelectedPlan(null);
@@ -408,7 +411,7 @@ export const PayPalCheckout = ({ onSuccess }: PayPalCheckoutProps) => {
         console.error("Error rendering PayPal button:", err);
       }
     });
-  }, [paypalLoaded, paypalConfig, userId, pollForSubscriptionUpdate, toast, buttonsRendered]);
+  }, [paypalLoaded, paypalConfig, userId, pollForSubscriptionUpdate, toast, buttonsRendered, isHebrew]);
 
   if (isLoading) {
     return (
@@ -420,12 +423,14 @@ export const PayPalCheckout = ({ onSuccess }: PayPalCheckoutProps) => {
 
   if (showSuccess || isActive) {
     return (
-      <Card className="border-primary bg-primary/5">
+      <Card className="border-primary bg-primary/5 glass-card">
         <CardContent className="flex flex-col items-center justify-center p-8 text-center">
           <PartyPopper className="w-16 h-16 text-primary mb-4" />
-          <h3 className="text-2xl font-bold mb-2">תודה על הרכישה! 🎉</h3>
+          <h3 className="text-2xl font-bold mb-2">
+            {isHebrew ? "תודה על הרכישה! 🎉" : "Thank you for your purchase! 🎉"}
+          </h3>
           <p className="text-muted-foreground">
-            המנוי שלך פעיל עכשיו. תהנה מגישה מלאה לכל התכנים!
+            {isHebrew ? "המנוי שלך פעיל עכשיו. תהנה מגישה מלאה לכל התכנים!" : "Your subscription is now active. Enjoy full access to all content!"}
           </p>
         </CardContent>
       </Card>
@@ -433,47 +438,50 @@ export const PayPalCheckout = ({ onSuccess }: PayPalCheckoutProps) => {
   }
 
   return (
-    <div className="grid md:grid-cols-2 gap-4">
+    <div className="grid md:grid-cols-2 gap-4" dir={isRTL ? 'rtl' : 'ltr'}>
       {plans.map((plan) => (
         <Card
           key={plan.id}
-          className={`relative ${
-            plan.popular
-              ? "border-primary shadow-lg shadow-primary/20"
-              : "border-border"
-          }`}
+          className={`relative glass-card rounded-[2rem] ${plan.popular
+            ? "border-primary shadow-lg shadow-primary/20"
+            : "border-border"
+            }`}
         >
           {plan.popular && (
-            <Badge className="absolute -top-3 right-4 bg-primary">
-              <Sparkles className="w-3 h-3 ml-1" />
-              הכי משתלם
+            <Badge className={`absolute -top-3 ${isRTL ? 'right-4' : 'left-4'} bg-primary`}>
+              <Sparkles className={`w-3 h-3 ${isRTL ? 'ml-1' : 'mr-1'}`} />
+              {isHebrew ? "הכי משתלם" : "Most Popular"}
             </Badge>
           )}
           <CardHeader>
-            <CardTitle className="flex items-baseline gap-2">
+            <CardTitle className={`flex items-baseline gap-2 ${isRTL ? 'flex-row' : 'flex-row'}`}>
               <span className="text-3xl font-bold">{plan.price}</span>
-              <span className="text-muted-foreground text-sm">{plan.period}</span>
+              <span className="text-muted-foreground text-sm">
+                {isHebrew ? plan.period : plan.periodEn}
+              </span>
             </CardTitle>
-            <CardDescription>{plan.name}</CardDescription>
-            {plan.savings && (
+            <CardDescription className={isRTL ? 'text-right' : 'text-left'}>
+              {isHebrew ? plan.name : plan.nameEn}
+            </CardDescription>
+            {(isHebrew ? plan.savings : plan.savingsEn) && (
               <Badge variant="secondary" className="w-fit mt-2">
-                {plan.savings}
+                {isHebrew ? plan.savings : plan.savingsEn}
               </Badge>
             )}
           </CardHeader>
           <CardContent className="space-y-4">
             <ul className="space-y-2">
-              {plan.features.map((feature, i) => (
-                <li key={i} className="flex items-center gap-2 text-sm">
+              {(isHebrew ? plan.features : plan.featuresEn).map((feature, i) => (
+                <li key={i} className={`flex items-center gap-2 text-sm ${isRTL ? 'flex-row' : 'flex-row'}`}>
                   <Check className="w-4 h-4 text-primary flex-shrink-0" />
                   <span>{feature}</span>
                 </li>
               ))}
             </ul>
-            
+
             {/* PayPal Button Container */}
-            <div 
-              id={`paypal-button-${plan.id}`} 
+            <div
+              id={`paypal-button-${plan.id}`}
               className="min-h-[50px]"
             >
               {!paypalLoaded && (
@@ -482,17 +490,17 @@ export const PayPalCheckout = ({ onSuccess }: PayPalCheckoutProps) => {
                 </div>
               )}
             </div>
-            
+
             {/* Google Pay Button Container */}
-            <div 
-              id={`googlepay-button-${plan.id}`} 
+            <div
+              id={`googlepay-button-${plan.id}`}
               className="min-h-[40px]"
             />{/* Google Pay will only render if eligible */}
-            
+
             {selectedPlan === plan.id && (
               <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
                 <Loader2 className="w-4 h-4 animate-spin" />
-                מעבד...
+                {isHebrew ? "מעבד..." : "Processing..."}
               </div>
             )}
           </CardContent>
@@ -501,3 +509,4 @@ export const PayPalCheckout = ({ onSuccess }: PayPalCheckoutProps) => {
     </div>
   );
 };
+

@@ -35,25 +35,30 @@ export const SubscriptionProvider = ({ children }: { children: ReactNode }) => {
   const navigate = useNavigate();
 
   const fetchSubscription = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    
-    if (!user) {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+
+      if (!user) {
+        setLoading(false);
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from("subscriptions")
+        .select("status, plan, trial_end, current_period_end")
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      if (error) {
+        console.error("Error fetching subscription:", error);
+      }
+
+      setSubscription(data);
+    } catch (err) {
+      console.error("Subscription provider error:", err);
+    } finally {
       setLoading(false);
-      return;
     }
-
-    const { data, error } = await supabase
-      .from("subscriptions")
-      .select("status, plan, trial_end, current_period_end")
-      .eq("user_id", user.id)
-      .single();
-
-    if (error && error.code !== "PGRST116") {
-      console.error("Error fetching subscription:", error);
-    }
-
-    setSubscription(data);
-    setLoading(false);
   };
 
   useEffect(() => {
@@ -70,18 +75,18 @@ export const SubscriptionProvider = ({ children }: { children: ReactNode }) => {
 
   const calculateDaysRemaining = () => {
     if (!subscription) return 0;
-    
-    const endDate = subscription.status === "trialing" 
-      ? subscription.trial_end 
+
+    const endDate = subscription.status === "trialing"
+      ? subscription.trial_end
       : subscription.current_period_end;
-    
+
     if (!endDate) return 0;
-    
+
     const end = new Date(endDate);
     const now = new Date();
     const diffTime = end.getTime() - now.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    
+
     return Math.max(0, diffDays);
   };
 

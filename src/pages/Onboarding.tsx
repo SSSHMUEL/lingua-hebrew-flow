@@ -14,11 +14,11 @@ const Onboarding = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { t, setLearningDirection, language, isRTL } = useLanguage();
-  
+
   const [step, setStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [checkingAuth, setCheckingAuth] = useState(true);
-  
+
   const [learningDirection, setLearningDirectionLocal] = useState<'he-en' | 'en-he'>('he-en');
   const [level, setLevel] = useState("");
   const [selectedTopics, setSelectedTopics] = useState<string[]>([]);
@@ -54,7 +54,7 @@ const Onboarding = () => {
   useEffect(() => {
     const checkOnboardingStatus = async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      
+
       if (!user) {
         navigate("/auth");
         return;
@@ -69,7 +69,7 @@ const Onboarding = () => {
       if (profile?.onboarding_completed) {
         navigate("/");
       }
-      
+
       setCheckingAuth(false);
     };
 
@@ -85,7 +85,7 @@ const Onboarding = () => {
   };
 
   const handleTopicToggle = (topicId: string) => {
-    setSelectedTopics(prev => 
+    setSelectedTopics(prev =>
       prev.includes(topicId)
         ? prev.filter(id => id !== topicId)
         : [...prev, topicId]
@@ -110,10 +110,10 @@ const Onboarding = () => {
 
   const handleComplete = async () => {
     setIsLoading(true);
-    
+
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      
+
       if (!user) {
         navigate("/auth");
         return;
@@ -179,8 +179,8 @@ const Onboarding = () => {
 
       toast({
         title: learningDirection === 'en-he' ? "Welcome! 🎉" : "ברוך הבא! 🎉",
-        description: learningDirection === 'en-he' 
-          ? "Registration complete. You have 30 days free trial!" 
+        description: learningDirection === 'en-he'
+          ? "Registration complete. You have 30 days free trial!"
           : "ההרשמה הושלמה בהצלחה. יש לך 30 יום ניסיון חינם!",
       });
 
@@ -212,29 +212,28 @@ const Onboarding = () => {
     <div className="min-h-screen relative overflow-hidden py-8 px-4" style={{ background: 'var(--gradient-hero)' }} dir={currentDir}>
       {/* Fixed background effect - Orange glow on right, Cyan on left */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
-        <div 
+        <div
           className="absolute top-1/2 -translate-y-1/2 -right-[150px] w-[600px] h-[100vh] rounded-full blur-[180px]"
           style={{ background: 'hsl(25 85% 45% / 0.3)' }}
         />
-        <div 
+        <div
           className="absolute top-1/2 -translate-y-1/2 -left-[150px] w-[500px] h-[90vh] rounded-full blur-[180px]"
           style={{ background: 'hsl(190 85% 55% / 0.25)' }}
         />
       </div>
-      
+
       <div className="max-w-2xl mx-auto relative z-10">
         {/* Progress indicator */}
         <div className="flex items-center justify-center gap-2 mb-8">
           {[1, 2, 3].map((s) => (
             <div
               key={s}
-              className={`h-2 rounded-full transition-all duration-300 ${
-                s === step
+              className={`h-2 rounded-full transition-all duration-300 ${s === step
                   ? "w-12 bg-primary"
                   : s < step
-                  ? "w-8 bg-primary/60"
-                  : "w-8 bg-muted"
-              }`}
+                    ? "w-8 bg-primary/60"
+                    : "w-8 bg-muted"
+                }`}
             />
           ))}
         </div>
@@ -256,11 +255,10 @@ const Onboarding = () => {
             <CardContent className="space-y-4">
               <RadioGroup value={learningDirection} onValueChange={(v) => handleDirectionChange(v as 'he-en' | 'en-he')}>
                 <div
-                  className={`flex items-center p-6 rounded-xl border-2 transition-all cursor-pointer hover:border-primary/50 ${
-                    learningDirection === 'he-en'
+                  className={`flex items-center p-6 rounded-xl border-2 transition-all cursor-pointer hover:border-primary/50 ${learningDirection === 'he-en'
                       ? "border-primary bg-primary/5"
                       : "border-border"
-                  }`}
+                    }`}
                   onClick={() => handleDirectionChange('he-en')}
                 >
                   <RadioGroupItem value="he-en" id="he-en" />
@@ -274,17 +272,16 @@ const Onboarding = () => {
                       {isEnglishUI ? "Hebrew to English" : "מעברית לאנגלית"}
                     </div>
                     <div className="text-sm text-muted-foreground">
-                      אני דובר עברית ורוצה ללמוד אנגלית
+                      {isEnglishUI ? "I speak Hebrew and want to learn English" : "אני דובר עברית ורוצה ללמוד אנגלית"}
                     </div>
                   </Label>
                 </div>
 
                 <div
-                  className={`flex items-center p-6 rounded-xl border-2 transition-all cursor-pointer hover:border-primary/50 ${
-                    learningDirection === 'en-he'
+                  className={`flex items-center p-6 rounded-xl border-2 transition-all cursor-pointer hover:border-primary/50 ${learningDirection === 'en-he'
                       ? "border-primary bg-primary/5"
                       : "border-border"
-                  }`}
+                    }`}
                   onClick={() => handleDirectionChange('en-he')}
                 >
                   <RadioGroupItem value="en-he" id="en-he" />
@@ -298,7 +295,7 @@ const Onboarding = () => {
                       {isEnglishUI ? "English to Hebrew" : "מאנגלית לעברית"}
                     </div>
                     <div className="text-sm text-muted-foreground">
-                      I speak English and want to learn Hebrew
+                      {isEnglishUI ? "I speak English and want to learn Hebrew" : "אני דובר אנגלית ורוצה ללמוד עברית"}
                     </div>
                   </Label>
                 </div>
@@ -326,11 +323,10 @@ const Onboarding = () => {
                 {getLevels().map((lvl) => (
                   <div
                     key={lvl.id}
-                    className={`flex items-center p-4 rounded-xl border-2 transition-all cursor-pointer hover:border-primary/50 ${
-                      level === lvl.id
+                    className={`flex items-center p-4 rounded-xl border-2 transition-all cursor-pointer hover:border-primary/50 ${level === lvl.id
                         ? "border-primary bg-primary/5"
                         : "border-border"
-                    }`}
+                      }`}
                     onClick={() => setLevel(lvl.id)}
                   >
                     <RadioGroupItem value={lvl.id} id={lvl.id} />
@@ -364,11 +360,10 @@ const Onboarding = () => {
                 {getTopics().map((topic) => (
                   <div
                     key={topic.id}
-                    className={`flex items-center gap-2 p-3 rounded-xl border-2 transition-all cursor-pointer hover:border-primary/50 ${
-                      selectedTopics.includes(topic.id)
+                    className={`flex items-center gap-2 p-3 rounded-xl border-2 transition-all cursor-pointer hover:border-primary/50 ${selectedTopics.includes(topic.id)
                         ? "border-primary bg-primary/5"
                         : "border-border"
-                    }`}
+                      }`}
                     onClick={() => handleTopicToggle(topic.id)}
                   >
                     <Checkbox
@@ -387,7 +382,7 @@ const Onboarding = () => {
                   <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
                     <Sparkles className="w-5 h-5 text-primary" />
                   </div>
-                  <div>
+                  <div className={isEnglishUI ? 'text-left' : 'text-right'}>
                     <h4 className="font-semibold text-primary">
                       {isEnglishUI ? "30 Days Free Trial!" : "30 ימי ניסיון חינם!"}
                     </h4>
@@ -420,7 +415,7 @@ const Onboarding = () => {
           ) : (
             <div />
           )}
-          
+
           {step < 3 ? (
             <Button onClick={handleNext} className="gap-2">
               {isEnglishUI ? (
@@ -437,8 +432,8 @@ const Onboarding = () => {
             </Button>
           ) : (
             <Button onClick={handleComplete} disabled={isLoading} className="gap-2">
-              {isLoading 
-                ? (isEnglishUI ? "Saving..." : "שומר...") 
+              {isLoading
+                ? (isEnglishUI ? "Saving..." : "שומר...")
                 : (isEnglishUI ? "Let's Start! 🚀" : "בואו נתחיל! 🚀")}
             </Button>
           )}
@@ -447,5 +442,8 @@ const Onboarding = () => {
     </div>
   );
 };
+
+export default Onboarding;
+
 
 export default Onboarding;
