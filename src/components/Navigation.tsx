@@ -5,7 +5,7 @@ import { useAuth } from '@/components/AuthProvider';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { BookOpen, Home, Heart, LogOut, FlipHorizontal2, User, Menu, CreditCard, Sparkles, Info } from 'lucide-react';
+import { BookOpen, Home, Heart, LogOut, FlipHorizontal2, User, Menu, CreditCard, Sparkles, Info, Download } from 'lucide-react';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { useUserWordsSync } from '@/hooks/use-words';
 import { Logo } from '@/components/Logo';
@@ -77,6 +77,14 @@ export const Navigation: React.FC = () => {
       >
         <Heart className="h-4 w-4" />
         <span className="font-medium text-sm">{isHebrew ? 'מילים שלמדתי' : 'Learned Words'}</span>
+      </Link>
+      <Link
+        to="/downloads"
+        className={`flex items-center gap-2 text-muted-foreground hover:text-primary transition-all px-3 py-2 rounded-xl hover:bg-white/5 ${mobile ? 'w-full' : ''}`}
+        onClick={() => setIsOpen(false)}
+      >
+        <Download className="h-4 w-4" />
+        <span className="font-medium text-sm">{isHebrew ? 'הורדות' : 'Downloads'}</span>
       </Link>
       <Link
         to="/profile"

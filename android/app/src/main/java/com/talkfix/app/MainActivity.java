@@ -85,7 +85,7 @@ public class MainActivity extends BridgeActivity {
     }
 
     @Override
-    public void onStart() {
+    public void                                                                                                                   onStart() {
         super.onStart();
         checkAndRequestMicrophonePermission();
     }
