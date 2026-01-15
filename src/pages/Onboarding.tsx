@@ -27,11 +27,11 @@ const Onboarding = () => {
   const getLevels = () => {
     const isEnglishUI = learningDirection === 'en-he';
     return [
-      { id: "beginner", label: isEnglishUI ? "Beginner" : "מתחיל", description: isEnglishUI ? "I'm just starting to learn" : "אני רק מתחיל ללמוד" },
-      { id: "elementary", label: isEnglishUI ? "Elementary" : "בסיסי", description: isEnglishUI ? "I know basic words and simple phrases" : "אני מכיר מילים בסיסיות וביטויים פשוטים" },
-      { id: "intermediate", label: isEnglishUI ? "Intermediate" : "בינוני", description: isEnglishUI ? "I can have simple conversations" : "אני יכול לנהל שיחה פשוטה" },
-      { id: "upper-intermediate", label: isEnglishUI ? "Upper Intermediate" : "מתקדם בינוני", description: isEnglishUI ? "I understand most content but need improvement" : "אני מבין רוב התוכן אבל צריך לשפר" },
-      { id: "advanced", label: isEnglishUI ? "Advanced" : "מתקדם", description: isEnglishUI ? "I have high proficiency" : "אני שולט ברמה גבוהה" },
+      { id: "letters", label: isEnglishUI ? "Letters Only" : "אותיות בלבד", description: isEnglishUI ? "Learn the alphabet first" : "לימוד האלפבית האנגלי והמקבילות בעברית", icon: "🔤" },
+      { id: "beginner", label: isEnglishUI ? "Beginner" : "מתחיל", description: isEnglishUI ? "I'm just starting to learn" : "אני רק מתחיל ללמוד", icon: "🌱" },
+      { id: "elementary", label: isEnglishUI ? "Elementary" : "בסיסי", description: isEnglishUI ? "I know basic words and simple phrases" : "אני מכיר מילים בסיסיות וביטויים פשוטים", icon: "📚" },
+      { id: "intermediate", label: isEnglishUI ? "Intermediate" : "בינוני", description: isEnglishUI ? "I can have simple conversations" : "אני יכול לנהל שיחה פשוטה", icon: "💬" },
+      { id: "advanced", label: isEnglishUI ? "Advanced" : "מתקדם", description: isEnglishUI ? "I have high proficiency" : "אני שולט ברמה גבוהה", icon: "🎓" },
     ];
   };
 
@@ -331,7 +331,10 @@ const Onboarding = () => {
                   >
                     <RadioGroupItem value={lvl.id} id={lvl.id} />
                     <Label htmlFor={lvl.id} className={`flex-1 cursor-pointer ${isEnglishUI ? 'ml-3' : 'mr-3'}`}>
-                      <div className="font-semibold">{lvl.label}</div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xl">{lvl.icon}</span>
+                        <span className="font-semibold">{lvl.label}</span>
+                      </div>
                       <div className="text-sm text-muted-foreground">{lvl.description}</div>
                     </Label>
                   </div>

@@ -12,7 +12,9 @@ import { toast } from '@/hooks/use-toast';
 import { useDailyLimit } from '@/hooks/use-daily-limit';
 import { useSpeechRecognition, fuzzyMatch } from '@/hooks/use-speech-recognition';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { BookOpen, Volume2, CheckCircle, ArrowLeft, ArrowRight, Crown, Lock, Mic, MicOff, CheckCircle2, Sparkles } from 'lucide-react';
+import { useLearningLevel, getLevelLabel } from '@/hooks/use-learning-level';
+import { useLetters, Letter, getLetterWordPair } from '@/hooks/use-letters';
+import { BookOpen, Volume2, CheckCircle, ArrowLeft, ArrowRight, Crown, Lock, Mic, MicOff, CheckCircle2, Sparkles, Type } from 'lucide-react';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -32,6 +34,7 @@ interface VocabularyWord {
   example_sentence: string;
   pronunciation?: string;
   word_pair: string;
+  level?: string;
 }
 
 export const Learn: React.FC = () => {
@@ -40,10 +43,17 @@ export const Learn: React.FC = () => {
   const { language, isRTL, t } = useLanguage();
   const isHebrew = language === 'he';
 
+  // Learning level hook
+  const { level: learningLevel, loading: levelLoading } = useLearningLevel(user?.id);
+  const { letters, loading: lettersLoading } = useLetters();
+  const isLettersMode = learningLevel === 'letters';
+
   const [currentWord, setCurrentWord] = useState<VocabularyWord | null>(null);
+  const [currentLetter, setCurrentLetter] = useState<Letter | null>(null);
   const [categoryWords, setCategoryWords] = useState<VocabularyWord[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [learnedWords, setLearnedWords] = useState<Set<string>>(new Set());
+  const [learnedLetterPairs, setLearnedLetterPairs] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(true);
   const [currentCategory, setCurrentCategory] = useState<string>('');
   const [showUpgradeDialog, setShowUpgradeDialog] = useState(false);
@@ -57,9 +67,10 @@ export const Learn: React.FC = () => {
 
   // Speech recognition hook
   const handleSpeechResult = useCallback((transcript: string) => {
-    if (!currentWord || !speechPracticeMode) return;
+    const targetWord = isLettersMode ? currentLetter?.english_letter : currentWord?.english_word;
+    if (!targetWord || !speechPracticeMode) return;
 
-    const isMatch = fuzzyMatch(transcript, currentWord.english_word);
+    const isMatch = fuzzyMatch(transcript, targetWord);
 
     if (isMatch) {
       setSpeechSuccess(true);
@@ -75,13 +86,13 @@ export const Learn: React.FC = () => {
       // Auto-advance after 1.5 seconds
       setTimeout(() => {
         if (speechPracticeMode) {
-          nextWord();
+          nextItem();
           setSpeechSuccess(false);
           setShowNextAfterSuccess(false);
         }
       }, 1500);
     }
-  }, [currentWord, speechPracticeMode, isHebrew]);
+  }, [currentWord, currentLetter, speechPracticeMode, isHebrew, isLettersMode]);
 
   const handleSpeechError = useCallback((error: string) => {
     toast({
@@ -103,23 +114,60 @@ export const Learn: React.FC = () => {
     onError: handleSpeechError,
   });
 
-  // Reset speech states when word changes
+  // Reset speech states when word/letter changes
   useEffect(() => {
     setSpeechSuccess(false);
     setShowNextAfterSuccess(false);
     resetTranscript();
-  }, [currentWord, resetTranscript]);
+  }, [currentWord, currentLetter, resetTranscript]);
 
+  // Load data based on learning level
   useEffect(() => {
-    if (!user) {
-      navigate('/auth');
-      return;
-    }
+    if (!user || levelLoading) return;
 
-    loadLearningData();
-  }, [user, navigate]);
+    if (isLettersMode) {
+      loadLettersData();
+    } else {
+      loadLearningData();
+    }
+  }, [user, navigate, levelLoading, learningLevel]);
+
+  const loadLettersData = async () => {
+    if (!user) return;
+    setLoading(true);
+
+    try {
+      // Get user's learned word_pairs to check which letters are learned
+      const { data: learnedData } = await supabase
+        .from('learned_words')
+        .select('word_pair')
+        .eq('user_id', user.id);
+
+      const learnedPairs = new Set(learnedData?.map(item => item.word_pair) || []);
+      setLearnedLetterPairs(learnedPairs);
+
+      if (letters.length > 0) {
+        // Find first unlearned letter
+        const isHebrewToEnglish = language === 'he';
+        const firstUnlearnedIndex = letters.findIndex(letter => {
+          const wordPair = getLetterWordPair(letter, isHebrewToEnglish);
+          return !learnedPairs.has(wordPair);
+        });
+
+        const startIndex = firstUnlearnedIndex >= 0 ? firstUnlearnedIndex : 0;
+        setCurrentIndex(startIndex);
+        setCurrentLetter(letters[startIndex]);
+        setCurrentCategory(isHebrew ? 'אותיות' : 'Letters');
+      }
+    } catch (error) {
+      console.error('Error loading letters data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const loadLearningData = async () => {
+    if (!user) return;
     setLoading(true);
 
     try {
@@ -127,19 +175,29 @@ export const Learn: React.FC = () => {
       const { data: learnedData } = await supabase
         .from('learned_words')
         .select('vocabulary_word_id')
-        .eq('user_id', user!.id);
+        .eq('user_id', user.id);
 
       const learnedSet = new Set(learnedData?.map(item => item.vocabulary_word_id) || []);
       setLearnedWords(learnedSet);
 
-      // Get all vocabulary words grouped by category
+      // Map level to database level values
+      const levelMap: { [key: string]: string[] } = {
+        'basic': ['basic', 'beginner', 'elementary'],
+        'intermediate': ['intermediate'],
+        'advanced': ['advanced', 'upper-intermediate']
+      };
+
+      const levelValues = levelMap[learningLevel] || ['basic'];
+
+      // Get vocabulary words filtered by level
       const { data: wordsData } = await supabase
         .from('vocabulary_words')
         .select('*')
+        .in('level', levelValues)
         .order('category', { ascending: true })
         .order('created_at', { ascending: true });
 
-      if (wordsData) {
+      if (wordsData && wordsData.length > 0) {
         // Group words by category
         const categories = [...new Set(wordsData.map(word => word.category))];
 
@@ -173,6 +231,9 @@ export const Learn: React.FC = () => {
 
         setCurrentIndex(startIndex);
         setCurrentWord(targetWords[startIndex]);
+      } else {
+        setCurrentWord(null);
+        setCategoryWords([]);
       }
     } catch (error) {
       console.error('Error loading learning data:', error);
@@ -186,8 +247,9 @@ export const Learn: React.FC = () => {
     }
   };
 
+  // Unified mark as learned for both letters and words
   const markAsLearned = async () => {
-    if (!currentWord || !user) return;
+    if (!user) return;
 
     // Check daily limit for free users
     if (!isPremium && !canLearnMore) {
@@ -196,49 +258,104 @@ export const Learn: React.FC = () => {
     }
 
     try {
-      const { error } = await supabase
-        .from('learned_words')
-        .insert({
-          user_id: user.id,
-          vocabulary_word_id: currentWord.id,
-          word_pair: currentWord.word_pair
-        });
+      if (isLettersMode && currentLetter) {
+        const isHebrewToEnglish = language === 'he';
+        const wordPair = getLetterWordPair(currentLetter, isHebrewToEnglish);
+        
+        const { error } = await supabase
+          .from('learned_words')
+          .insert({
+            user_id: user.id,
+            vocabulary_word_id: currentLetter.id,
+            word_pair: wordPair
+          });
 
-      if (error) throw error;
+        if (error && error.code !== '23505') throw error;
 
-      setLearnedWords(prev => new Set([...prev, currentWord.id]));
-
-      // Refresh daily limit count
-      await refreshDailyLimit();
-
-      toast({
-        title: isHebrew ? "מעולה!" : "Excellent!",
-        description: isHebrew
-          ? `למדת את המילה "${currentWord.english_word}"`
-          : `You've learned the word "${currentWord.english_word}"`
-      });
-
-      // Move to next word
-      nextWord();
-    } catch (error: any) {
-      if (error.code === '23505') {
+        setLearnedLetterPairs(prev => new Set([...prev, wordPair]));
         toast({
-          title: isHebrew ? "כבר למדת" : "Already learned",
+          title: isHebrew ? "מעולה!" : "Excellent!",
           description: isHebrew
-            ? "המילה הזאת כבר נמצאת ברשימת המילים הנלמדות שלך"
-            : "This word is already in your learned words list"
+            ? `למדת את האות "${currentLetter.english_letter}"`
+            : `You've learned the letter "${currentLetter.english_letter}"`
         });
-      } else {
+      } else if (currentWord) {
+        const { error } = await supabase
+          .from('learned_words')
+          .insert({
+            user_id: user.id,
+            vocabulary_word_id: currentWord.id,
+            word_pair: currentWord.word_pair
+          });
+
+        if (error && error.code !== '23505') throw error;
+
+        setLearnedWords(prev => new Set([...prev, currentWord.id]));
         toast({
-          title: isHebrew ? "שגיאה" : "Error",
-          description: isHebrew ? "לא ניתן לסמן את המילה כנלמדת" : "Could not mark word as learned",
-          variant: "destructive"
+          title: isHebrew ? "מעולה!" : "Excellent!",
+          description: isHebrew
+            ? `למדת את המילה "${currentWord.english_word}"`
+            : `You've learned the word "${currentWord.english_word}"`
         });
+      }
+
+      await refreshDailyLimit();
+      nextItem();
+    } catch (error: any) {
+      toast({
+        title: isHebrew ? "שגיאה" : "Error",
+        description: isHebrew ? "לא ניתן לסמן כנלמד" : "Could not mark as learned",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const nextItem = () => {
+    if (isLettersMode) {
+      if (currentIndex < letters.length - 1) {
+        const newIndex = currentIndex + 1;
+        setCurrentIndex(newIndex);
+        setCurrentLetter(letters[newIndex]);
+      }
+    } else {
+      nextWord();
+    }
+  };
+
+  const previousItem = () => {
+    if (currentIndex > 0) {
+      const newIndex = currentIndex - 1;
+      setCurrentIndex(newIndex);
+      if (isLettersMode) {
+        setCurrentLetter(letters[newIndex]);
+      } else {
+        setCurrentWord(categoryWords[newIndex]);
       }
     }
   };
 
   const nextWord = () => {
+    if (currentIndex < categoryWords.length - 1) {
+      const newIndex = currentIndex + 1;
+      setCurrentIndex(newIndex);
+      setCurrentWord(categoryWords[newIndex]);
+    }
+  };
+
+  const speakItem = () => {
+    if ('speechSynthesis' in window) {
+      const text = isLettersMode ? currentLetter?.english_letter : currentWord?.english_word;
+      if (text) {
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'en-US';
+        utterance.rate = 0.8;
+        speechSynthesis.speak(utterance);
+      }
+    }
+  };
+
+  const totalItems = isLettersMode ? letters.length : categoryWords.length;
+  const progress = totalItems > 0 ? ((currentIndex + 1) / totalItems) * 100 : 0;
     if (currentIndex < categoryWords.length - 1) {
       const newIndex = currentIndex + 1;
       setCurrentIndex(newIndex);

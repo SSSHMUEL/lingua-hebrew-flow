@@ -33,12 +33,12 @@ const Profile: React.FC = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isGoogleUser, setIsGoogleUser] = useState(false);
 
-  const englishLevels = [
-    { id: "beginner", label: isHebrew ? "מתחיל" : "Beginner" },
-    { id: "elementary", label: isHebrew ? "בסיסי" : "Elementary" },
-    { id: "intermediate", label: isHebrew ? "בינוני" : "Intermediate" },
-    { id: "upper-intermediate", label: isHebrew ? "מתקדם בינוני" : "Upper-Intermediate" },
-    { id: "advanced", label: isHebrew ? "מתקדם" : "Advanced" },
+  const learningLevels = [
+    { id: "letters", label: isHebrew ? "אותיות בלבד" : "Letters Only", icon: "🔤", description: isHebrew ? "לימוד האלפבית" : "Learn the alphabet" },
+    { id: "beginner", label: isHebrew ? "מתחיל" : "Beginner", icon: "🌱", description: isHebrew ? "מתחיל ללמוד" : "Just starting" },
+    { id: "elementary", label: isHebrew ? "בסיסי" : "Elementary", icon: "📚", description: isHebrew ? "מילים בסיסיות" : "Basic words" },
+    { id: "intermediate", label: isHebrew ? "בינוני" : "Intermediate", icon: "💬", description: isHebrew ? "שיחות פשוטות" : "Simple conversations" },
+    { id: "advanced", label: isHebrew ? "מתקדם" : "Advanced", icon: "🎓", description: isHebrew ? "רמה גבוהה" : "High proficiency" },
   ];
 
   const availableTopics = [
@@ -343,14 +343,16 @@ const Profile: React.FC = () => {
                 </div>
 
                 <div>
-                  <p className="text-[10px] font-bold text-muted-foreground tracking-[0.2em] mb-4 uppercase">{t('profile.targetProficiency')}</p>
+                  <p className="text-[10px] font-bold text-muted-foreground tracking-[0.2em] mb-4 uppercase">{t('profile.learningLevel')}</p>
                   <div className="flex flex-wrap gap-2">
-                    {englishLevels.map(lvl => (
+                    {learningLevels.map(lvl => (
                       <Button
                         key={lvl.id}
-                        className={`font-bold px-4 py-2 text-xs rounded-xl transition-all ${englishLevel === lvl.id ? 'bg-primary text-white' : 'bg-white/5 text-muted-foreground'}`}
+                        className={`font-bold px-4 py-2 text-xs rounded-xl transition-all flex items-center gap-2 ${englishLevel === lvl.id ? 'bg-primary text-white' : 'bg-white/5 text-muted-foreground'}`}
                         onClick={() => setEnglishLevel(lvl.id)}
+                        title={lvl.description}
                       >
+                        <span>{lvl.icon}</span>
                         {lvl.label}
                       </Button>
                     ))}
