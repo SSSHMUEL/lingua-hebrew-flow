@@ -66,15 +66,40 @@ export type Database = {
           vocabulary_word_id?: string
           word_pair?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "learned_words_vocabulary_word_id_fkey"
-            columns: ["vocabulary_word_id"]
-            isOneToOne: false
-            referencedRelation: "vocabulary_words"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
+      }
+      letters: {
+        Row: {
+          created_at: string
+          display_order: number | null
+          english_letter: string
+          example_word: string | null
+          hebrew_letter: string
+          id: string
+          phonetic_description: string | null
+          pronunciation: string | null
+        }
+        Insert: {
+          created_at?: string
+          display_order?: number | null
+          english_letter: string
+          example_word?: string | null
+          hebrew_letter: string
+          id?: string
+          phonetic_description?: string | null
+          pronunciation?: string | null
+        }
+        Update: {
+          created_at?: string
+          display_order?: number | null
+          english_letter?: string
+          example_word?: string | null
+          hebrew_letter?: string
+          id?: string
+          phonetic_description?: string | null
+          pronunciation?: string | null
+        }
+        Relationships: []
       }
       numbers: {
         Row: {
@@ -290,6 +315,7 @@ export type Database = {
           example_sentence: string | null
           hebrew_translation: string
           id: string
+          level: string | null
           pronunciation: string | null
           updated_at: string
           word_pair: string | null
@@ -301,6 +327,7 @@ export type Database = {
           example_sentence?: string | null
           hebrew_translation: string
           id?: string
+          level?: string | null
           pronunciation?: string | null
           updated_at?: string
           word_pair?: string | null
@@ -312,6 +339,7 @@ export type Database = {
           example_sentence?: string | null
           hebrew_translation?: string
           id?: string
+          level?: string | null
           pronunciation?: string | null
           updated_at?: string
           word_pair?: string | null
