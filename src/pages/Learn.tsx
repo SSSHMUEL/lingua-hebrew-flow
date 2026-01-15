@@ -381,12 +381,51 @@ export const Learn: React.FC = () => {
     );
   }
 
+  // Hebrew translations for phonetic descriptions
+  const phoneticDescriptionsHebrew: Record<string, string> = {
+    'Silent letter or "ah" sound': 'אות שקטה או צליל "אָ"',
+    'Like English B': 'כמו B באנגלית',
+    'K sound (ק) or S sound (ס)': 'צליל ק או צליל ס',
+    'Like English D': 'כמו D באנגלית',
+    'Short or long E sound': 'צליל E קצר או ארוך',
+    'Like English F': 'כמו F באנגלית',
+    'Like English G in "go"': 'כמו G ב-"go"',
+    'Like English H': 'כמו H באנגלית',
+    'Like English I or Y sound': 'כמו I או Y באנגלית',
+    'Soft J sound': 'צליל J רך',
+    'Like English K': 'כמו K באנגלית',
+    'Like English L': 'כמו L באנגלית',
+    'Like English M': 'כמו M באנגלית',
+    'Like English N': 'כמו N באנגלית',
+    'O sound variations': 'וריאציות של צליל O',
+    'Like English P': 'כמו P באנגלית',
+    'Like English Q/K': 'כמו Q/K באנגלית',
+    'Guttural R sound': 'צליל R גרוני',
+    'Like English S': 'כמו S באנגלית',
+    'Like English T': 'כמו T באנגלית',
+    'Like English U': 'כמו U באנגלית',
+    'Like English V': 'כמו V באנגלית',
+    'Like English W': 'כמו W באנגלית',
+    'KS sound combination': 'שילוב צלילים KS',
+    'Like English Y': 'כמו Y באנגלית',
+    'Like English Z': 'כמו Z באנגלית'
+  };
+
   // Get display content based on mode
   const displayTitle = isLettersMode ? currentLetter?.english_letter : currentWord?.english_word;
   const displayTranslation = isLettersMode ? currentLetter?.hebrew_letter : currentWord?.hebrew_translation;
-  const displayDescription = isLettersMode 
-    ? currentLetter?.phonetic_description 
-    : currentWord?.example_sentence;
+  
+  // Get phonetic description with Hebrew translation if in Hebrew mode
+  const getPhoneticDescription = () => {
+    if (!isLettersMode) return currentWord?.example_sentence;
+    const englishDesc = currentLetter?.phonetic_description || '';
+    if (isHebrew && phoneticDescriptionsHebrew[englishDesc]) {
+      return phoneticDescriptionsHebrew[englishDesc];
+    }
+    return englishDesc;
+  };
+  
+  const displayDescription = getPhoneticDescription();
 
   return (
     <div className="min-h-screen relative overflow-hidden" style={{ background: 'var(--gradient-hero)' }}>

@@ -66,15 +66,7 @@ export type Database = {
           vocabulary_word_id?: string
           word_pair?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "learned_words_vocabulary_word_id_fkey"
-            columns: ["vocabulary_word_id"]
-            isOneToOne: false
-            referencedRelation: "vocabulary_words"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       letters: {
         Row: {

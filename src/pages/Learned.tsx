@@ -8,27 +8,27 @@ import { useAuth } from '@/components/AuthProvider';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Search, Heart, Trash2, BookOpen, Sparkles } from 'lucide-react';
+import { Search, Heart, Trash2, BookOpen, Sparkles, Type } from 'lucide-react';
 
-interface LearnedWord {
+interface LearnedItem {
   id: string;
   vocabulary_word_id: string;
+  word_pair: string;
   learned_at: string;
-  vocabulary_words: {
-    english_word: string;
-    hebrew_translation: string;
-    category: string;
-    example_sentence: string;
-  };
+  english_word?: string;
+  hebrew_translation?: string;
+  category?: string;
+  example_sentence?: string;
+  isLetter?: boolean;
 }
 
 export const Learned: React.FC = () => {
   const { user } = useAuth();
-  const { language, isRTL, t } = useLanguage();
+  const { language, isRTL } = useLanguage();
   const isHebrew = language === 'he';
   const navigate = useNavigate();
-  const [learnedWords, setLearnedWords] = useState<LearnedWord[]>([]);
-  const [filteredWords, setFilteredWords] = useState<LearnedWord[]>([]);
+  const [learnedItems, setLearnedItems] = useState<LearnedItem[]>([]);
+  const [filteredItems, setFilteredItems] = useState<LearnedItem[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
 
@@ -38,47 +38,98 @@ export const Learned: React.FC = () => {
       return;
     }
 
-    loadLearnedWords();
+    loadLearnedItems();
   }, [user, navigate]);
 
   useEffect(() => {
     if (searchTerm.trim() === '') {
-      setFilteredWords(learnedWords);
+      setFilteredItems(learnedItems);
     } else {
-      const filtered = learnedWords.filter(word =>
-        word.vocabulary_words.english_word.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        word.vocabulary_words.hebrew_translation.includes(searchTerm) ||
-        word.vocabulary_words.category.includes(searchTerm)
+      const filtered = learnedItems.filter(item =>
+        (item.english_word?.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (item.hebrew_translation?.includes(searchTerm)) ||
+        (item.category?.includes(searchTerm)) ||
+        (item.word_pair?.toLowerCase().includes(searchTerm.toLowerCase()))
       );
-      setFilteredWords(filtered);
+      setFilteredItems(filtered);
     }
-  }, [searchTerm, learnedWords]);
+  }, [searchTerm, learnedItems]);
 
-  const loadLearnedWords = async () => {
+  const loadLearnedItems = async () => {
     setLoading(true);
 
     try {
-      const { data, error } = await supabase
+      // Get all learned_words entries
+      const { data: learnedData, error: learnedError } = await supabase
         .from('learned_words')
-        .select(`
-          id,
-          vocabulary_word_id,
-          learned_at,
-          vocabulary_words (
-            english_word,
-            hebrew_translation,
-            category,
-            example_sentence
-          )
-        `)
+        .select('id, vocabulary_word_id, word_pair, learned_at')
         .eq('user_id', user!.id)
         .order('learned_at', { ascending: false });
 
-      if (error) throw error;
+      if (learnedError) throw learnedError;
 
-      setLearnedWords(data || []);
+      if (!learnedData || learnedData.length === 0) {
+        setLearnedItems([]);
+        setLoading(false);
+        return;
+      }
+
+      // Get vocabulary words data
+      const vocabIds = learnedData.map(item => item.vocabulary_word_id);
+      const { data: vocabData } = await supabase
+        .from('vocabulary_words')
+        .select('id, english_word, hebrew_translation, category, example_sentence')
+        .in('id', vocabIds);
+
+      // Get letters data
+      const { data: lettersData } = await supabase
+        .from('letters')
+        .select('id, english_letter, hebrew_letter, phonetic_description')
+        .in('id', vocabIds);
+
+      const vocabMap = new Map(vocabData?.map(v => [v.id, v]) || []);
+      const lettersMap = new Map(lettersData?.map(l => [l.id, l]) || []);
+
+      // Combine the data
+      const items: LearnedItem[] = learnedData.map(item => {
+        const vocab = vocabMap.get(item.vocabulary_word_id);
+        const letter = lettersMap.get(item.vocabulary_word_id);
+
+        if (vocab) {
+          return {
+            ...item,
+            english_word: vocab.english_word,
+            hebrew_translation: vocab.hebrew_translation,
+            category: vocab.category,
+            example_sentence: vocab.example_sentence,
+            isLetter: false
+          };
+        } else if (letter) {
+          return {
+            ...item,
+            english_word: letter.english_letter,
+            hebrew_translation: letter.hebrew_letter,
+            category: isHebrew ? 'אותיות' : 'Letters',
+            example_sentence: letter.phonetic_description || '',
+            isLetter: true
+          };
+        } else {
+          // Parse from word_pair if no match found
+          const [source, target] = item.word_pair.split(' - ');
+          return {
+            ...item,
+            english_word: isHebrew ? target : source,
+            hebrew_translation: isHebrew ? source : target,
+            category: isHebrew ? 'אותיות' : 'Letters',
+            example_sentence: '',
+            isLetter: true
+          };
+        }
+      });
+
+      setLearnedItems(items);
     } catch (error) {
-      console.error('Error loading learned words:', error);
+      console.error('Error loading learned items:', error);
       toast({
         title: isHebrew ? "שגיאה" : "Error",
         description: isHebrew ? "לא ניתן לטעון את המילים הנלמדות" : "Could not load learned words",
@@ -89,38 +140,38 @@ export const Learned: React.FC = () => {
     }
   };
 
-  const unmarkAsLearned = async (wordId: string, englishWord: string) => {
+  const unmarkAsLearned = async (itemId: string, displayWord: string) => {
     try {
       const { error } = await supabase
         .from('learned_words')
         .delete()
-        .eq('id', wordId);
+        .eq('id', itemId);
 
       if (error) throw error;
 
-      setLearnedWords(prev => prev.filter(word => word.id !== wordId));
+      setLearnedItems(prev => prev.filter(item => item.id !== itemId));
 
       toast({
         title: isHebrew ? "הוסר" : "Removed",
-        description: isHebrew ? `המילה "${englishWord}" הוסרה מהרשימה` : `"${englishWord}" removed from list`
+        description: isHebrew ? `"${displayWord}" הוסר מהרשימה` : `"${displayWord}" removed from list`
       });
     } catch (error) {
       toast({
         title: isHebrew ? "שגיאה" : "Error",
-        description: isHebrew ? "לא ניתן להסיר את המילה" : "Could not remove word",
+        description: isHebrew ? "לא ניתן להסיר" : "Could not remove",
         variant: "destructive"
       });
     }
   };
 
-  const groupedByCategory = filteredWords.reduce((acc, word) => {
-    const category = word.vocabulary_words.category;
+  const groupedByCategory = filteredItems.reduce((acc, item) => {
+    const category = item.category || (isHebrew ? 'אחר' : 'Other');
     if (!acc[category]) {
       acc[category] = [];
     }
-    acc[category].push(word);
+    acc[category].push(item);
     return acc;
-  }, {} as Record<string, LearnedWord[]>);
+  }, {} as Record<string, LearnedItem[]>);
 
   if (loading) {
     return (
@@ -133,7 +184,7 @@ export const Learned: React.FC = () => {
     );
   }
 
-  if (learnedWords.length === 0) {
+  if (learnedItems.length === 0) {
     return (
       <div className="min-h-screen" style={{ background: 'var(--gradient-hero)' }}>
         <div className="container mx-auto px-4 py-12">
@@ -187,11 +238,11 @@ export const Learned: React.FC = () => {
             <h1 className="text-4xl font-bold text-foreground mb-4">{isHebrew ? 'המילים שלמדת' : 'Your Learned Words'}</h1>
             <div className={`flex items-center justify-center gap-4 ${isRTL ? 'flex-row' : 'flex-row-reverse'}`}>
               <Badge className="bg-primary/20 text-primary border-primary/30 text-base px-4 py-2">
-                {learnedWords.length} {isHebrew ? 'מילים במאגר' : 'words mastered'}
+                {learnedItems.length} {isHebrew ? 'פריטים במאגר' : 'items mastered'}
               </Badge>
               {searchTerm && (
                 <Badge variant="outline" className="border-white/20">
-                  {filteredWords.length} {isHebrew ? 'תוצאות' : 'results'}
+                  {filteredItems.length} {isHebrew ? 'תוצאות' : 'results'}
                 </Badge>
               )}
             </div>
@@ -213,48 +264,53 @@ export const Learned: React.FC = () => {
 
           {/* Words by Category */}
           <div className="space-y-10">
-            {Object.entries(groupedByCategory).map(([category, words], categoryIndex) => (
+            {Object.entries(groupedByCategory).map(([category, items], categoryIndex) => (
               <div key={category}>
                 <div className={`flex items-center gap-4 mb-6 ${isRTL ? 'flex-row' : 'flex-row'}`}>
                   <Badge variant="outline" className="text-sm border-white/20 bg-white/5">
                     {categoryIndex + 1}
                   </Badge>
-                  <h2 className="text-xl font-semibold text-foreground">
-                    {category}
-                  </h2>
+                  <div className="flex items-center gap-2">
+                    {category === (isHebrew ? 'אותיות' : 'Letters') && <Type className="h-4 w-4 text-primary" />}
+                    <h2 className="text-xl font-semibold text-foreground">
+                      {category}
+                    </h2>
+                  </div>
                   <div className="flex-1 h-px bg-gradient-to-r from-white/20 to-transparent" />
                 </div>
 
                 <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                  {words.map((word) => (
-                    <Card key={word.id} className="glass-card border-white/10 hover:border-primary/30 transition-all duration-300 group">
+                  {items.map((item) => (
+                    <Card key={item.id} className="glass-card border-white/10 hover:border-primary/30 transition-all duration-300 group">
                       <CardHeader className="pb-2">
                         <div className={`flex items-center justify-between ${isRTL ? 'flex-row' : 'flex-row-reverse'}`}>
                           <Badge className="bg-primary/20 text-primary text-xs">
-                            {new Date(word.learned_at).toLocaleDateString(isHebrew ? 'he-IL' : 'en-US')}
+                            {new Date(item.learned_at).toLocaleDateString(isHebrew ? 'he-IL' : 'en-US')}
                           </Badge>
                           <span className="text-xs text-muted-foreground uppercase tracking-wider">
-                            {isHebrew ? 'נלמד' : 'Mastered'}
+                            {item.isLetter ? (isHebrew ? 'אות' : 'Letter') : (isHebrew ? 'נלמד' : 'Mastered')}
                           </span>
                         </div>
                         <CardTitle className={`text-2xl font-bold text-foreground mt-2 ${isRTL ? 'text-right' : 'text-left'}`}>
-                          {word.vocabulary_words.english_word}
+                          {item.english_word}
                         </CardTitle>
                       </CardHeader>
 
                       <CardContent className="space-y-4">
                         <p className={`text-xl font-semibold text-primary ${isRTL ? 'text-right' : 'text-left'}`}>
-                          {word.vocabulary_words.hebrew_translation}
+                          {item.hebrew_translation}
                         </p>
 
-                        <div className="glass-card rounded-xl p-3 bg-white/5">
-                          <p className={`text-sm text-muted-foreground italic ${isRTL ? 'text-right' : 'text-left'}`}>
-                            "{word.vocabulary_words.example_sentence}"
-                          </p>
-                        </div>
+                        {item.example_sentence && (
+                          <div className="glass-card rounded-xl p-3 bg-white/5">
+                            <p className={`text-sm text-muted-foreground italic ${isRTL ? 'text-right' : 'text-left'}`}>
+                              "{item.example_sentence}"
+                            </p>
+                          </div>
+                        )}
 
                         <Button
-                          onClick={() => unmarkAsLearned(word.id, word.vocabulary_words.english_word)}
+                          onClick={() => unmarkAsLearned(item.id, item.english_word || '')}
                           variant="ghost"
                           size="sm"
                           className="w-full text-destructive/70 hover:text-destructive hover:bg-destructive/10 rounded-full"
@@ -270,7 +326,7 @@ export const Learned: React.FC = () => {
             ))}
           </div>
 
-          {filteredWords.length === 0 && searchTerm && (
+          {filteredItems.length === 0 && searchTerm && (
             <div className="text-center py-12">
               <Search className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
               <h3 className="text-lg font-semibold mb-2 text-foreground">{isHebrew ? 'לא נמצאו תוצאות' : 'No results found'}</h3>
@@ -299,4 +355,3 @@ export const Learned: React.FC = () => {
 };
 
 export default Learned;
-
