@@ -119,7 +119,7 @@ serve(async (req) => {
       case "PAYMENT.SALE.COMPLETED": {
         // Recurring payment completed - extend the subscription
         const billingAgreementId = resource.billing_agreement_id;
-        
+
         const { data: subscription } = await supabase
           .from("subscriptions")
           .select("user_id, plan")
