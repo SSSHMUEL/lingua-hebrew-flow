@@ -65,6 +65,9 @@ export const Learn: React.FC = () => {
 
   const { canLearnMore, isPremium, remainingWords, refresh: refreshDailyLimit, dailyLimit, loading: limitLoading } = useDailyLimit(user?.id);
 
+  // Filtered letters state (will be populated in loadLettersData)
+  const [filteredLettersForNav, setFilteredLettersForNav] = useState<Letter[]>([]);
+
   // Navigation functions (defined before useCallback that uses them)
   const nextWord = useCallback(() => {
     if (currentIndex < categoryWords.length - 1) {
@@ -76,27 +79,27 @@ export const Learn: React.FC = () => {
 
   const nextItem = useCallback(() => {
     if (isLettersMode) {
-      if (currentIndex < letters.length - 1) {
+      if (currentIndex < filteredLettersForNav.length - 1) {
         const newIndex = currentIndex + 1;
         setCurrentIndex(newIndex);
-        setCurrentLetter(letters[newIndex]);
+        setCurrentLetter(filteredLettersForNav[newIndex]);
       }
     } else {
       nextWord();
     }
-  }, [isLettersMode, currentIndex, letters, nextWord]);
+  }, [isLettersMode, currentIndex, filteredLettersForNav, nextWord]);
 
   const previousItem = useCallback(() => {
     if (currentIndex > 0) {
       const newIndex = currentIndex - 1;
       setCurrentIndex(newIndex);
       if (isLettersMode) {
-        setCurrentLetter(letters[newIndex]);
+        setCurrentLetter(filteredLettersForNav[newIndex]);
       } else {
         setCurrentWord(categoryWords[newIndex]);
       }
     }
-  }, [currentIndex, isLettersMode, letters, categoryWords]);
+  }, [currentIndex, isLettersMode, filteredLettersForNav, categoryWords]);
 
   // Speech recognition hook
   const handleSpeechResult = useCallback((transcript: string) => {
@@ -153,9 +156,10 @@ export const Learn: React.FC = () => {
     resetTranscript();
   }, [currentWord, currentLetter, resetTranscript]);
 
-  // Load letters data
+  
+  // Load letters data - only unlearned letters
   const loadLettersData = useCallback(async () => {
-    if (!user) return;
+    if (!user || letters.length === 0) return;
     setLoading(true);
 
     try {
@@ -167,17 +171,22 @@ export const Learn: React.FC = () => {
       const learnedPairs = new Set(learnedData?.map(item => item.word_pair) || []);
       setLearnedLetterPairs(learnedPairs);
 
-      if (letters.length > 0) {
-        const isHebrewToEnglish = language === 'he';
-        const firstUnlearnedIndex = letters.findIndex(letter => {
-          const wordPair = getLetterWordPair(letter, isHebrewToEnglish);
-          return !learnedPairs.has(wordPair);
-        });
+      const isHebrewToEnglish = language === 'he';
+      
+      // Filter to only unlearned letters
+      const unlearnedLetters = letters.filter(letter => {
+        const wordPair = getLetterWordPair(letter, isHebrewToEnglish);
+        return !learnedPairs.has(wordPair);
+      });
 
-        const startIndex = firstUnlearnedIndex >= 0 ? firstUnlearnedIndex : 0;
-        setCurrentIndex(startIndex);
-        setCurrentLetter(letters[startIndex]);
-        setCurrentCategory(isHebrew ? 'אותיות' : 'Letters');
+      setFilteredLettersForNav(unlearnedLetters);
+      setCurrentCategory(isHebrew ? 'אותיות' : 'Letters');
+      
+      if (unlearnedLetters.length > 0) {
+        setCurrentIndex(0);
+        setCurrentLetter(unlearnedLetters[0]);
+      } else {
+        setCurrentLetter(null);
       }
     } catch (error) {
       console.error('Error loading letters data:', error);
@@ -186,64 +195,57 @@ export const Learn: React.FC = () => {
     }
   }, [user, letters, language, isHebrew]);
 
-  // Load vocabulary data
+  // Load vocabulary data - only unlearned words
   const loadLearningData = useCallback(async () => {
     if (!user) return;
     setLoading(true);
 
     try {
-      const { data: learnedData } = await supabase
-        .from('learned_words')
-        .select('vocabulary_word_id')
-        .eq('user_id', user.id);
-
-      const learnedSet = new Set(learnedData?.map(item => item.vocabulary_word_id) || []);
-      setLearnedWords(learnedSet);
-
+      // Fetch learned words and vocabulary in parallel
       const levelMap: { [key: string]: string[] } = {
         'basic': ['basic', 'beginner', 'elementary'],
         'intermediate': ['intermediate'],
         'advanced': ['advanced', 'upper-intermediate']
       };
-
       const levelValues = levelMap[learningLevel] || ['basic'];
 
-      const { data: wordsData } = await supabase
-        .from('vocabulary_words')
-        .select('*')
-        .in('level', levelValues)
-        .order('category', { ascending: true })
-        .order('created_at', { ascending: true });
+      const [learnedResponse, wordsResponse] = await Promise.all([
+        supabase
+          .from('learned_words')
+          .select('vocabulary_word_id')
+          .eq('user_id', user.id),
+        supabase
+          .from('vocabulary_words')
+          .select('id, english_word, hebrew_translation, category, example_sentence, pronunciation, word_pair, level')
+          .in('level', levelValues)
+          .order('category', { ascending: true })
+          .order('created_at', { ascending: true })
+      ]);
+
+      const learnedSet = new Set(learnedResponse.data?.map(item => item.vocabulary_word_id) || []);
+      setLearnedWords(learnedSet);
+
+      const wordsData = wordsResponse.data;
 
       if (wordsData && wordsData.length > 0) {
-        const categories = [...new Set(wordsData.map(word => word.category))];
-        let targetCategory = '';
-        let targetWords: VocabularyWord[] = [];
+        // Filter to only unlearned words
+        const unlearnedWords = wordsData.filter(word => !learnedSet.has(word.id));
 
-        for (const category of categories) {
-          const categoryWordsData = wordsData.filter(word => word.category === category);
-          const unlearnedInCategory = categoryWordsData.filter(word => !learnedSet.has(word.id));
+        if (unlearnedWords.length > 0) {
+          // Group by category and get first category with unlearned words
+          const categories = [...new Set(unlearnedWords.map(word => word.category))];
+          const targetCategory = categories[0];
+          const targetWords = unlearnedWords.filter(word => word.category === targetCategory);
 
-          if (unlearnedInCategory.length > 0) {
-            targetCategory = category;
-            targetWords = categoryWordsData;
-            break;
-          }
+          setCurrentCategory(targetCategory);
+          setCategoryWords(targetWords);
+          setCurrentIndex(0);
+          setCurrentWord(targetWords[0]);
+        } else {
+          // All words learned
+          setCurrentWord(null);
+          setCategoryWords([]);
         }
-
-        if (targetWords.length === 0) {
-          targetCategory = categories[0];
-          targetWords = wordsData.filter(word => word.category === targetCategory);
-        }
-
-        setCurrentCategory(targetCategory);
-        setCategoryWords(targetWords);
-
-        const firstUnlearnedIndex = targetWords.findIndex(word => !learnedSet.has(word.id));
-        const startIndex = firstUnlearnedIndex >= 0 ? firstUnlearnedIndex : 0;
-
-        setCurrentIndex(startIndex);
-        setCurrentWord(targetWords[startIndex]);
       } else {
         setCurrentWord(null);
         setCategoryWords([]);
@@ -296,6 +298,19 @@ export const Learn: React.FC = () => {
         if (error && error.code !== '23505') throw error;
 
         setLearnedLetterPairs(prev => new Set([...prev, wordPair]));
+        
+        // Remove learned letter from filtered array and move to next
+        const newFiltered = filteredLettersForNav.filter(l => l.id !== currentLetter.id);
+        setFilteredLettersForNav(newFiltered);
+        
+        if (newFiltered.length > 0) {
+          const nextIndex = Math.min(currentIndex, newFiltered.length - 1);
+          setCurrentIndex(nextIndex);
+          setCurrentLetter(newFiltered[nextIndex]);
+        } else {
+          setCurrentLetter(null);
+        }
+
         toast({
           title: isHebrew ? "מעולה!" : "Excellent!",
           description: isHebrew
@@ -314,6 +329,19 @@ export const Learn: React.FC = () => {
         if (error && error.code !== '23505') throw error;
 
         setLearnedWords(prev => new Set([...prev, currentWord.id]));
+        
+        // Remove learned word from array and move to next
+        const newWords = categoryWords.filter(w => w.id !== currentWord.id);
+        setCategoryWords(newWords);
+        
+        if (newWords.length > 0) {
+          const nextIndex = Math.min(currentIndex, newWords.length - 1);
+          setCurrentIndex(nextIndex);
+          setCurrentWord(newWords[nextIndex]);
+        } else {
+          setCurrentWord(null);
+        }
+
         toast({
           title: isHebrew ? "מעולה!" : "Excellent!",
           description: isHebrew
@@ -323,7 +351,6 @@ export const Learn: React.FC = () => {
       }
 
       await refreshDailyLimit();
-      nextItem();
     } catch (error) {
       toast({
         title: isHebrew ? "שגיאה" : "Error",
@@ -345,7 +372,7 @@ export const Learn: React.FC = () => {
     }
   };
 
-  const totalItems = isLettersMode ? letters.length : categoryWords.length;
+  const totalItems = isLettersMode ? filteredLettersForNav.length : categoryWords.length;
   const progress = totalItems > 0 ? ((currentIndex + 1) / totalItems) * 100 : 0;
 
   if (loading || limitLoading || levelLoading) {
