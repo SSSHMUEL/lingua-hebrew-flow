@@ -499,19 +499,19 @@ export const AITeacher: React.FC = () => {
                         messages.map((message, index) => (
                           <div
                             key={index}
-                            className={`flex gap-4 ${message.role === 'user' ? (isRTL ? 'flex-row' : 'flex-row-reverse') : (isRTL ? 'flex-row-reverse' : 'flex-row')}`}
+                            className={`flex gap-4 group ${message.role === 'user' ? (isRTL ? 'flex-row' : 'flex-row-reverse') : (isRTL ? 'flex-row-reverse' : 'flex-row')}`}
                           >
-                            <div className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center shadow-lg ${message.role === 'user'
-                              ? 'bg-gradient-to-br from-primary to-blue-600 text-white'
-                              : 'bg-gradient-to-br from-slate-700 to-slate-900 text-white border border-white/10'
+                            <div className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300 ${message.role === 'user'
+                                ? 'bg-gradient-to-br from-primary to-blue-600 border border-white/20'
+                                : 'bg-gradient-to-br from-accent to-orange-500 border border-white/20'
                               }`}>
-                              {message.role === 'user' ? <User className="h-5 w-5" /> : <Bot className="h-5 w-5" />}
+                              {message.role === 'user' ? <User className="h-5 w-5 text-white" /> : <Sparkles className="h-5 w-5 text-white" />}
                             </div>
-                            <div className={`flex-1 max-w-[85%] rounded-2xl px-6 py-4 shadow-md backdrop-blur-sm ${message.role === 'user'
-                              ? 'bg-primary/20 border border-primary/20 text-white rounded-br-sm'
-                              : 'bg-white/5 border border-white/10 text-gray-200 rounded-bl-sm'
+                            <div className={`flex-1 max-w-[85%] rounded-[1.5rem] px-6 py-4 shadow-xl backdrop-blur-md animate-in fade-in slide-in-from-top-1 duration-300 ${message.role === 'user'
+                              ? 'bg-primary/15 border border-primary/30 text-white rounded-br-none'
+                              : 'bg-white/10 border border-white/15 text-gray-100 rounded-bl-none'
                               }`}>
-                              <div className={`prose prose-sm prose-invert max-w-none`}>
+                              <div className={`prose prose-sm prose-invert max-w-none leading-relaxed`}>
                                 <ReactMarkdown>{message.content}</ReactMarkdown>
                               </div>
                               {message.role === 'assistant' && (
@@ -544,38 +544,44 @@ export const AITeacher: React.FC = () => {
 
                       {isLoading && (
                         <div className={`flex gap-3 ${isRTL ? 'flex-row-reverse' : 'flex-row'}`}>
-                          <div className="flex-shrink-0 w-10 h-10 rounded-full bg-slate-800 border border-white/10 flex items-center justify-center">
-                            <Bot className="h-5 w-5 text-gray-400" />
+                          <div className="flex-shrink-0 w-10 h-10 rounded-full bg-gradient-to-br from-accent to-orange-500 border border-white/20 flex items-center justify-center shadow-lg">
+                            <Sparkles className="h-5 w-5 text-white animate-pulse" />
                           </div>
-                          <div className="bg-white/5 border border-white/10 rounded-2xl px-6 py-4 flex items-center gap-2">
-                            <Loader2 className="h-4 w-4 animate-spin text-primary" />
-                            <span className="text-sm text-gray-400">{isHebrew ? 'חושב...' : 'Thinking...'}</span>
+                          <div className="bg-white/10 border border-white/15 rounded-2xl rounded-bl-none px-6 py-4 flex items-center gap-3 backdrop-blur-md">
+                            <div className="flex gap-1">
+                              <span className="w-1.5 h-1.5 bg-accent rounded-full animate-bounce [animation-delay:-0.3s]"></span>
+                              <span className="w-1.5 h-1.5 bg-accent rounded-full animate-bounce [animation-delay:-0.15s]"></span>
+                              <span className="w-1.5 h-1.5 bg-accent rounded-full animate-bounce"></span>
+                            </div>
+                            <span className="text-sm text-gray-300 font-medium">{isHebrew ? 'המורה חושב...' : 'Teacher is thinking...'}</span>
                           </div>
                         </div>
                       )}
                       <div ref={messagesEndRef} />
                     </div>
 
-                    <div className="p-4 border-t border-white/10 bg-black/20 backdrop-blur-md">
-                      <div className="flex gap-3 relative">
-                        <Textarea
-                          ref={textareaRef}
-                          value={input}
-                          onChange={(e) => setInput(e.target.value)}
-                          onKeyDown={handleKeyDown}
-                          placeholder={isHebrew ? 'הקלד הודעה...' : 'Type a message...'}
-                          className="min-h-[50px] max-h-[150px] resize-none bg-white/5 border-white/10 focus:border-primary/50 focus:ring-1 focus:ring-primary/50 text-base pr-12 rounded-xl"
-                          disabled={isLoading}
-                        />
+                    <div className="p-6 border-t border-white/10 bg-black/40 backdrop-blur-xl">
+                      <div className="flex gap-4 items-end relative">
+                        <div className="flex-1 relative">
+                          <Textarea
+                            ref={textareaRef}
+                            value={input}
+                            onChange={(e) => setInput(e.target.value)}
+                            onKeyDown={handleKeyDown}
+                            placeholder={isHebrew ? 'כתבו פה למורה...' : 'Type here to the teacher...'}
+                            className="min-h-[60px] max-h-[200px] py-4 px-6 resize-none bg-white/5 border-white/15 focus:border-primary/50 focus:ring-1 focus:ring-primary/40 text-base rounded-[1.5rem] shadow-inner transition-all duration-300"
+                            disabled={isLoading}
+                          />
+                        </div>
                         <Button
                           onClick={handleSend}
                           disabled={!input.trim() || isLoading}
-                          className="h-[50px] w-[50px] rounded-xl flex-shrink-0 bg-primary hover:bg-primary/90 transition-all shadow-lg shadow-primary/25"
+                          className="h-[60px] w-[60px] rounded-2xl flex-shrink-0 bg-gradient-to-br from-primary to-blue-600 hover:from-primary/90 hover:to-blue-600/90 transition-all duration-300 shadow-xl shadow-primary/20 transform active:scale-95"
                         >
                           {isLoading ? (
-                            <Loader2 className="h-5 w-5 animate-spin" />
+                            <Loader2 className="h-6 w-6 animate-spin" />
                           ) : (
-                            <Send className="h-5 w-5 ml-0.5" />
+                            <Send className="h-6 w-6 ml-0.5" />
                           )}
                         </Button>
                       </div>
@@ -590,25 +596,25 @@ export const AITeacher: React.FC = () => {
                 {/* Visualizer / Avatar */}
                 <div className="relative mb-16">
                   {/* Main Circle */}
-                  <div className={`w-56 h-56 rounded-full flex items-center justify-center relative z-10 transition-all duration-700 ${isSpeaking
+                  <div className={`w-56 h-56 rounded-full flex items-center justify-center relative z-10 transition-all duration-700 group ${isSpeaking
                     ? 'bg-gradient-to-br from-accent to-orange-600 shadow-[0_0_80px_rgba(255,100,0,0.5)] scale-110'
                     : (isListening
                       ? 'bg-gradient-to-br from-primary to-blue-600 shadow-[0_0_80px_rgba(59,130,246,0.5)] scale-105'
                       : 'bg-gradient-to-br from-slate-800 to-slate-950 border border-white/10 shadow-2xl')
                     }`}>
                     {isSpeaking ? (
-                      <div className="text-white flex flex-col items-center">
-                        <Volume2 className="h-20 w-20 mb-2 animate-pulse" />
-                        <span className="text-xs font-bold tracking-widest uppercase opacity-80">{isHebrew ? 'מדבר' : 'SPEAKING'}</span>
+                      <div className="text-white flex flex-col items-center animate-in zoom-in duration-300">
+                        <Volume2 className="h-24 w-24 mb-2 animate-pulse" />
+                        <span className="text-sm font-bold tracking-widest uppercase opacity-90 bg-white/10 px-4 py-1 rounded-full">{isHebrew ? 'המורה מדבר' : 'SPEAKING'}</span>
                       </div>
                     ) : isListening ? (
-                      <div className="text-white flex flex-col items-center">
-                        <Mic className="h-20 w-20 mb-2 animate-pulse" />
-                        <span className="text-xs font-bold tracking-widest uppercase opacity-80">{isHebrew ? 'מקשיב' : 'LISTENING'}</span>
+                      <div className="text-white flex flex-col items-center animate-in zoom-in duration-300">
+                        <Mic className="h-24 w-24 mb-2 animate-pulse" />
+                        <span className="text-sm font-bold tracking-widest uppercase opacity-90 bg-white/10 px-4 py-1 rounded-full">{isHebrew ? 'מקשיב לך...' : 'LISTENING'}</span>
                       </div>
                     ) : (
-                      <div className="text-white/50 flex flex-col items-center">
-                        <Bot className="h-24 w-24 mb-2 stroke-[1]" />
+                      <div className="text-white/60 flex flex-col items-center group-hover:scale-110 transition-transform duration-500">
+                        <Sparkles className="h-28 w-28 mb-2 stroke-[1] text-accent/80" />
                       </div>
                     )}
                   </div>
