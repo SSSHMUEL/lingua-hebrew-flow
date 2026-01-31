@@ -18,7 +18,7 @@ const Learn = lazy(() => import("./pages/Learn"));
 const Learned = lazy(() => import("./pages/Learned"));
 const Downloads = lazy(() => import("./pages/Downloads"));
 const About = lazy(() => import("./pages/About"));
-const AISubtitles = lazy(() => import("./pages/AISubtitles"));
+const AITeacher = lazy(() => import("./pages/AITeacher"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const Flashcards = lazy(() => import("./pages/Flashcards"));
 const Quiz = lazy(() => import("./pages/Quiz"));
@@ -68,7 +68,7 @@ const AppContent = () => {
           <Route path="/quiz" element={<ProtectedRoute><Quiz /></ProtectedRoute>} />
           <Route path="/learned" element={<ProtectedRoute><Learned /></ProtectedRoute>} />
           <Route path="/downloads" element={<ProtectedRoute><Downloads /></ProtectedRoute>} />
-          <Route path="/ai-subtitles" element={<ProtectedRoute><AISubtitles /></ProtectedRoute>} />
+          <Route path="/ai-teacher" element={<ProtectedRoute><AITeacher /></ProtectedRoute>} />
           <Route path="/practice" element={<ProtectedRoute><Practice /></ProtectedRoute>} />
           <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
 
