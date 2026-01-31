@@ -384,21 +384,22 @@ export const Learn: React.FC = () => {
                 <p className="text-[10px] md:text-xs text-muted-foreground">{currentCategory}</p>
               </div>
             </div>
-            <Badge className="glass-card border-primary/30 text-primary px-2 py-0.5 md:px-3 md:py-1 text-[10px] md:text-xs">
-              <Sparkles className="h-3 w-3 mr-1 md:mr-2" />
-              {currentIndex + 1} / {totalItems}
+            <Badge className="bg-primary/20 text-primary border border-primary/30 px-3 py-1 font-bold shadow-lg shadow-primary/10">
+              <Sparkles className="h-3 w-3 mr-1 md:mr-2 text-primary" />
+              <span className="text-white drop-shadow-md">
+                {currentIndex + 1} / {totalItems}
+              </span>
             </Badge>
           </div>
 
-          {/* Progress */}
+          {/* Progress area - simplified */}
           <div className="flex-shrink-0">
-            <div className="flex justify-between items-center mb-0.5 md:mb-1 text-[10px]">
-              <span className="text-primary font-semibold">{Math.round(progress)}%</span>
-              <span className="text-muted-foreground">
-                {currentIndex + 1} / {totalItems}
+            <div className="flex justify-between items-center mb-1 text-[10px]">
+              <span className="text-primary font-bold tracking-tight bg-primary/10 px-2 py-0.5 rounded-full">
+                {Math.round(progress)}%
               </span>
             </div>
-            <Progress value={progress} className="h-1 md:h-1.5" />
+            <Progress value={progress} className="h-1 md:h-1.5 bg-white/5" />
           </div>
 
           {/* Daily Limit */}
@@ -443,21 +444,21 @@ export const Learn: React.FC = () => {
                   {displayTitle}
                 </CardTitle>
                 <Button onClick={speakItem} variant="outline" size="sm" className="mx-auto glass-button h-8 md:h-10 px-4 md:px-6 text-xs transform active:scale-95 transition-transform">
-                  <Volume2 className="h-3.5 w-3.5 mr-2" /> Listen
+                  <Volume2 className="h-3.5 w-3.5 mr-2" /> {isHebrew ? 'הגייה' : 'Listen'}
                 </Button>
               </CardHeader>
 
               <CardContent className="flex-1 flex flex-col justify-center gap-2 md:gap-4 pb-4 md:pb-6 px-4 md:px-8 min-h-0">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-2 md:gap-4 min-h-0 flex-grow-0">
                   <div className="glass-card rounded-xl md:rounded-2xl p-3 md:p-6 border-white/5 text-center bg-white/5 flex flex-col justify-center">
-                    <p className="text-[8px] md:text-[10px] text-muted-foreground mb-1 uppercase tracking-widest">Translation</p>
+                    <p className="text-[8px] md:text-[10px] text-muted-foreground mb-1 uppercase tracking-widest">{isHebrew ? 'תרגום' : 'Translation'}</p>
                     <p className="text-xl md:text-3xl lg:text-4xl font-black text-white leading-tight">{displayTranslation}</p>
                     {isLettersMode && currentLetter?.pronunciation && (
                       <p className="text-[10px] md:text-xs text-primary mt-1 font-bold">{currentLetter.pronunciation}</p>
                     )}
                   </div>
                   <div className="glass-card rounded-xl md:rounded-2xl p-3 md:p-6 border-white/5 text-center bg-white/5 flex flex-col justify-center">
-                    <p className="text-[8px] md:text-[10px] text-muted-foreground mb-1 uppercase tracking-widest">Context</p>
+                    <p className="text-[8px] md:text-[10px] text-muted-foreground mb-1 uppercase tracking-widest">{isHebrew ? 'דוגמה' : 'Context'}</p>
                     <p className="text-xs md:text-base font-medium text-gray-200 italic leading-snug line-clamp-3">{displayDescription}</p>
                   </div>
                 </div>
@@ -466,9 +467,9 @@ export const Learn: React.FC = () => {
                   <div className="glass-card rounded-xl p-2 md:p-3 border-accent/20 text-center animate-in slide-in-from-bottom-4 bg-accent/5 flex-shrink-0">
                     <div className="flex items-center justify-center gap-3">
                       <Button onClick={isListening ? stopListening : startListening} className={`h-9 md:h-11 px-4 md:px-8 text-xs md:text-sm font-bold ${isListening ? 'bg-red-500 animate-pulse' : 'bg-accent'}`}>
-                        <Mic className="h-4 w-4 mr-2" /> {isListening ? 'Listening...' : 'Practice'}
+                        <Mic className="h-4 w-4 mr-2" /> {isListening ? (isHebrew ? 'מקשיב...' : 'Listening...') : (isHebrew ? 'תרגול דיבור' : 'Practice')}
                       </Button>
-                      {speechSuccess && <span className="text-green-500 font-bold text-xs md:text-sm animate-in zoom-in-50">✓ Correct!</span>}
+                      {speechSuccess && <span className="text-green-500 font-bold text-xs md:text-sm animate-in zoom-in-50">{isHebrew ? '✓ מצוין!' : '✓ Correct!'}</span>}
                     </div>
                   </div>
                 )}
@@ -494,12 +495,24 @@ export const Learn: React.FC = () => {
       <AlertDialog open={showUpgradeDialog} onOpenChange={setShowUpgradeDialog}>
         <AlertDialogContent className="glass-card border-white/10">
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-center">Daily Limit Reached!</AlertDialogTitle>
-            <AlertDialogDescription className="text-center">Upgrade to continue learning without limits.</AlertDialogDescription>
+            <AlertDialogTitle className="text-center">
+              <Crown className="h-12 w-12 text-primary mx-auto mb-4" />
+              {isHebrew ? 'הגעת לגבול היומי!' : 'Daily Limit Reached!'}
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-center text-gray-400">
+              {isHebrew
+                ? 'למדת את כל המילים להיום! כדי להמשיך ללמוד ללא הגבלה, שדרג לחשבון פרימיום.'
+                : 'You have reached your daily limit! To continue learning without limits, upgrade to Premium.'}
+            </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel className="glass-button">Later</AlertDialogCancel>
-            <AlertDialogAction onClick={() => navigate('/pricing')} className="bg-primary">Upgrade Now</AlertDialogAction>
+          <AlertDialogFooter className="flex-col sm:flex-row gap-2">
+            <AlertDialogCancel className="glass-button w-full sm:w-auto mt-0">
+              {isHebrew ? 'אולי אחר כך' : 'Later'}
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={() => navigate('/pricing')} className="bg-primary glow-primary w-full sm:w-auto">
+              <Crown className="h-4 w-4 mr-2" />
+              {isHebrew ? 'שדרג עכשיו' : 'Upgrade Now'}
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
