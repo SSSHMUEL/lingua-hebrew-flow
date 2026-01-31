@@ -373,9 +373,9 @@ export const AITeacher: React.FC = () => {
                 )}
 
                 <div className="flex gap-3 md:gap-5 items-end">
-                  {/* Mode Toggle Button with Label */}
-                  <div className="flex flex-col items-center gap-1.5 flex-shrink-0 animate-in fade-in slide-in-from-bottom-2 duration-500">
-                    <span className="text-[10px] font-black uppercase tracking-widest text-accent/80 whitespace-nowrap">
+                  {/* Mode Toggle Button */}
+                  <div className="flex flex-col gap-1.5 flex-shrink-0 animate-in fade-in slide-in-from-bottom-2 duration-1000">
+                    <span className="text-[10px] font-black uppercase tracking-widest text-accent/80 whitespace-nowrap px-1">
                       {isHebrew ? 'מצב שיחה' : 'VOICE MODE'}
                     </span>
                     <Button
@@ -396,14 +396,14 @@ export const AITeacher: React.FC = () => {
                       onChange={(e) => setInput(e.target.value)}
                       onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), handleSend())}
                       placeholder={isListening ? (isHebrew ? 'מקשיב לך...' : 'Listening...') : (isHebrew ? 'כתוב הודעה למורה...' : 'Type here...')}
-                      className="min-h-[60px] max-h-[200px] w-full py-4 px-6 md:px-8 resize-none bg-white/5 border-white/10 focus:border-accent/40 focus:ring-1 focus:ring-accent/20 text-base rounded-[1.8rem] shadow-inner transition-all duration-300 pr-14"
+                      className={`min-h-[60px] max-h-[200px] w-full py-4 resize-none bg-white/5 border-white/10 focus:border-accent/40 focus:ring-1 focus:ring-accent/20 text-base rounded-[1.8rem] shadow-inner transition-all duration-300 ${isRTL ? 'pl-14 pr-6 md:pr-8' : 'pr-14 pl-6 md:pl-8'}`}
                       disabled={isLoading}
                     />
 
-                    {/* Integrated Mic Button */}
+                    {/* Integrated Mic Button - Positioned logically for RTL/LTR */}
                     <button
                       onClick={isListening ? stopListening : startListening}
-                      className={`absolute right-4 bottom-4 h-10 w-10 rounded-full flex items-center justify-center transition-all duration-500 ${isListening ? 'bg-red-500 text-white shadow-lg shadow-red-500/30' : 'text-gray-400 hover:text-white hover:bg-white/10'}`}
+                      className={`absolute bottom-2.5 h-10 w-10 rounded-full flex items-center justify-center transition-all duration-500 ${isRTL ? 'left-4' : 'right-4'} ${isListening ? 'bg-red-500 text-white shadow-lg shadow-red-500/30' : 'text-gray-400 hover:text-white hover:bg-white/10'}`}
                     >
                       {isListening ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
                     </button>
@@ -414,7 +414,7 @@ export const AITeacher: React.FC = () => {
                     disabled={!input.trim() || isLoading}
                     className="h-[60px] w-[60px] rounded-2xl flex-shrink-0 bg-gradient-to-br from-primary to-blue-600 hover:scale-110 active:scale-95 transition-all shadow-xl shadow-primary/20"
                   >
-                    {isLoading ? <Loader2 className="h-6 w-6 animate-spin" /> : <Send className="h-6 w-6 ml-0.5" />}
+                    {isLoading ? <Loader2 className="h-6 w-6 animate-spin" /> : <Send className={`h-6 w-6 ${isRTL ? 'mr-1' : 'ml-0.5'}`} />}
                   </Button>
                 </div>
               </div>
