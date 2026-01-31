@@ -264,17 +264,24 @@ export const AITeacher: React.FC = () => {
         <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-accent/10 blur-[150px]" />
       </div>
 
-      <div className="container mx-auto px-4 relative z-10 h-[calc(100vh-80px)] max-w-5xl">
+      <div className="container mx-auto px-4 relative z-10 h-[calc(100vh-2rem)] max-w-5xl flex flex-col pt-2 pb-2">
         <div className="flex flex-col h-full gap-4">
 
           {/* Header */}
-          <div className="flex items-center justify-between bg-black/20 backdrop-blur-xl border border-white/10 p-4 rounded-[1.5rem] shadow-2xl">
+          <div className="flex items-center justify-between bg-black/20 backdrop-blur-xl border border-white/10 p-4 rounded-[1.5rem] shadow-2xl flex-shrink-0">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-accent  to-orange-500 flex items-center justify-center shadow-lg shadow-accent/20">
                 <Sparkles className="h-6 w-6 text-white" />
               </div>
-              <div>
-                <h1 className="text-xl font-black text-white leading-none mb-1">TalkFix Teacher</h1>
+              <div className="flex flex-col">
+                <h1 className="text-xl font-black text-white leading-none">TalkFix Teacher</h1>
+                {messages.length === 0 && (
+                  <p className="text-[11px] text-gray-400 mt-1.5 animate-in fade-in slide-in-from-left-2 duration-700">
+                    {isHebrew
+                      ? 'התכתבו או שוחחו עם המורה כדי לשפר את האנגלית שלכם בזמן אמת'
+                      : 'Chat or talk with the teacher to improve your English in real-time'}
+                  </p>
+                )}
               </div>
             </div>
 
