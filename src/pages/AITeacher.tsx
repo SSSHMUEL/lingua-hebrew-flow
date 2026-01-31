@@ -15,8 +15,7 @@ import {
   Loader2, 
   Sparkles, 
   BookOpen,
-  MessageSquare,
-  Lightbulb
+  RefreshCw
 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 
@@ -32,14 +31,17 @@ interface LearnedWord {
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-teacher`;
 
-const TOPIC_SUGGESTIONS = [
-  { he: '🛒 קניות בסופר', en: 'Shopping at the supermarket' },
-  { he: '✈️ נסיעה לחו"ל', en: 'Traveling abroad' },
-  { he: '🍕 הזמנת אוכל במסעדה', en: 'Ordering food at a restaurant' },
-  { he: '🏥 ביקור אצל רופא', en: 'Visiting the doctor' },
-  { he: '💼 ראיון עבודה', en: 'Job interview' },
-  { he: '🏠 חיפוש דירה', en: 'Apartment hunting' },
-];
+// Topic ID to display name mapping
+const TOPIC_NAMES: Record<string, { he: string; en: string }> = {
+  travel: { he: '✈️ נסיעות', en: '✈️ Travel' },
+  business: { he: '💼 עסקים', en: '💼 Business' },
+  technology: { he: '💻 טכנולוגיה', en: '💻 Technology' },
+  health: { he: '🏥 בריאות', en: '🏥 Health' },
+  food: { he: '🍕 אוכל', en: '🍕 Food' },
+  entertainment: { he: '🎬 בידור', en: '🎬 Entertainment' },
+  sports: { he: '⚽ ספורט', en: '⚽ Sports' },
+  education: { he: '📚 חינוך', en: '📚 Education' },
+};
 
 export const AITeacher: React.FC = () => {
   const { user } = useAuth();
@@ -50,29 +52,58 @@ export const AITeacher: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isInitializing, setIsInitializing] = useState(true);
   const [learnedWords, setLearnedWords] = useState<LearnedWord[]>([]);
-  const [selectedTopic, setSelectedTopic] = useState<string | null>(null);
+  const [userTopics, setUserTopics] = useState<string[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const hasInitialized = useRef(false);
 
   useEffect(() => {
     if (!user) {
       navigate('/auth');
       return;
     }
-    loadLearnedWords();
+    loadUserData();
   }, [user, navigate]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  const loadLearnedWords = async () => {
+  const loadUserData = async () => {
     if (!user) return;
+    setIsInitializing(true);
+
+    try {
+      // Load learned words and user topics in parallel
+      const [wordsResult, topicsResult] = await Promise.all([
+        loadLearnedWords(),
+        loadUserTopics()
+      ]);
+
+      // Auto-start conversation after data is loaded
+      if (!hasInitialized.current && (wordsResult.length > 0 || topicsResult.length > 0)) {
+        hasInitialized.current = true;
+        setTimeout(() => {
+          startIntroduction(wordsResult, topicsResult);
+        }, 500);
+      } else if (!hasInitialized.current) {
+        hasInitialized.current = true;
+        setIsInitializing(false);
+      }
+    } catch (error) {
+      console.error('Error loading user data:', error);
+      setIsInitializing(false);
+    }
+  };
+
+  const loadLearnedWords = async (): Promise<LearnedWord[]> => {
+    if (!user) return [];
 
     try {
       // First try new schema
-      const { data: newSchemaData, error: newSchemaError } = await supabase
+      const { data: newSchemaData } = await supabase
         .from('user_learned_words')
         .select(`
           translation_pair_id,
@@ -84,21 +115,19 @@ export const AITeacher: React.FC = () => {
           )
         `)
         .eq('user_id', user.id)
-        .limit(50);
+        .limit(30);
 
       if (newSchemaData && newSchemaData.length > 0) {
         const words: LearnedWord[] = newSchemaData.map((item: any) => {
           const word1 = item.word_translations?.words;
           const word2 = item.word_translations?.words2;
-          // Determine which is Hebrew and which is English
-          // Assuming Hebrew language_id contains 'he' or is specific
           const hebrewWord = word1?.word_text || '';
           const englishWord = word2?.word_text || '';
           return { hebrew: hebrewWord, english: englishWord };
         }).filter((w: LearnedWord) => w.hebrew && w.english);
         
         setLearnedWords(words);
-        return;
+        return words;
       }
 
       // Fallback to old schema
@@ -112,7 +141,7 @@ export const AITeacher: React.FC = () => {
           )
         `)
         .eq('user_id', user.id)
-        .limit(50);
+        .limit(30);
 
       if (oldSchemaData && oldSchemaData.length > 0) {
         const words: LearnedWord[] = oldSchemaData.map((item: any) => ({
@@ -121,18 +150,53 @@ export const AITeacher: React.FC = () => {
         })).filter((w: LearnedWord) => w.hebrew && w.english);
         
         setLearnedWords(words);
+        return words;
       }
+
+      return [];
     } catch (error) {
       console.error('Error loading learned words:', error);
+      return [];
+    }
+  };
+
+  const loadUserTopics = async (): Promise<string[]> => {
+    if (!user) return [];
+
+    try {
+      const { data } = await supabase
+        .from('user_topic_preferences')
+        .select('topic_id')
+        .eq('user_id', user.id);
+
+      if (data && data.length > 0) {
+        const topics = data.map(item => {
+          const topicInfo = TOPIC_NAMES[item.topic_id];
+          return topicInfo ? (isHebrew ? topicInfo.he : topicInfo.en) : item.topic_id;
+        });
+        setUserTopics(topics);
+        return topics;
+      }
+
+      return [];
+    } catch (error) {
+      console.error('Error loading user topics:', error);
+      return [];
     }
   };
 
   const streamChat = useCallback(async ({
     messages,
+    words,
+    topics,
+    isIntroduction = false,
     onDelta,
     onDone,
   }: {
     messages: Message[];
+    words: LearnedWord[];
+    topics: string[];
+    isIntroduction?: boolean;
     onDelta: (deltaText: string) => void;
     onDone: () => void;
   }) => {
@@ -144,8 +208,9 @@ export const AITeacher: React.FC = () => {
       },
       body: JSON.stringify({ 
         messages,
-        learnedWords,
-        topic: selectedTopic
+        learnedWords: words,
+        userTopics: topics,
+        isIntroduction
       }),
     });
 
@@ -216,7 +281,45 @@ export const AITeacher: React.FC = () => {
     }
 
     onDone();
-  }, [learnedWords, selectedTopic, isHebrew]);
+  }, [isHebrew]);
+
+  const startIntroduction = async (words: LearnedWord[], topics: string[]) => {
+    setIsLoading(true);
+    setIsInitializing(false);
+
+    let assistantContent = "";
+    
+    const updateAssistant = (chunk: string) => {
+      assistantContent += chunk;
+      setMessages(prev => {
+        const last = prev[prev.length - 1];
+        if (last?.role === "assistant") {
+          return prev.map((m, i) => (i === prev.length - 1 ? { ...m, content: assistantContent } : m));
+        }
+        return [{ role: "assistant", content: assistantContent }];
+      });
+    };
+
+    try {
+      // Send empty messages array with introduction flag
+      await streamChat({
+        messages: [{ role: 'user', content: 'היי, בוא נתחיל!' }],
+        words,
+        topics,
+        isIntroduction: true,
+        onDelta: updateAssistant,
+        onDone: () => setIsLoading(false),
+      });
+    } catch (error) {
+      console.error('Introduction error:', error);
+      toast({
+        title: isHebrew ? 'שגיאה' : 'Error',
+        description: error instanceof Error ? error.message : (isHebrew ? 'לא ניתן להתחיל שיחה' : 'Could not start conversation'),
+        variant: 'destructive',
+      });
+      setIsLoading(false);
+    }
+  };
 
   const handleSend = async () => {
     if (!input.trim() || isLoading) return;
@@ -242,6 +345,8 @@ export const AITeacher: React.FC = () => {
     try {
       await streamChat({
         messages: [...messages, userMessage],
+        words: learnedWords,
+        topics: userTopics,
         onDelta: updateAssistant,
         onDone: () => setIsLoading(false),
       });
@@ -263,13 +368,10 @@ export const AITeacher: React.FC = () => {
     }
   };
 
-  const startWithTopic = (topic: string) => {
-    setSelectedTopic(topic);
-    const greeting = isHebrew 
-      ? `היי! בוא נתרגל אנגלית על הנושא: ${topic}`
-      : `Hi! Let's practice English about: ${topic}`;
-    setInput(greeting);
-    textareaRef.current?.focus();
+  const handleNewConversation = () => {
+    setMessages([]);
+    hasInitialized.current = false;
+    loadUserData();
   };
 
   return (
@@ -299,54 +401,57 @@ export const AITeacher: React.FC = () => {
                 ? 'שוחח עם המורה הוירטואלי שלך ותרגל את המילים שלמדת'
                 : 'Chat with your virtual teacher and practice the words you learned'}
             </p>
-            {learnedWords.length > 0 && (
-              <Badge variant="secondary" className="mt-2">
-                <BookOpen className="h-3 w-3 mr-1" />
-                {isHebrew ? `${learnedWords.length} מילים נלמדו` : `${learnedWords.length} words learned`}
-              </Badge>
-            )}
+            <div className="flex items-center justify-center gap-2 mt-3 flex-wrap">
+              {learnedWords.length > 0 && (
+                <Badge variant="secondary">
+                  <BookOpen className="h-3 w-3 mr-1" />
+                  {isHebrew ? `${learnedWords.length} מילים` : `${learnedWords.length} words`}
+                </Badge>
+              )}
+              {userTopics.length > 0 && (
+                <Badge variant="outline" className="text-xs">
+                  {userTopics.slice(0, 2).join(', ')}
+                  {userTopics.length > 2 && ` +${userTopics.length - 2}`}
+                </Badge>
+              )}
+              {messages.length > 0 && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleNewConversation}
+                  className="text-xs h-6 px-2"
+                >
+                  <RefreshCw className="h-3 w-3 mr-1" />
+                  {isHebrew ? 'שיחה חדשה' : 'New Chat'}
+                </Button>
+              )}
+            </div>
           </div>
-
-          {/* Topic Suggestions - Show when no messages */}
-          {messages.length === 0 && (
-            <Card className="mb-6 glass-card border-white/10">
-              <CardContent className="p-6">
-                <div className="flex items-center gap-2 mb-4 text-muted-foreground">
-                  <Lightbulb className="h-5 w-5 text-primary" />
-                  <span className="font-medium">
-                    {isHebrew ? 'בחר נושא לשיחה:' : 'Choose a topic to discuss:'}
-                  </span>
-                </div>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                  {TOPIC_SUGGESTIONS.map((topic, index) => (
-                    <Button
-                      key={index}
-                      variant="outline"
-                      className="h-auto py-3 px-4 text-sm hover:bg-primary/10 hover:border-primary/50 transition-all"
-                      onClick={() => startWithTopic(topic.he)}
-                    >
-                      {isHebrew ? topic.he : topic.en}
-                    </Button>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          )}
 
           {/* Chat Messages */}
           <Card className="mb-4 glass-card border-white/10 overflow-hidden">
             <CardContent className="p-0">
               <div className="h-[400px] md:h-[500px] overflow-y-auto p-4 space-y-4">
-                {messages.length === 0 ? (
+                {isInitializing ? (
+                  <div className="h-full flex flex-col items-center justify-center text-center text-muted-foreground">
+                    <Loader2 className="h-12 w-12 mb-4 animate-spin text-primary" />
+                    <p className="text-lg font-medium">
+                      {isHebrew ? 'טוען את הנתונים שלך...' : 'Loading your data...'}
+                    </p>
+                    <p className="text-sm mt-2">
+                      {isHebrew ? 'מכין את המורה האישי שלך' : 'Preparing your personal teacher'}
+                    </p>
+                  </div>
+                ) : messages.length === 0 && !isLoading ? (
                   <div className="h-full flex flex-col items-center justify-center text-center text-muted-foreground">
                     <Bot className="h-16 w-16 mb-4 opacity-50" />
                     <p className="text-lg font-medium">
                       {isHebrew ? 'שלום! אני המורה שלך לאנגלית 👋' : 'Hello! I\'m your English teacher 👋'}
                     </p>
                     <p className="text-sm mt-2">
-                      {isHebrew 
-                        ? 'בחר נושא למעלה או התחל לכתוב כדי לתרגל'
-                        : 'Choose a topic above or start typing to practice'}
+                      {learnedWords.length === 0 
+                        ? (isHebrew ? 'לך ללמוד קודם כמה מילים ואז חזור אלי!' : 'Go learn some words first, then come back!')
+                        : (isHebrew ? 'מתחיל שיחה...' : 'Starting conversation...')}
                     </p>
                   </div>
                 ) : (
@@ -372,7 +477,7 @@ export const AITeacher: React.FC = () => {
                     </div>
                   ))
                 )}
-                {isLoading && messages[messages.length - 1]?.role === 'user' && (
+                {isLoading && (messages.length === 0 || messages[messages.length - 1]?.role === 'user') && (
                   <div className={`flex gap-3 ${isRTL ? 'flex-row-reverse' : 'flex-row'}`}>
                     <div className="flex-shrink-0 w-8 h-8 rounded-full bg-secondary flex items-center justify-center">
                       <Bot className="h-4 w-4" />
@@ -398,11 +503,11 @@ export const AITeacher: React.FC = () => {
                   onKeyDown={handleKeyDown}
                   placeholder={isHebrew ? 'כתוב הודעה...' : 'Type a message...'}
                   className="min-h-[50px] max-h-[150px] resize-none bg-background/50"
-                  disabled={isLoading}
+                  disabled={isLoading || isInitializing}
                 />
                 <Button
                   onClick={handleSend}
-                  disabled={!input.trim() || isLoading}
+                  disabled={!input.trim() || isLoading || isInitializing}
                   className="h-auto px-6"
                 >
                   {isLoading ? (
