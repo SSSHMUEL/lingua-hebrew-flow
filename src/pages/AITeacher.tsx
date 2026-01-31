@@ -25,7 +25,8 @@ import {
   Pause,
   Coffee,
   X,
-  Keyboard
+  Keyboard,
+  Bot
 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 
@@ -257,37 +258,37 @@ export const AITeacher: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen relative py-4 md:py-8 overflow-hidden" style={{ background: 'var(--gradient-hero)' }}>
+    <div className="h-screen w-full overflow-hidden relative" style={{ background: 'var(--gradient-hero)' }}>
       {/* Background */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/10 blur-[150px]" />
         <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-accent/10 blur-[150px]" />
       </div>
 
-      <div className="container mx-auto px-4 relative z-10 h-[calc(100vh-2rem)] max-w-5xl flex flex-col pt-2 pb-2">
-        <div className="flex flex-col h-full gap-4">
+      <div className="h-full w-full max-w-5xl mx-auto px-4 relative z-10 flex flex-col pt-4 pb-4 overflow-hidden">
+        <div className="flex flex-col h-full gap-4 overflow-hidden">
 
           {/* Header */}
-          <div className="flex items-center justify-between bg-black/20 backdrop-blur-xl border border-white/10 p-4 rounded-[1.5rem] shadow-2xl flex-shrink-0">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-accent  to-orange-500 flex items-center justify-center shadow-lg shadow-accent/20">
-                <Sparkles className="h-6 w-6 text-white" />
+          <div className="flex items-center justify-between bg-black/30 backdrop-blur-2xl border border-white/10 p-5 rounded-[2rem] shadow-2xl flex-shrink-0 transition-all duration-500">
+            <div className="flex items-center gap-4">
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary to-blue-600 flex items-center justify-center shadow-2xl shadow-primary/20 transform hover:rotate-3 transition-transform">
+                <Bot className="h-8 w-8 text-white" />
               </div>
               <div className="flex flex-col">
-                <h1 className="text-xl font-black text-white leading-none">TalkFix Teacher</h1>
+                <h1 className="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-white/70 leading-none mb-1">TalkFix AI Teacher</h1>
                 {messages.length === 0 && (
-                  <p className="text-[11px] text-gray-400 mt-1.5 animate-in fade-in slide-in-from-left-2 duration-700">
+                  <p className="text-sm md:text-base text-gray-300 font-medium max-w-xl animate-in fade-in slide-in-from-left-4 duration-1000">
                     {isHebrew
-                      ? 'התכתבו או שוחחו עם המורה כדי לשפר את האנגלית שלכם בזמן אמת'
-                      : 'Chat or talk with the teacher to improve your English in real-time'}
+                      ? 'הצטרפו לשיחה חיה באנגלית! כאן תוכלו לתרגל דיבור או כתיבה, לקבל תיקונים בזמן אמת ולשפר את הביטחון שלכם בשפה.'
+                      : 'Join a live English conversation! Practice speaking or writing, get real-time corrections, and boost your confidence.'}
                   </p>
                 )}
               </div>
             </div>
 
-            <div className="flex gap-2">
-              <Badge variant="outline" className="border-white/10 bg-white/5 text-white/60 text-[10px] hidden sm:flex">
-                PRO AI
+            <div className="hidden md:flex gap-2">
+              <Badge variant="outline" className="border-accent/40 bg-accent/10 text-accent text-[10px] px-4 py-1.5 rounded-full font-bold tracking-widest uppercase">
+                PREMIUM AI
               </Badge>
             </div>
           </div>
