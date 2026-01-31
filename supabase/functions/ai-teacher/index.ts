@@ -12,7 +12,7 @@ serve(async (req) => {
 
   try {
     const { messages, learnedWords, topic } = await req.json();
-    
+
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
       throw new Error("LOVABLE_API_KEY is not configured");
@@ -23,8 +23,8 @@ serve(async (req) => {
       ? `\n\nהמשתמש כבר למד את המילים הבאות באנגלית (עברית -> אנגלית):\n${learnedWords.map((w: { hebrew: string; english: string }) => `- ${w.hebrew} = ${w.english}`).join('\n')}\n\nשלב את המילים האלה בשיחה באופן טבעי. כשאתה משתמש במילה שהמשתמש למד, הדגש אותה בטקסט מודגש (**מילה**).`
       : '';
 
-    const topicContext = topic 
-      ? `\n\nהנושא הנוכחי לשיחה: ${topic}`
+    const topicContext = topic
+      ? `\n\nהנושא שנבחר לשיחה הוא: "${topic}".\nהקפד למקד את השיחה בנושא זה בלבד. שאל שאלות שקשורות אליו ועזור למשתמש לתרגל אוצר מילים רלוונטי לנושא זה.`
       : '';
 
     const systemPrompt = `אתה מורה לאנגלית ידידותי ומעודד בשם "TalkFix Teacher". 

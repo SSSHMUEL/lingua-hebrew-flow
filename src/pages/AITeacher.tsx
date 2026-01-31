@@ -8,15 +8,20 @@ import { useAuth } from '@/components/AuthProvider';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { 
-  Send, 
-  Bot, 
-  User, 
-  Loader2, 
-  Sparkles, 
+import { useSpeechRecognition } from '@/hooks/use-speech-recognition';
+import {
+  Send,
+  Bot,
+  User,
+  Loader2,
+  Sparkles,
   BookOpen,
   MessageSquare,
-  Lightbulb
+  Lightbulb,
+  Mic,
+  MicOff,
+  Volume2,
+  VolumeX
 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 
@@ -46,14 +51,29 @@ export const AITeacher: React.FC = () => {
   const navigate = useNavigate();
   const { language, isRTL } = useLanguage();
   const isHebrew = language === 'he';
-  
+
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [learnedWords, setLearnedWords] = useState<LearnedWord[]>([]);
   const [selectedTopic, setSelectedTopic] = useState<string | null>(null);
+  const [isSpeechEnabled, setIsSpeechEnabled] = useState(false);
+  const [isSpeaking, setIsSpeaking] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Speech Recognition Hook
+  const {
+    isListening,
+    transcript,
+    startListening,
+    stopListening,
+    resetTranscript
+  } = useSpeechRecognition({
+    onResult: (text) => {
+      setInput(text);
+    }
+  });
 
   useEffect(() => {
     if (!user) {
@@ -72,7 +92,7 @@ export const AITeacher: React.FC = () => {
 
     try {
       // First try new schema
-      const { data: newSchemaData, error: newSchemaError } = await supabase
+      const { data: newSchemaData } = await supabase
         .from('user_learned_words')
         .select(`
           translation_pair_id,
@@ -90,13 +110,11 @@ export const AITeacher: React.FC = () => {
         const words: LearnedWord[] = newSchemaData.map((item: any) => {
           const word1 = item.word_translations?.words;
           const word2 = item.word_translations?.words2;
-          // Determine which is Hebrew and which is English
-          // Assuming Hebrew language_id contains 'he' or is specific
           const hebrewWord = word1?.word_text || '';
           const englishWord = word2?.word_text || '';
           return { hebrew: hebrewWord, english: englishWord };
         }).filter((w: LearnedWord) => w.hebrew && w.english);
-        
+
         setLearnedWords(words);
         return;
       }
@@ -119,12 +137,36 @@ export const AITeacher: React.FC = () => {
           hebrew: item.vocabulary_words?.hebrew_translation || '',
           english: item.vocabulary_words?.english_word || ''
         })).filter((w: LearnedWord) => w.hebrew && w.english);
-        
+
         setLearnedWords(words);
       }
     } catch (error) {
       console.error('Error loading learned words:', error);
     }
+  };
+
+  const speakText = (text: string) => {
+    if (!isSpeechEnabled) return;
+
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    // Try to detect language or fallback to English if mostly English chars
+    const isEnglish = /^[A-Za-z\s.,!?']+$/.test(text.substring(0, 50));
+    utterance.lang = isEnglish ? 'en-US' : 'he-IL';
+    utterance.rate = 0.9; // Slightly slower for clarity
+
+    utterance.onstart = () => setIsSpeaking(true);
+    utterance.onend = () => setIsSpeaking(false);
+
+    window.speechSynthesis.speak(utterance);
+  };
+
+  const toggleSpeech = () => {
+    if (isSpeaking) {
+      window.speechSynthesis.cancel();
+      setIsSpeaking(false);
+    }
+    setIsSpeechEnabled(!isSpeechEnabled);
   };
 
   const streamChat = useCallback(async ({
@@ -142,7 +184,7 @@ export const AITeacher: React.FC = () => {
         "Content-Type": "application/json",
         Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
       },
-      body: JSON.stringify({ 
+      body: JSON.stringify({
         messages,
         learnedWords,
         topic: selectedTopic
@@ -219,15 +261,23 @@ export const AITeacher: React.FC = () => {
   }, [learnedWords, selectedTopic, isHebrew]);
 
   const handleSend = async () => {
-    if (!input.trim() || isLoading) return;
+    if ((!input.trim() && !transcript) || isLoading) return;
 
-    const userMessage: Message = { role: 'user', content: input.trim() };
+    const textToSend = input.trim() || transcript;
+
+    // Stop listening if active
+    if (isListening) {
+      stopListening();
+      resetTranscript();
+    }
+
+    const userMessage: Message = { role: 'user', content: textToSend };
     setMessages(prev => [...prev, userMessage]);
     setInput('');
     setIsLoading(true);
 
     let assistantContent = "";
-    
+
     const updateAssistant = (chunk: string) => {
       assistantContent += chunk;
       setMessages(prev => {
@@ -243,7 +293,13 @@ export const AITeacher: React.FC = () => {
       await streamChat({
         messages: [...messages, userMessage],
         onDelta: updateAssistant,
-        onDone: () => setIsLoading(false),
+        onDone: () => {
+          setIsLoading(false);
+          // Speak the full response if enabled
+          if (isSpeechEnabled) {
+            speakText(assistantContent);
+          }
+        },
       });
     } catch (error) {
       console.error('Chat error:', error);
@@ -265,7 +321,7 @@ export const AITeacher: React.FC = () => {
 
   const startWithTopic = (topic: string) => {
     setSelectedTopic(topic);
-    const greeting = isHebrew 
+    const greeting = isHebrew
       ? `היי! בוא נתרגל אנגלית על הנושא: ${topic}`
       : `Hi! Let's practice English about: ${topic}`;
     setInput(greeting);
@@ -294,17 +350,32 @@ export const AITeacher: React.FC = () => {
               <Sparkles className="h-8 w-8" />
               {isHebrew ? 'מורה AI' : 'AI Teacher'}
             </h1>
-            <p className="text-muted-foreground">
+            <p className="text-muted-foreground mb-4">
               {isHebrew
                 ? 'שוחח עם המורה הוירטואלי שלך ותרגל את המילים שלמדת'
                 : 'Chat with your virtual teacher and practice the words you learned'}
             </p>
-            {learnedWords.length > 0 && (
-              <Badge variant="secondary" className="mt-2">
-                <BookOpen className="h-3 w-3 mr-1" />
-                {isHebrew ? `${learnedWords.length} מילים נלמדו` : `${learnedWords.length} words learned`}
-              </Badge>
-            )}
+
+            <div className="flex items-center justify-center gap-2 mb-2">
+              {learnedWords.length > 0 && (
+                <Badge variant="secondary">
+                  <BookOpen className="h-3 w-3 mr-1" />
+                  {isHebrew ? `${learnedWords.length} מילים נלמדו` : `${learnedWords.length} words learned`}
+                </Badge>
+              )}
+
+              <Button
+                variant={isSpeechEnabled ? "default" : "outline"}
+                size="sm"
+                onClick={toggleSpeech}
+                className="h-6 text-xs gap-1"
+              >
+                {isSpeechEnabled
+                  ? <><Volume2 className="h-3 w-3" /> {isHebrew ? 'הקראה פעילה' : 'Voice On'}</>
+                  : <><VolumeX className="h-3 w-3" /> {isHebrew ? 'הקראה כבויה' : 'Voice Off'}</>
+                }
+              </Button>
+            </div>
           </div>
 
           {/* Topic Suggestions - Show when no messages */}
@@ -322,7 +393,7 @@ export const AITeacher: React.FC = () => {
                     <Button
                       key={index}
                       variant="outline"
-                      className="h-auto py-3 px-4 text-sm hover:bg-primary/10 hover:border-primary/50 transition-all"
+                      className="h-auto py-3 px-4 text-sm hover:bg-primary/10 hover:border-primary/50 transition-all text-wrap"
                       onClick={() => startWithTopic(topic.he)}
                     >
                       {isHebrew ? topic.he : topic.en}
@@ -344,7 +415,7 @@ export const AITeacher: React.FC = () => {
                       {isHebrew ? 'שלום! אני המורה שלך לאנגלית 👋' : 'Hello! I\'m your English teacher 👋'}
                     </p>
                     <p className="text-sm mt-2">
-                      {isHebrew 
+                      {isHebrew
                         ? 'בחר נושא למעלה או התחל לכתוב כדי לתרגל'
                         : 'Choose a topic above or start typing to practice'}
                     </p>
@@ -355,19 +426,29 @@ export const AITeacher: React.FC = () => {
                       key={index}
                       className={`flex gap-3 ${message.role === 'user' ? (isRTL ? 'flex-row' : 'flex-row-reverse') : (isRTL ? 'flex-row-reverse' : 'flex-row')}`}
                     >
-                      <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
-                        message.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-secondary text-secondary-foreground'
-                      }`}>
+                      <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${message.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-secondary text-secondary-foreground'
+                        }`}>
                         {message.role === 'user' ? <User className="h-4 w-4" /> : <Bot className="h-4 w-4" />}
                       </div>
-                      <div className={`flex-1 max-w-[80%] rounded-2xl px-4 py-3 ${
-                        message.role === 'user' 
-                          ? 'bg-primary text-primary-foreground rounded-br-sm' 
+                      <div className={`flex-1 max-w-[80%] rounded-2xl px-4 py-3 ${message.role === 'user'
+                          ? 'bg-primary text-primary-foreground rounded-br-sm'
                           : 'bg-muted rounded-bl-sm'
-                      }`}>
+                        }`}>
                         <div className={`prose prose-sm max-w-none ${message.role === 'user' ? 'prose-invert' : ''}`}>
                           <ReactMarkdown>{message.content}</ReactMarkdown>
                         </div>
+                        {message.role === 'assistant' && (
+                          <div className="mt-2 flex justify-end">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-6 w-6 opacity-50 hover:opacity-100"
+                              onClick={() => speakText(message.content)}
+                            >
+                              <Volume2 className="h-3 w-3" />
+                            </Button>
+                          </div>
+                        )}
                       </div>
                     </div>
                   ))
@@ -390,20 +471,31 @@ export const AITeacher: React.FC = () => {
           {/* Input Area */}
           <Card className="glass-card border-white/10">
             <CardContent className="p-4">
-              <div className="flex gap-3">
+              <div className="flex gap-2">
+                <Button
+                  variant={isListening ? "destructive" : "outline"}
+                  size="icon"
+                  className={`flex-shrink-0 h-12 w-12 rounded-full ${isListening ? 'animate-pulse' : ''}`}
+                  onClick={isListening ? stopListening : startListening}
+                  disabled={isLoading}
+                >
+                  {isListening ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
+                </Button>
+
                 <Textarea
                   ref={textareaRef}
-                  value={input}
+                  value={isListening ? transcript : input}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={handleKeyDown}
-                  placeholder={isHebrew ? 'כתוב הודעה...' : 'Type a message...'}
-                  className="min-h-[50px] max-h-[150px] resize-none bg-background/50"
+                  placeholder={isListening ? (isHebrew ? 'מקשיב לך...' : 'Listening...') : (isHebrew ? 'כתוב הודעה...' : 'Type a message...')}
+                  className="min-h-[48px] max-h-[150px] resize-none bg-background/50 flex-1"
                   disabled={isLoading}
                 />
+
                 <Button
                   onClick={handleSend}
-                  disabled={!input.trim() || isLoading}
-                  className="h-auto px-6"
+                  disabled={(!input.trim() && !transcript) || isLoading}
+                  className="h-12 w-12 rounded-full flex-shrink-0"
                 >
                   {isLoading ? (
                     <Loader2 className="h-5 w-5 animate-spin" />
@@ -412,10 +504,10 @@ export const AITeacher: React.FC = () => {
                   )}
                 </Button>
               </div>
-              <p className="text-xs text-muted-foreground mt-2 text-center">
-                {isHebrew 
-                  ? 'לחץ Enter לשליחה, Shift+Enter לשורה חדשה'
-                  : 'Press Enter to send, Shift+Enter for new line'}
+              <p className="text-xs text-muted-foreground mt-2 text-center flex items-center justify-center gap-2">
+                <span>{isHebrew ? 'לחץ על המיקרופון כדי לדבר' : 'Click the mic to speak'}</span>
+                <span className="w-1 h-1 rounded-full bg-muted-foreground/50" />
+                <span>{isHebrew ? 'Enter לשליחה' : 'Enter to send'}</span>
               </p>
             </CardContent>
           </Card>
