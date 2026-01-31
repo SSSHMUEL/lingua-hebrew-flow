@@ -85,15 +85,16 @@ export const AITeacher: React.FC = () => {
       const voices = window.speechSynthesis.getVoices();
       setAvailableVoices(voices);
 
-      // Find nice English Voice
-      const eng = voices.find(v => v.name.includes("Google US English"))
-        || voices.find(v => v.name.includes("Zira"))
+      // Find nice English Voice - Prioritize "Natural" or high-quality voices
+      const eng = voices.find(v => v.name.includes("Natural") && v.lang.startsWith("en"))
+        || voices.find(v => v.name.includes("Google US English"))
+        || voices.find(v => v.name.includes("Microsoft Zira"))
         || voices.find(v => v.name.includes("Samantha"))
         || voices.find(v => v.lang.startsWith("en-US"))
         || voices.find(v => v.lang.startsWith("en"));
       setEnglishVoice(eng || null);
 
-      // Find Hebrew Voice - Prioritize Google Hebrew if available
+      // Find Hebrew Voice - Prioritize Google Hebrew as it's usually the best
       const heb = voices.find(v => v.name.includes("Google") && (v.lang.includes("he") || v.lang.includes("iw")))
         || voices.find(v => v.lang.includes("he") || v.lang.includes("iw"))
         || voices.find(v => v.name.toLowerCase().includes("hebrew"));
@@ -205,12 +206,14 @@ export const AITeacher: React.FC = () => {
     if (!isSpeechEnabled && mode !== 'conversation') return;
 
     window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(text);
+
+    // Remove emojis specifically for speech (keeping text visual)
+    const textForSpeech = text.replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F700}-\u{1F77F}\u{1F780}-\u{1F7FF}\u{1F800}-\u{1F8FF}\u{1F900}-\u{1F9FF}\u{1FA00}-\u{1FA6F}\u{1FA70}-\u{1FAFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, '');
+
+    const utterance = new SpeechSynthesisUtterance(textForSpeech);
 
     // Detect Language - Simple heuristic
-    // If more than 50% of the first 50 chars are English, treat as English.
-    // Otherwise Hebrew.
-    const sample = text.substring(0, 50);
+    const sample = textForSpeech.substring(0, 50);
     const englishChars = (sample.match(/[A-Za-z]/g) || []).length;
     const hebrewChars = (sample.match(/[\u0590-\u05FF]/g) || []).length;
 
@@ -220,12 +223,12 @@ export const AITeacher: React.FC = () => {
     if (isEnglishText) {
       utterance.lang = 'en-US';
       if (englishVoice) utterance.voice = englishVoice;
-      utterance.rate = 0.95;
-      utterance.pitch = 1.05;
+      utterance.rate = 1.0;
+      utterance.pitch = 1.0;
     } else {
       utterance.lang = 'he-IL';
       if (hebrewVoice) utterance.voice = hebrewVoice;
-      utterance.rate = 1.0;
+      utterance.rate = 0.9;
       utterance.pitch = 1.0;
     }
 
@@ -449,8 +452,8 @@ export const AITeacher: React.FC = () => {
               <button
                 onClick={() => setMode('text')}
                 className={`px-6 py-2 rounded-full transition-all duration-300 flex items-center gap-2 text-sm font-medium ${mode === 'text'
-                    ? 'bg-primary text-primary-foreground shadow-lg'
-                    : 'text-muted-foreground hover:text-white'
+                  ? 'bg-primary text-primary-foreground shadow-lg'
+                  : 'text-muted-foreground hover:text-white'
                   }`}
               >
                 <MessageSquare className="h-4 w-4" />
@@ -459,8 +462,8 @@ export const AITeacher: React.FC = () => {
               <button
                 onClick={() => setMode('conversation')}
                 className={`px-6 py-2 rounded-full transition-all duration-300 flex items-center gap-2 text-sm font-medium ${mode === 'conversation'
-                    ? 'bg-accent text-accent-foreground shadow-lg'
-                    : 'text-muted-foreground hover:text-white'
+                  ? 'bg-accent text-accent-foreground shadow-lg'
+                  : 'text-muted-foreground hover:text-white'
                   }`}
               >
                 <Headphones className="h-4 w-4" />
@@ -493,8 +496,8 @@ export const AITeacher: React.FC = () => {
                             className={`flex gap-4 ${message.role === 'user' ? (isRTL ? 'flex-row' : 'flex-row-reverse') : (isRTL ? 'flex-row-reverse' : 'flex-row')}`}
                           >
                             <div className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center shadow-lg ${message.role === 'user'
-                                ? 'bg-gradient-to-br from-primary to-blue-600 text-white'
-                                : 'bg-gradient-to-br from-slate-700 to-slate-900 text-white border border-white/10'
+                              ? 'bg-gradient-to-br from-primary to-blue-600 text-white'
+                              : 'bg-gradient-to-br from-slate-700 to-slate-900 text-white border border-white/10'
                               }`}>
                               {message.role === 'user' ? <User className="h-5 w-5" /> : <Bot className="h-5 w-5" />}
                             </div>
@@ -582,10 +585,10 @@ export const AITeacher: React.FC = () => {
                 <div className="relative mb-16">
                   {/* Main Circle */}
                   <div className={`w-56 h-56 rounded-full flex items-center justify-center relative z-10 transition-all duration-700 ${isSpeaking
-                      ? 'bg-gradient-to-br from-accent to-orange-600 shadow-[0_0_80px_rgba(255,100,0,0.5)] scale-110'
-                      : (isListening
-                        ? 'bg-gradient-to-br from-primary to-blue-600 shadow-[0_0_80px_rgba(59,130,246,0.5)] scale-105'
-                        : 'bg-gradient-to-br from-slate-800 to-slate-950 border border-white/10 shadow-2xl')
+                    ? 'bg-gradient-to-br from-accent to-orange-600 shadow-[0_0_80px_rgba(255,100,0,0.5)] scale-110'
+                    : (isListening
+                      ? 'bg-gradient-to-br from-primary to-blue-600 shadow-[0_0_80px_rgba(59,130,246,0.5)] scale-105'
+                      : 'bg-gradient-to-br from-slate-800 to-slate-950 border border-white/10 shadow-2xl')
                     }`}>
                     {isSpeaking ? (
                       <div className="text-white flex flex-col items-center">
@@ -627,8 +630,8 @@ export const AITeacher: React.FC = () => {
                   <Button
                     onClick={isListening ? stopListening : startListening}
                     className={`h-24 w-24 rounded-full shadow-2xl transition-all duration-300 transform hover:scale-105 ${isListening
-                        ? 'bg-white text-primary border-4 border-primary'
-                        : (isSpeaking ? 'bg-black/20 text-gray-500 border border-white/10' : 'bg-primary text-white border-none shadow-[0_0_40px_rgba(59,130,246,0.3)]')
+                      ? 'bg-white text-primary border-4 border-primary'
+                      : (isSpeaking ? 'bg-black/20 text-gray-500 border border-white/10' : 'bg-primary text-white border-none shadow-[0_0_40px_rgba(59,130,246,0.3)]')
                       }`}
                     disabled={isLoading || isSpeaking}
                   >
