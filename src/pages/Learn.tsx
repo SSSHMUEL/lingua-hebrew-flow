@@ -156,7 +156,7 @@ export const Learn: React.FC = () => {
     resetTranscript();
   }, [currentWord, currentLetter, resetTranscript]);
 
-  
+
   // Load letters data - only unlearned letters
   const loadLettersData = useCallback(async () => {
     if (!user || letters.length === 0) return;
@@ -172,7 +172,7 @@ export const Learn: React.FC = () => {
       setLearnedLetterPairs(learnedPairs);
 
       const isHebrewToEnglish = language === 'he';
-      
+
       // Filter to only unlearned letters
       const unlearnedLetters = letters.filter(letter => {
         const wordPair = getLetterWordPair(letter, isHebrewToEnglish);
@@ -181,7 +181,7 @@ export const Learn: React.FC = () => {
 
       setFilteredLettersForNav(unlearnedLetters);
       setCurrentCategory(isHebrew ? 'אותיות' : 'Letters');
-      
+
       if (unlearnedLetters.length > 0) {
         setCurrentIndex(0);
         setCurrentLetter(unlearnedLetters[0]);
@@ -286,7 +286,7 @@ export const Learn: React.FC = () => {
       if (isLettersMode && currentLetter) {
         const isHebrewToEnglish = language === 'he';
         const wordPair = getLetterWordPair(currentLetter, isHebrewToEnglish);
-        
+
         const { error } = await supabase
           .from('learned_words')
           .insert({
@@ -298,11 +298,11 @@ export const Learn: React.FC = () => {
         if (error && error.code !== '23505') throw error;
 
         setLearnedLetterPairs(prev => new Set([...prev, wordPair]));
-        
+
         // Remove learned letter from filtered array and move to next
         const newFiltered = filteredLettersForNav.filter(l => l.id !== currentLetter.id);
         setFilteredLettersForNav(newFiltered);
-        
+
         if (newFiltered.length > 0) {
           const nextIndex = Math.min(currentIndex, newFiltered.length - 1);
           setCurrentIndex(nextIndex);
@@ -329,11 +329,11 @@ export const Learn: React.FC = () => {
         if (error && error.code !== '23505') throw error;
 
         setLearnedWords(prev => new Set([...prev, currentWord.id]));
-        
+
         // Remove learned word from array and move to next
         const newWords = categoryWords.filter(w => w.id !== currentWord.id);
         setCategoryWords(newWords);
-        
+
         if (newWords.length > 0) {
           const nextIndex = Math.min(currentIndex, newWords.length - 1);
           setCurrentIndex(nextIndex);
@@ -396,7 +396,7 @@ export const Learn: React.FC = () => {
           <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
           <h2 className="text-2xl font-bold mb-2">{isHebrew ? 'כל הכבוד!' : 'Well done!'}</h2>
           <p className="text-muted-foreground mb-4">
-            {isLettersMode 
+            {isLettersMode
               ? (isHebrew ? 'למדת את כל האותיות' : 'You have learned all the letters')
               : (isHebrew ? 'למדת את כל המילים' : 'You have learned all the words')}
           </p>
@@ -441,7 +441,7 @@ export const Learn: React.FC = () => {
   // Get display content based on mode
   const displayTitle = isLettersMode ? currentLetter?.english_letter : currentWord?.english_word;
   const displayTranslation = isLettersMode ? currentLetter?.hebrew_letter : currentWord?.hebrew_translation;
-  
+
   // Get phonetic description with Hebrew translation if in Hebrew mode
   const getPhoneticDescription = () => {
     if (!isLettersMode) return currentWord?.example_sentence;
@@ -451,11 +451,11 @@ export const Learn: React.FC = () => {
     }
     return englishDesc;
   };
-  
+
   const displayDescription = getPhoneticDescription();
 
   return (
-    <div className="min-h-screen relative overflow-hidden" style={{ background: 'var(--gradient-hero)' }}>
+    <div className="flex-1 flex flex-col w-full overflow-hidden relative" style={{ height: 'calc(100vh - 4.5rem)' }}>
       {/* Background effect */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
         <div
@@ -468,189 +468,189 @@ export const Learn: React.FC = () => {
         />
       </div>
 
-      <div className="container mx-auto px-4 py-8 relative z-10">
-        <div className="max-w-4xl mx-auto">
+      <div className="flex-1 w-full max-w-4xl mx-auto px-4 py-4 md:py-6 relative z-10 flex flex-col overflow-hidden">
+        <div className="flex flex-col h-full gap-3 md:gap-4 overflow-hidden">
           {/* Header */}
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center justify-between flex-shrink-0">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center glow-primary">
-                {isLettersMode ? <Type className="h-6 w-6 text-primary-foreground" /> : <BookOpen className="h-6 w-6 text-primary-foreground" />}
+              <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center glow-primary">
+                {isLettersMode ? <Type className="h-5 w-5 md:h-6 md:w-6 text-primary-foreground" /> : <BookOpen className="h-5 w-5 md:h-6 md:w-6 text-primary-foreground" />}
               </div>
               <div className={isRTL ? 'text-right' : 'text-left'}>
-                <h1 className="text-xl font-bold">
-                  {isLettersMode 
+                <h1 className="text-lg md:text-xl font-bold leading-tight">
+                  {isLettersMode
                     ? (isHebrew ? 'לימוד אותיות' : 'Letter Learning')
                     : (isHebrew ? 'שיעור פעיל' : 'Active Lesson')}
                 </h1>
-                <p className="text-sm text-muted-foreground">{currentCategory}</p>
+                <p className="text-xs text-muted-foreground">{currentCategory}</p>
               </div>
             </div>
-            <Badge className="glass-card border-primary/30 text-primary px-4 py-2">
-              <Sparkles className={`h-4 w-4 ${isRTL ? 'ml-2' : 'mr-2'}`} />
+            <Badge className="glass-card border-primary/30 text-primary px-3 py-1 md:px-4 md:py-2 text-xs md:text-sm">
+              <Sparkles className={`h-3 w-3 md:h-4 md:w-4 ${isRTL ? 'ml-2' : 'mr-2'}`} />
               {currentIndex + 1} / {totalItems} {isLettersMode ? (isHebrew ? 'אותיות' : 'letters') : (isHebrew ? 'מילים' : 'words')}
             </Badge>
           </div>
 
           {/* Progress */}
-          <div className="mb-6">
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-sm text-primary font-semibold">{Math.round(progress)}%</span>
-              <span className="text-sm text-muted-foreground">
+          <div className="flex-shrink-0">
+            <div className="flex justify-between items-center mb-1.5 text-[10px] md:text-sm">
+              <span className="text-primary font-semibold">{Math.round(progress)}%</span>
+              <span className="text-muted-foreground">
                 {isLettersMode
                   ? (isHebrew ? `אות ${currentIndex + 1} מתוך ${totalItems}` : `Letter ${currentIndex + 1} of ${totalItems}`)
                   : (isHebrew ? `מילה ${currentIndex + 1} מתוך ${totalItems}` : `Word ${currentIndex + 1} of ${totalItems}`)}
               </span>
             </div>
-            <Progress value={progress} className="h-2" />
+            <Progress value={progress} className="h-1.5 md:h-2" />
           </div>
 
-          {/* Daily Limit Banner */}
+          {/* Daily Limit Banner (Compact) */}
           {!isPremium && (
-            <div className="mb-6 glass-card rounded-[2rem] p-4 border-primary/30">
-              <div className="flex flex-row items-center justify-between gap-4">
-                <div className="flex items-center gap-3">
-                  <Lock className="h-5 w-5 text-primary" />
-                  <span className="text-sm font-medium">
+            <div className="glass-card rounded-2xl p-3 border-primary/30 flex-shrink-0">
+              <div className="flex flex-row items-center justify-between gap-2 md:gap-4">
+                <div className="flex items-center gap-2">
+                  <Lock className="h-4 w-4 text-primary" />
+                  <span className="text-[10px] md:text-xs font-medium">
                     {isHebrew
-                      ? `מנוי חינמי: נותרו לך ${remainingWords} היום מתוך ${dailyLimit}`
-                      : `Free Plan: You have ${remainingWords} left today out of ${dailyLimit}`}
+                      ? `נותרו לך ${remainingWords} היום`
+                      : `${remainingWords} left today`}
                   </span>
                 </div>
                 <Button
                   size="sm"
+                  variant="ghost"
                   onClick={() => navigate('/pricing')}
-                  className="bg-gradient-to-r from-primary to-primary/80 text-primary-foreground glow-primary shrink-0"
+                  className="h-7 text-[10px] md:text-xs text-primary hover:bg-primary/10 px-2"
                 >
-                  <Crown className={`h-4 w-4 ${isRTL ? 'ml-1' : 'mr-1'}`} />
-                  {isHebrew ? 'שדרג לפרימיום' : 'Upgrade to Premium'}
+                  <Crown className={`h-3 w-3 ${isRTL ? 'ml-1' : 'mr-1'}`} />
+                  {isHebrew ? 'שדרג' : 'Upgrade'}
                 </Button>
               </div>
             </div>
           )}
 
-          {/* Speech Practice Mode Toggle */}
-          {isSupported && (
-            <div className="mb-6 glass-card rounded-[2rem] p-4 border-accent/30">
-              <div className="flex flex-row items-center justify-between gap-4">
-                <div className="flex items-center gap-3">
-                  <Mic className="h-5 w-5 text-accent" />
-                  <div>
-                    <Label htmlFor="speech-mode" className="text-sm font-bold cursor-pointer text-foreground block">
-                      {isHebrew ? 'מצב תרגול דיבור' : 'Speech Practice Mode'}
-                    </Label>
-                    <p className="text-xs text-muted-foreground">
-                      {isHebrew ? 'אמור את המילה באנגלית כדי להתקדם' : 'Say the word in English to proceed'}
+          {/* Main Area - Scrollable if content overflow but tries to fit */}
+          <div className="flex-1 overflow-y-auto min-h-0 space-y-3 md:space-y-4 pr-1 scrollbar-thin scrollbar-thumb-white/10">
+            {/* Speech Practice Mode Toggle */}
+            {isSupported && (
+              <div className="glass-card rounded-[1.5rem] p-3 border-accent/30">
+                <div className="flex flex-row items-center justify-between gap-4">
+                  <div className="flex items-center gap-2.5">
+                    <Mic className="h-4 w-4 text-accent" />
+                    <div>
+                      <Label htmlFor="speech-mode" className="text-xs md:text-sm font-bold cursor-pointer text-foreground block">
+                        {isHebrew ? 'מצב תרגול דיבור' : 'Speech Practice Mode'}
+                      </Label>
+                    </div>
+                  </div>
+
+                  <Switch
+                    id="speech-mode"
+                    dir={isRTL ? "rtl" : "ltr"}
+                    checked={speechPracticeMode}
+                    onCheckedChange={(checked) => {
+                      setSpeechPracticeMode(checked);
+                      if (!checked) {
+                        stopListening();
+                        setSpeechSuccess(false);
+                        setShowNextAfterSuccess(false);
+                      }
+                    }}
+                    className="data-[state=checked]:bg-accent shadow-sm scale-90"
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Main Learning Card */}
+            <Card className="glass-card border-white/10 overflow-hidden shadow-xl">
+              <CardHeader className="text-center pb-2 pt-4 md:pt-6">
+                <Badge className="mx-auto mb-2 md:mb-4 bg-primary/20 text-primary border-primary/30 scale-90 md:scale-100">
+                  {isLettersMode ? (isHebrew ? 'אות חדשה' : 'NEW LETTER') : (isHebrew ? 'מילה חדשה' : 'NEW DISCOVERY')}
+                </Badge>
+                <CardTitle className="text-4xl md:text-6xl font-black text-foreground mb-4 md:mb-6">
+                  {displayTitle}
+                </CardTitle>
+                <Button
+                  onClick={speakItem}
+                  variant="outline"
+                  size="sm"
+                  className="mx-auto glass-button border-white/20 hover:bg-white/10 h-10 md:h-12 px-6"
+                >
+                  <Volume2 className={`h-4 w-4 md:h-5 md:w-5 ${isRTL ? 'ml-2' : 'mr-2'}`} />
+                  {isHebrew ? 'שמע הגייה' : 'PRONOUNCE'}
+                </Button>
+              </CardHeader>
+
+              <CardContent className="space-y-4 pb-6 md:pb-8 px-4 md:px-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
+                  {/* Description/Example */}
+                  <div className={`glass-card rounded-2xl p-4 md:p-6 border-white/5 ${isRTL ? 'text-right' : 'text-left'}`}>
+                    <p className="text-[10px] text-muted-foreground mb-1 uppercase tracking-wider">
+                      {isLettersMode ? (isHebrew ? 'תיאור' : 'Description') : (isHebrew ? 'דוגמה לשימוש' : 'Usage Example')}
                     </p>
+                    <p className="text-sm md:text-lg font-medium text-gray-200">
+                      {displayDescription}
+                    </p>
+                  </div>
+
+                  {/* Translation */}
+                  <div className={`glass-card rounded-2xl p-4 md:p-6 border-white/5 ${isRTL ? 'text-right' : 'text-left'}`}>
+                    <p className="text-[10px] text-muted-foreground mb-1 uppercase tracking-wider">
+                      {isHebrew ? 'תרגום לעברית' : 'Hebrew Translation'}
+                    </p>
+                    <p className="text-2xl md:text-3xl font-black text-white">
+                      {displayTranslation}
+                    </p>
+                    {isLettersMode && currentLetter?.pronunciation && (
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {currentLetter.pronunciation}
+                      </p>
+                    )}
                   </div>
                 </div>
 
-                <Switch
-                  id="speech-mode"
-                  dir={isRTL ? "rtl" : "ltr"}
-                  checked={speechPracticeMode}
-                  onCheckedChange={(checked) => {
-                    setSpeechPracticeMode(checked);
-                    if (!checked) {
-                      stopListening();
-                      setSpeechSuccess(false);
-                      setShowNextAfterSuccess(false);
-                    }
-                  }}
-                  className="data-[state=checked]:bg-accent shadow-sm"
-                />
-              </div>
-            </div>
-          )}
-
-          {/* Main Learning Card */}
-          <Card className="glass-card border-white/10 mb-6 overflow-hidden">
-            <CardHeader className="text-center pb-4">
-              <Badge className="mx-auto mb-4 bg-primary/20 text-primary border-primary/30">
-                {isLettersMode ? (isHebrew ? 'אות חדשה' : 'NEW LETTER') : (isHebrew ? 'מילה חדשה' : 'NEW DISCOVERY')}
-              </Badge>
-              <CardTitle className="text-5xl md:text-6xl font-bold text-foreground mb-6">
-                {displayTitle}
-              </CardTitle>
-              <Button
-                onClick={speakItem}
-                variant="outline"
-                size="lg"
-                className="mx-auto glass-button border-white/20 hover:bg-white/10"
-                aria-label={isHebrew ? "השמעה" : "Speak"}
-              >
-                <Volume2 className={`h-5 w-5 ${isRTL ? 'ml-2' : 'mr-2'}`} />
-                {isHebrew ? 'האזן עכשיו' : 'LISTEN NOW'}
-              </Button>
-            </CardHeader>
-
-            <CardContent className="space-y-6 pb-8">
-              <div className="grid md:grid-cols-2 gap-4">
-                {/* Description/Example */}
-                <div className={`glass-card rounded-[2rem] p-6 border-white/10 ${isRTL ? 'text-right' : 'text-left'}`}>
-                  <p className="text-xs text-muted-foreground mb-2 uppercase tracking-wider">
-                    {isLettersMode ? (isHebrew ? 'תיאור' : 'Description') : (isHebrew ? 'דוגמה לשימוש' : 'Usage Example')}
-                  </p>
-                  <p className="text-lg font-medium text-foreground">
-                    {displayDescription}
-                  </p>
-                </div>
-
-                {/* Translation */}
-                <div className={`glass-card rounded-[2rem] p-6 border-white/10 ${isRTL ? 'text-right' : 'text-left'}`}>
-                  <p className="text-xs text-muted-foreground mb-2 uppercase tracking-wider">
-                    {isHebrew ? 'תרגום לעברית' : 'Hebrew Translation'}
-                  </p>
-                  <p className="text-3xl font-bold text-foreground">
-                    {displayTranslation}
-                  </p>
-                  {isLettersMode && currentLetter?.pronunciation && (
-                    <p className="text-sm text-muted-foreground mt-2">
-                      {currentLetter.pronunciation}
+                {/* Speech Practice Controls */}
+                {speechPracticeMode && (
+                  <div className="glass-card rounded-2xl p-4 md:p-6 border-accent/20 text-center animate-in zoom-in-95 duration-300">
+                    <p className="text-xs text-muted-foreground mb-2">
+                      {isHebrew ? 'לחצו ואמרו:' : 'Click & say:'}
                     </p>
-                  )}
-                </div>
-              </div>
+                    <p className="text-xl md:text-2xl font-black text-accent mb-4">{displayTitle}</p>
+                    <Button
+                      onClick={isListening ? stopListening : startListening}
+                      className={`h-12 w-full max-w-[200px] ${isListening ? 'bg-red-500 hover:bg-red-600' : 'bg-accent hover:bg-accent/90 focus:ring-accent/50'} text-white shadow-lg transition-all`}
+                    >
+                      <Mic className={`h-5 w-5 ${isRTL ? 'ml-2' : 'mr-2'}`} />
+                      {isListening ? (isHebrew ? 'מנקה...' : 'Cleaning...') : (isHebrew ? 'התחל לדבר' : 'Start Speaking')}
+                    </Button>
+                    {speechSuccess && (
+                      <p className="text-green-500 mt-3 font-bold animate-in fade-in duration-300">
+                        {isHebrew ? '✓ מצוין!' : '✓ Excellent!'}
+                      </p>
+                    )}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
 
-              {/* Speech Practice */}
-              {speechPracticeMode && (
-                <div className="glass-card rounded-[2rem] p-6 border-accent/30 text-center">
-                  <p className="text-sm text-muted-foreground mb-4">
-                    {isHebrew ? 'לחץ על הכפתור ואמור:' : 'Click the button and say:'}
-                  </p>
-                  <p className="text-2xl font-bold text-accent mb-4">{displayTitle}</p>
-                  <Button
-                    onClick={isListening ? stopListening : startListening}
-                    className={`${isListening ? 'bg-red-500 hover:bg-red-600' : 'bg-accent hover:bg-accent/90'} text-white`}
-                  >
-                    <Mic className={`h-5 w-5 ${isRTL ? 'ml-2' : 'mr-2'}`} />
-                    {isListening ? (isHebrew ? 'עצור' : 'Stop') : (isHebrew ? 'התחל לדבר' : 'Start Speaking')}
-                  </Button>
-                  {speechSuccess && (
-                    <p className="text-green-500 mt-4 font-bold">
-                      {isHebrew ? '✓ מצוין!' : '✓ Excellent!'}
-                    </p>
-                  )}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Navigation buttons */}
-          <div className="flex items-center justify-between">
+          {/* Navigation - Bottom Bar */}
+          <div className="flex items-center justify-between py-2 md:py-4 flex-shrink-0">
             <Button
               onClick={previousItem}
               variant="ghost"
               disabled={currentIndex === 0}
-              className="text-muted-foreground hover:text-foreground"
+              className="text-muted-foreground hover:text-white"
             >
-              <ArrowRight className={`h-5 w-5 ${isRTL ? 'ml-2' : 'mr-2'}`} />
-              {isHebrew ? 'הקודם' : 'Previous'}
+              <ArrowRight className={`h-4 w-4 md:h-5 md:w-5 ${isRTL ? 'ml-1' : 'mr-1'}`} />
+              <span className="hidden sm:inline">{isHebrew ? 'הקודם' : 'Previous'}</span>
             </Button>
 
             {(!speechPracticeMode || showNextAfterSuccess) && (
               <Button
                 onClick={markAsLearned}
-                className="bg-gradient-to-r from-primary to-primary/80 text-primary-foreground glow-primary px-8 py-6 text-lg"
+                className="bg-gradient-to-r from-primary to-blue-600 text-white glow-primary px-6 md:px-10 py-5 md:py-6 text-base md:text-lg font-black rounded-2xl shadow-xl hover:scale-105 active:scale-95 transition-all"
               >
                 <CheckCircle className={`h-5 w-5 ${isRTL ? 'ml-2' : 'mr-2'}`} />
                 {isHebrew ? 'למדתי!' : 'I Learned It!'}
@@ -661,10 +661,10 @@ export const Learn: React.FC = () => {
               onClick={nextItem}
               variant="ghost"
               disabled={currentIndex >= totalItems - 1}
-              className="text-muted-foreground hover:text-foreground"
+              className="text-muted-foreground hover:text-white"
             >
-              {isHebrew ? 'דלג' : 'Skip'}
-              <ArrowLeft className={`h-5 w-5 ${isRTL ? 'mr-2' : 'ml-2'}`} />
+              <span className="hidden sm:inline">{isHebrew ? 'דלג' : 'Skip'}</span>
+              <ArrowLeft className={`h-4 w-4 md:h-5 md:w-5 ${isRTL ? 'mr-1' : 'ml-1'}`} />
             </Button>
           </div>
         </div>
