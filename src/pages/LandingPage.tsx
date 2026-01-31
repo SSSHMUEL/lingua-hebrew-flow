@@ -43,7 +43,9 @@ export const LandingPage = () => {
                 terms: "תנאי שימוש",
                 privacy: "מדיניות פרטיות",
                 refund: "מדיניות החזרים",
+
                 about: "אודות",
+                contact: "צור קשר",
                 rights: "כל הזכויות שמורות."
             }
         },
@@ -77,7 +79,9 @@ export const LandingPage = () => {
                 terms: "Terms of Use",
                 privacy: "Privacy Policy",
                 refund: "Refund Policy",
+
                 about: "About",
+                contact: "Contact",
                 rights: "All rights reserved."
             }
         }
@@ -258,6 +262,9 @@ export const LandingPage = () => {
                             <Link to="/about" className="text-muted-foreground hover:text-primary transition-colors">
                                 {t.footer.about}
                             </Link>
+                            <a href="mailto:talkfix.app@gmail.com" className="text-muted-foreground hover:text-primary transition-colors">
+                                {t.footer.contact}
+                            </a>
                         </div>
 
                         <div className="text-sm text-muted-foreground">

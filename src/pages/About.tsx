@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Globe, Monitor, Smartphone, BookOpen, Target, Zap, Brain, Sparkles } from 'lucide-react';
+import { Globe, Monitor, Smartphone, BookOpen, Target, Zap, Brain, Sparkles, Mail } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { WordSwapDemo } from '@/components/WordSwapDemo';
 
@@ -274,6 +274,40 @@ const About = () => {
             </CardContent>
           </Card>
         </div>
+
+
+        {/* Contact Section */}
+        <div className="max-w-4xl mx-auto mb-16 mt-24 text-center">
+          <Card className="glass-card border-white/10 relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-accent/10 pointer-events-none" />
+            <CardContent className="p-8 relative z-10">
+              <div className="w-16 h-16 mx-auto bg-white/5 rounded-full flex items-center justify-center mb-6 border border-white/10 shadow-lg">
+                <Mail className="h-8 w-8 text-primary" />
+              </div>
+              <h2 className="text-3xl font-bold mb-4 text-foreground">
+                {isHebrew ? 'יש לכם שאלה או הצעה?' : 'Have a Question or Suggestion?'}
+              </h2>
+              <p className="text-muted-foreground text-lg mb-8 max-w-2xl mx-auto">
+                {isHebrew
+                  ? 'אנחנו תמיד שמחים לשמוע מהמשתמשים שלנו. אם נתקלתם בבעיה או שיש לכם רעיון לשיפור, אל תהססו לפנות אלינו.'
+                  : 'We are always happy to hear from our users. If you encountered an issue or have an improvement idea, don\'t hesitate to reach out.'}
+              </p>
+              <div className="flex flex-col items-center gap-4">
+                <a
+                  href="mailto:talkfix.app@gmail.com"
+                  className="inline-flex items-center gap-2 bg-primary hover:bg-primary/90 text-white px-8 py-3 rounded-full text-lg font-bold transition-all hover:scale-105 shadow-lg shadow-primary/25"
+                >
+                  <Mail className="h-5 w-5" />
+                  {isHebrew ? 'שלחו לנו למייל' : 'Email Us'}
+                </a>
+                <p className="text-muted-foreground font-mono bg-white/5 px-4 py-2 rounded-lg select-all border border-white/10 text-sm hover:bg-white/10 transition-colors cursor-text">
+                  talkfix.app@gmail.com
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
       </div>
 
       {/* Footer - Consistent with Landing Page */}
@@ -297,6 +331,9 @@ const About = () => {
             <a href="/about" className="text-muted-foreground hover:text-primary transition-colors">
               {isHebrew ? 'אודות' : 'About'}
             </a>
+            <a href="mailto:talkfix.app@gmail.com" className="text-muted-foreground hover:text-primary transition-colors">
+              {isHebrew ? 'צור קשר' : 'Contact'}
+            </a>
           </div>
 
           <div className="text-sm text-muted-foreground">
@@ -304,7 +341,7 @@ const About = () => {
           </div>
         </div>
       </footer>
-    </div>
+    </div >
   );
 };
 
