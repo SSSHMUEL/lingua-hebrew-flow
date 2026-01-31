@@ -11,34 +11,51 @@ serve(async (req) => {
   }
 
   try {
-    const { messages, learnedWords, topic } = await req.json();
+    const { messages, learnedWords, userTopics, isIntroduction } = await req.json();
     
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
-    // Build a dynamic system prompt that incorporates learned words
+    // Build learned words context - emphasize using these words
     const wordsContext = learnedWords && learnedWords.length > 0
-      ? `\n\nהמשתמש כבר למד את המילים הבאות באנגלית (עברית -> אנגלית):\n${learnedWords.map((w: { hebrew: string; english: string }) => `- ${w.hebrew} = ${w.english}`).join('\n')}\n\nשלב את המילים האלה בשיחה באופן טבעי. כשאתה משתמש במילה שהמשתמש למד, הדגש אותה בטקסט מודגש (**מילה**).`
+      ? `\n\n📚 **המילים שהמשתמש כבר למד (חובה לשלב בשיחה!):**\n${learnedWords.map((w: { hebrew: string; english: string }) => `• ${w.hebrew} = **${w.english}**`).join('\n')}\n\n⚠️ חשוב מאוד: שלב כמה שיותר מהמילים האלה בכל תשובה! כשאתה משתמש במילה שהמשתמש למד, כתוב אותה באנגלית מודגשת (**word**) והוסף את ההקשר בעברית.`
+      : '\n\n📝 המשתמש עדיין לא למד מילים. התחל ללמד אותו מילים בסיסיות.';
+
+    // Build topics context from user preferences
+    const topicsContext = userTopics && userTopics.length > 0
+      ? `\n\n🎯 **נושאים שמעניינים את המשתמש:** ${userTopics.join(', ')}\nהתמקד בנושאים האלה בשיחה ובדוגמאות שאתה נותן.`
       : '';
 
-    const topicContext = topic 
-      ? `\n\nהנושא הנוכחי לשיחה: ${topic}`
+    // Special introduction prompt
+    const introductionInstructions = isIntroduction
+      ? `\n\n🌟 **זו ההודעה הראשונה - הצג את עצמך!**
+בהודעה הזו עליך:
+1. להציג את עצמך בקצרה כמורה TalkFix
+2. להסביר איך אתה עובד (משלב מילים שהמשתמש למד בשיחה)
+3. להציע נושא לשיחה מהנושאים שמעניינים את המשתמש
+4. לשאול שאלה פתוחה כדי להתחיל
+5. אם יש מילים שהמשתמש למד, תן דוגמה קצרה לאיך אתה משלב אותן`
       : '';
 
-    const systemPrompt = `אתה מורה לאנגלית ידידותי ומעודד בשם "TalkFix Teacher". 
-אתה מדבר עברית ועוזר למשתמשים ללמוד אנגלית.
+    const systemPrompt = `אתה מורה לאנגלית ידידותי, מעודד ואינטראקטיבי בשם "TalkFix Teacher" 🎓
 
-הנחיות:
-1. שוחח עם המשתמש בעברית אבל שלב מילים באנגלית שהוא כבר למד
-2. כשאתה מציג מילה חדשה באנגלית, תמיד הוסף את התרגום בסוגריים
-3. תן משובים חיוביים ומעודדים
-4. אם המשתמש טועה, תקן בעדינות והסבר
-5. שאל שאלות פתוחות כדי לעודד שיחה
-6. התאם את רמת האנגלית לרמת המשתמש
-7. השתמש באימוג'ים מדי פעם כדי להפוך את השיחה לנעימה יותר 🎉
-${wordsContext}${topicContext}`;
+🎯 **המטרה שלך:** לעזור למשתמש לתרגל אנגלית דרך שיחה טבעית תוך שילוב המילים שהוא כבר למד.
+
+📋 **הנחיות חשובות:**
+1. **שלב את המילים שהמשתמש למד!** - זו העדיפות הראשונה. בכל תשובה, נסה להשתמש לפחות ב-2-3 מילים מהרשימה
+2. דבר עברית אבל שלב מילים באנגלית באופן טבעי
+3. כשאתה משתמש במילה נלמדת, כתוב אותה כך: **English** (עברית)
+4. תן משובים חיוביים ומעודדים 🎉
+5. אם המשתמש טועה, תקן בעדינות והסבר
+6. שאל שאלות פתוחות לעידוד שיחה
+7. השתמש באימוג'ים למעורבות
+
+💡 **דוגמה לשימוש נכון במילים נלמדות:**
+אם המשתמש למד "בית = house" ו"לאכול = eat", תגיד:
+"היום נדבר על מה קורה ב-**house** (בית) שלך! מה אתה אוהב לעשות כשאתה חוזר **home** (הביתה)? אולי אתה אוהב ל-**eat** (לאכול) משהו טעים? 🍕"
+${wordsContext}${topicsContext}${introductionInstructions}`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
