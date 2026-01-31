@@ -16,14 +16,16 @@ import {
   Loader2,
   Sparkles,
   BookOpen,
-  MessageSquare,
-  Lightbulb,
   Mic,
   MicOff,
   Volume2,
-  VolumeX
+  VolumeX,
+  MessageSquare,
+  Headphones
 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
+import { Switch } from '@/components/ui/switch';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -57,10 +59,39 @@ export const AITeacher: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [learnedWords, setLearnedWords] = useState<LearnedWord[]>([]);
   const [selectedTopic, setSelectedTopic] = useState<string | null>(null);
+
+  // Modes: 'text' or 'conversation'
+  const [mode, setMode] = useState<'text' | 'conversation'>('text');
+
+  // Voice State
   const [isSpeechEnabled, setIsSpeechEnabled] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [availableVoices, setAvailableVoices] = useState<SpeechSynthesisVoice[]>([]);
+  const [selectedVoice, setSelectedVoice] = useState<SpeechSynthesisVoice | null>(null);
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Load voices and pick a nice one
+  useEffect(() => {
+    const loadVoices = () => {
+      const voices = window.speechSynthesis.getVoices();
+      setAvailableVoices(voices);
+
+      // Try to find a "nice" English voice
+      // Priority: Google US English, Microsoft Zira, Samantha, or any English voice
+      const preferred = voices.find(v => v.name.includes("Google US English"))
+        || voices.find(v => v.name.includes("Zira"))
+        || voices.find(v => v.name.includes("Samantha"))
+        || voices.find(v => v.lang.startsWith("en-US"))
+        || voices.find(v => v.lang.startsWith("en"));
+
+      if (preferred) setSelectedVoice(preferred);
+    };
+
+    loadVoices();
+    window.speechSynthesis.onvoiceschanged = loadVoices;
+  }, []);
 
   // Speech Recognition Hook
   const {
@@ -85,7 +116,14 @@ export const AITeacher: React.FC = () => {
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+  }, [messages, mode]);
+
+  // Automatically enable speech in conversation mode
+  useEffect(() => {
+    if (mode === 'conversation') {
+      setIsSpeechEnabled(true);
+    }
+  }, [mode]);
 
   const loadLearnedWords = async () => {
     if (!user) return;
@@ -150,13 +188,21 @@ export const AITeacher: React.FC = () => {
 
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(text);
+
+    // Use selected voice if available
+    if (selectedVoice) {
+      utterance.voice = selectedVoice;
+    }
+
     // Try to detect language or fallback to English if mostly English chars
     const isEnglish = /^[A-Za-z\s.,!?']+$/.test(text.substring(0, 50));
     utterance.lang = isEnglish ? 'en-US' : 'he-IL';
-    utterance.rate = 0.9; // Slightly slower for clarity
+    utterance.rate = 0.95; // Slightly slower for clarity, but not too slow
+    utterance.pitch = 1.05; // Slightly higher pitch often sounds friendlier
 
     utterance.onstart = () => setIsSpeaking(true);
     utterance.onend = () => setIsSpeaking(false);
+    utterance.onerror = () => setIsSpeaking(false);
 
     window.speechSynthesis.speak(utterance);
   };
@@ -295,8 +341,8 @@ export const AITeacher: React.FC = () => {
         onDelta: updateAssistant,
         onDone: () => {
           setIsLoading(false);
-          // Speak the full response if enabled
-          if (isSpeechEnabled) {
+          // Speak the full response if enabled or in conversation mode
+          if (isSpeechEnabled || mode === 'conversation') {
             speakText(assistantContent);
           }
         },
@@ -325,8 +371,37 @@ export const AITeacher: React.FC = () => {
       ? `היי! בוא נתרגל אנגלית על הנושא: ${topic}`
       : `Hi! Let's practice English about: ${topic}`;
     setInput(greeting);
-    textareaRef.current?.focus();
+    if (mode === 'text') {
+      setTimeout(() => textareaRef.current?.focus(), 100);
+    }
   };
+
+  // UI Components helpers
+  const renderTopicSuggestions = () => (
+    <Card className="glass-card border-white/10 mb-6 animate-fade-in">
+      <CardContent className="p-6">
+        <div className="flex items-center gap-2 mb-4 text-muted-foreground">
+          <Sparkles className="h-5 w-5 text-accent" />
+          <span className="font-medium">
+            {isHebrew ? 'נושאים לשיחה:' : 'Conversation topics:'}
+          </span>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+          {TOPIC_SUGGESTIONS.map((topic, index) => (
+            <Button
+              key={index}
+              variant="outline"
+              className="h-auto py-3 px-4 text-sm justify-start hover:bg-primary/10 hover:border-primary/50 transition-all text-wrap border-white/5 bg-black/20"
+              onClick={() => startWithTopic(topic.he)}
+            >
+              <span className="mr-2 text-lg inline-block">{topic.he.split(' ')[0]}</span>
+              <span>{isHebrew ? topic.he.substring(topic.he.indexOf(' ') + 1) : topic.en}</span>
+            </Button>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
+  );
 
   return (
     <div className="min-h-screen relative py-8" style={{ background: 'var(--gradient-hero)' }}>
@@ -334,183 +409,233 @@ export const AITeacher: React.FC = () => {
       <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
         <div
           className="absolute top-1/2 -translate-y-1/2 -right-[150px] w-[600px] h-[100vh] rounded-full blur-[180px]"
-          style={{ background: 'hsl(25 85% 45% / 0.3)' }}
+          style={{ background: 'hsl(25 85% 45% / 0.15)' }}
         />
         <div
           className="absolute top-1/2 -translate-y-1/2 -left-[150px] w-[500px] h-[90vh] rounded-full blur-[180px]"
-          style={{ background: 'hsl(190 85% 55% / 0.25)' }}
+          style={{ background: 'hsl(190 85% 55% / 0.15)' }}
         />
       </div>
 
       <div className="container mx-auto px-4 relative z-10">
-        <div className="max-w-3xl mx-auto">
-          {/* Header */}
-          <div className="text-center mb-6">
-            <h1 className="text-4xl font-bold text-primary mb-2 flex items-center justify-center gap-3">
-              <Sparkles className="h-8 w-8" />
-              {isHebrew ? 'מורה AI' : 'AI Teacher'}
-            </h1>
-            <p className="text-muted-foreground mb-4">
-              {isHebrew
-                ? 'שוחח עם המורה הוירטואלי שלך ותרגל את המילים שלמדת'
-                : 'Chat with your virtual teacher and practice the words you learned'}
-            </p>
+        <div className="max-w-4xl mx-auto">
+          {/* Header & Mode Switch */}
+          <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <h1 className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-white/70 mb-2 flex items-center gap-3">
+                <Sparkles className="h-8 w-8 text-accent" />
+                {isHebrew ? 'מורה AI' : 'AI Teacher'}
+              </h1>
+              <p className="text-muted-foreground">
+                {isHebrew
+                  ? 'שוחח עם המורה הוירטואלי שלך ותרגל את המילים שלמדת'
+                  : 'Chat with your virtual teacher and practice learned words'}
+              </p>
+            </div>
 
-            <div className="flex items-center justify-center gap-2 mb-2">
-              {learnedWords.length > 0 && (
-                <Badge variant="secondary">
-                  <BookOpen className="h-3 w-3 mr-1" />
-                  {isHebrew ? `${learnedWords.length} מילים נלמדו` : `${learnedWords.length} words learned`}
-                </Badge>
-              )}
-
-              <Button
-                variant={isSpeechEnabled ? "default" : "outline"}
-                size="sm"
-                onClick={toggleSpeech}
-                className="h-6 text-xs gap-1"
+            <div className="glass-card p-1 rounded-full flex items-center bg-black/20 border-white/5">
+              <button
+                onClick={() => setMode('text')}
+                className={`px-6 py-2 rounded-full transition-all duration-300 flex items-center gap-2 text-sm font-medium ${mode === 'text'
+                    ? 'bg-primary text-primary-foreground shadow-lg'
+                    : 'text-muted-foreground hover:text-white'
+                  }`}
               >
-                {isSpeechEnabled
-                  ? <><Volume2 className="h-3 w-3" /> {isHebrew ? 'הקראה פעילה' : 'Voice On'}</>
-                  : <><VolumeX className="h-3 w-3" /> {isHebrew ? 'הקראה כבויה' : 'Voice Off'}</>
-                }
-              </Button>
+                <MessageSquare className="h-4 w-4" />
+                {isHebrew ? 'צ׳אט' : 'Text'}
+              </button>
+              <button
+                onClick={() => setMode('conversation')}
+                className={`px-6 py-2 rounded-full transition-all duration-300 flex items-center gap-2 text-sm font-medium ${mode === 'conversation'
+                    ? 'bg-accent text-accent-foreground shadow-lg'
+                    : 'text-muted-foreground hover:text-white'
+                  }`}
+              >
+                <Headphones className="h-4 w-4" />
+                {isHebrew ? 'שיחה' : 'Talk'}
+              </button>
             </div>
           </div>
 
-          {/* Topic Suggestions - Show when no messages */}
-          {messages.length === 0 && (
-            <Card className="mb-6 glass-card border-white/10">
-              <CardContent className="p-6">
-                <div className="flex items-center gap-2 mb-4 text-muted-foreground">
-                  <Lightbulb className="h-5 w-5 text-primary" />
-                  <span className="font-medium">
-                    {isHebrew ? 'בחר נושא לשיחה:' : 'Choose a topic to discuss:'}
-                  </span>
-                </div>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                  {TOPIC_SUGGESTIONS.map((topic, index) => (
-                    <Button
-                      key={index}
-                      variant="outline"
-                      className="h-auto py-3 px-4 text-sm hover:bg-primary/10 hover:border-primary/50 transition-all text-wrap"
-                      onClick={() => startWithTopic(topic.he)}
-                    >
-                      {isHebrew ? topic.he : topic.en}
-                    </Button>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          )}
+          {/* Main Content Area */}
+          <div className="relative min-h-[500px]">
+            {mode === 'text' ? (
+              /* TEXT MODE DEFAULT UI */
+              <div className="space-y-4">
+                {messages.length === 0 && renderTopicSuggestions()}
 
-          {/* Chat Messages */}
-          <Card className="mb-4 glass-card border-white/10 overflow-hidden">
-            <CardContent className="p-0">
-              <div className="h-[400px] md:h-[500px] overflow-y-auto p-4 space-y-4">
-                {messages.length === 0 ? (
-                  <div className="h-full flex flex-col items-center justify-center text-center text-muted-foreground">
-                    <Bot className="h-16 w-16 mb-4 opacity-50" />
-                    <p className="text-lg font-medium">
-                      {isHebrew ? 'שלום! אני המורה שלך לאנגלית 👋' : 'Hello! I\'m your English teacher 👋'}
-                    </p>
-                    <p className="text-sm mt-2">
-                      {isHebrew
-                        ? 'בחר נושא למעלה או התחל לכתוב כדי לתרגל'
-                        : 'Choose a topic above or start typing to practice'}
-                    </p>
-                  </div>
-                ) : (
-                  messages.map((message, index) => (
-                    <div
-                      key={index}
-                      className={`flex gap-3 ${message.role === 'user' ? (isRTL ? 'flex-row' : 'flex-row-reverse') : (isRTL ? 'flex-row-reverse' : 'flex-row')}`}
-                    >
-                      <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${message.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-secondary text-secondary-foreground'
-                        }`}>
-                        {message.role === 'user' ? <User className="h-4 w-4" /> : <Bot className="h-4 w-4" />}
-                      </div>
-                      <div className={`flex-1 max-w-[80%] rounded-2xl px-4 py-3 ${message.role === 'user'
-                          ? 'bg-primary text-primary-foreground rounded-br-sm'
-                          : 'bg-muted rounded-bl-sm'
-                        }`}>
-                        <div className={`prose prose-sm max-w-none ${message.role === 'user' ? 'prose-invert' : ''}`}>
-                          <ReactMarkdown>{message.content}</ReactMarkdown>
+                <Card className="glass-card border-white/10 overflow-hidden h-[60vh] flex flex-col">
+                  <CardContent className="p-0 flex-1 flex flex-col overflow-hidden">
+                    <div className="flex-1 overflow-y-auto p-4 space-y-6">
+                      {messages.length === 0 ? (
+                        <div className="h-full flex flex-col items-center justify-center text-center text-muted-foreground opacity-50">
+                          <Bot className="h-20 w-20 mb-6 stroke-[1.5]" />
+                          <p className="text-xl font-medium">
+                            {isHebrew ? 'אני כאן בשבילך' : 'I\'m here to help'}
+                          </p>
                         </div>
-                        {message.role === 'assistant' && (
-                          <div className="mt-2 flex justify-end">
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-6 w-6 opacity-50 hover:opacity-100"
-                              onClick={() => speakText(message.content)}
-                            >
-                              <Volume2 className="h-3 w-3" />
-                            </Button>
+                      ) : (
+                        messages.map((message, index) => (
+                          <div
+                            key={index}
+                            className={`flex gap-4 ${message.role === 'user' ? (isRTL ? 'flex-row' : 'flex-row-reverse') : (isRTL ? 'flex-row-reverse' : 'flex-row')}`}
+                          >
+                            <div className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center shadow-lg ${message.role === 'user'
+                                ? 'bg-gradient-to-br from-primary to-blue-600 text-white'
+                                : 'bg-gradient-to-br from-slate-700 to-slate-900 text-white border border-white/10'
+                              }`}>
+                              {message.role === 'user' ? <User className="h-5 w-5" /> : <Bot className="h-5 w-5" />}
+                            </div>
+                            <div className={`flex-1 max-w-[85%] rounded-2xl px-6 py-4 shadow-md ${message.role === 'user'
+                              ? 'bg-primary/20 border border-primary/20 text-white rounded-br-sm'
+                              : 'bg-white/5 border border-white/10 text-gray-200 rounded-bl-sm'
+                              }`}>
+                              <div className={`prose prose-sm prose-invert max-w-none`}>
+                                <ReactMarkdown>{message.content}</ReactMarkdown>
+                              </div>
+                              {message.role === 'assistant' && (
+                                <div className="mt-3 flex justify-end">
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-8 w-8 rounded-full bg-white/5 hover:bg-white/10 transition-colors"
+                                    onClick={() => speakText(message.content)}
+                                  >
+                                    <Volume2 className="h-4 w-4 text-gray-400" />
+                                  </Button>
+                                </div>
+                              )}
+                            </div>
                           </div>
-                        )}
+                        ))
+                      )}
+                      {isLoading && (
+                        <div className={`flex gap-3 ${isRTL ? 'flex-row-reverse' : 'flex-row'}`}>
+                          <div className="flex-shrink-0 w-10 h-10 rounded-full bg-slate-800 border border-white/10 flex items-center justify-center">
+                            <Bot className="h-5 w-5 text-gray-400" />
+                          </div>
+                          <div className="bg-white/5 border border-white/10 rounded-2xl px-6 py-4 flex items-center gap-2">
+                            <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                            <span className="text-sm text-gray-400">{isHebrew ? 'חושב...' : 'Thinking...'}</span>
+                          </div>
+                        </div>
+                      )}
+                      <div ref={messagesEndRef} />
+                    </div>
+
+                    <div className="p-4 border-t border-white/10 bg-black/20 backdrop-blur-md">
+                      <div className="flex gap-3 relative">
+                        <Textarea
+                          ref={textareaRef}
+                          value={input}
+                          onChange={(e) => setInput(e.target.value)}
+                          onKeyDown={handleKeyDown}
+                          placeholder={isHebrew ? 'הקלד הודעה...' : 'Type a message...'}
+                          className="min-h-[50px] max-h-[150px] resize-none bg-white/5 border-white/10 focus:border-primary/50 focus:ring-1 focus:ring-primary/50 text-base pr-12 rounded-xl"
+                          disabled={isLoading}
+                        />
+                        <Button
+                          onClick={handleSend}
+                          disabled={!input.trim() || isLoading}
+                          className="h-[50px] w-[50px] rounded-xl flex-shrink-0 bg-primary hover:bg-primary/90 transition-all shadow-lg shadow-primary/25"
+                        >
+                          {isLoading ? (
+                            <Loader2 className="h-5 w-5 animate-spin" />
+                          ) : (
+                            <Send className="h-5 w-5 ml-0.5" />
+                          )}
+                        </Button>
                       </div>
                     </div>
-                  ))
-                )}
-                {isLoading && messages[messages.length - 1]?.role === 'user' && (
-                  <div className={`flex gap-3 ${isRTL ? 'flex-row-reverse' : 'flex-row'}`}>
-                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-secondary flex items-center justify-center">
-                      <Bot className="h-4 w-4" />
-                    </div>
-                    <div className="bg-muted rounded-2xl rounded-bl-sm px-4 py-3">
-                      <Loader2 className="h-5 w-5 animate-spin" />
+                  </CardContent>
+                </Card>
+              </div>
+            ) : (
+              /* CONVERSATION MODE UI */
+              <div className="flex flex-col items-center justify-center min-h-[60vh] animate-in fade-in zoom-in duration-300">
+                <div className="relative mb-12">
+                  {/* Avatar Circle with Pulse Effect */}
+                  <div className={`w-48 h-48 rounded-full flex items-center justify-center relative z-10 transition-all duration-500 ${isSpeaking
+                      ? 'bg-gradient-to-br from-accent to-orange-600 shadow-[0_0_60px_rgba(255,100,0,0.4)] scale-110'
+                      : (isListening
+                        ? 'bg-gradient-to-br from-primary to-blue-600 shadow-[0_0_60px_rgba(59,130,246,0.4)] scale-105'
+                        : 'bg-gradient-to-br from-slate-700 to-slate-900 border-4 border-white/10 shadow-2xl')
+                    }`}>
+                    {isSpeaking ? (
+                      <Volume2 className="h-20 w-20 text-white animate-pulse" />
+                    ) : isListening ? (
+                      <Mic className="h-20 w-20 text-white animate-pulse" />
+                    ) : (
+                      <Bot className="h-20 w-20 text-white/80" />
+                    )}
+                  </div>
+
+                  {/* Background Glow Rings */}
+                  {isSpeaking && (
+                    <>
+                      <div className="absolute inset-0 rounded-full border-4 border-accent/30 animate-ping" />
+                      <div className="absolute inset-[-20px] rounded-full border-2 border-accent/20 animate-pulse delay-75" />
+                    </>
+                  )}
+                  {isListening && (
+                    <>
+                      <div className="absolute inset-0 rounded-full border-4 border-primary/30 animate-ping" />
+                      <div className="absolute inset-[-20px] rounded-full border-2 border-primary/20 animate-pulse delay-75" />
+                    </>
+                  )}
+                </div>
+
+                {/* Status Text */}
+                <div className="text-center mb-8 h-8">
+                  {isSpeaking ? (
+                    <span className="text-accent font-medium text-lg animate-pulse">
+                      {isHebrew ? 'מורה מדבר...' : 'Teacher is speaking...'}
+                    </span>
+                  ) : isListening ? (
+                    <span className="text-primary font-medium text-lg animate-pulse">
+                      {isHebrew ? 'מקשיב לך...' : 'Listening to you...'}
+                    </span>
+                  ) : (
+                    <span className="text-muted-foreground text-lg">
+                      {isHebrew ? 'לחץ לדבר' : 'Tap to speak'}
+                    </span>
+                  )}
+                </div>
+
+                {/* Controls */}
+                <div className="flex items-center gap-6">
+                  <Button
+                    size="lg"
+                    className={`h-20 w-20 rounded-full shadow-2xl transition-all duration-300 hover:scale-110 ${isListening
+                        ? 'bg-red-500 hover:bg-red-600 animate-pulse'
+                        : 'bg-white text-black hover:bg-gray-200'
+                      }`}
+                    onClick={isListening ? stopListening : startListening}
+                  >
+                    {isListening ? (
+                      <MicOff className="h-8 w-8" />
+                    ) : (
+                      <Mic className="h-8 w-8" />
+                    )}
+                  </Button>
+                </div>
+
+                {/* Last Message Preview */}
+                {messages.length > 0 && (
+                  <div className="mt-12 max-w-lg w-full">
+                    <div className="glass-card p-6 rounded-2xl border-white/5 bg-black/40">
+                      <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-2">
+                        {messages[messages.length - 1].role === 'user' ? (isHebrew ? 'אתה' : 'You') : (isHebrew ? 'מורה' : 'Teacher')}
+                      </h3>
+                      <p className="text-lg text-white/90 leading-relaxed">
+                        {messages[messages.length - 1].content}
+                      </p>
                     </div>
                   </div>
                 )}
-                <div ref={messagesEndRef} />
               </div>
-            </CardContent>
-          </Card>
-
-          {/* Input Area */}
-          <Card className="glass-card border-white/10">
-            <CardContent className="p-4">
-              <div className="flex gap-2">
-                <Button
-                  variant={isListening ? "destructive" : "outline"}
-                  size="icon"
-                  className={`flex-shrink-0 h-12 w-12 rounded-full ${isListening ? 'animate-pulse' : ''}`}
-                  onClick={isListening ? stopListening : startListening}
-                  disabled={isLoading}
-                >
-                  {isListening ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
-                </Button>
-
-                <Textarea
-                  ref={textareaRef}
-                  value={isListening ? transcript : input}
-                  onChange={(e) => setInput(e.target.value)}
-                  onKeyDown={handleKeyDown}
-                  placeholder={isListening ? (isHebrew ? 'מקשיב לך...' : 'Listening...') : (isHebrew ? 'כתוב הודעה...' : 'Type a message...')}
-                  className="min-h-[48px] max-h-[150px] resize-none bg-background/50 flex-1"
-                  disabled={isLoading}
-                />
-
-                <Button
-                  onClick={handleSend}
-                  disabled={(!input.trim() && !transcript) || isLoading}
-                  className="h-12 w-12 rounded-full flex-shrink-0"
-                >
-                  {isLoading ? (
-                    <Loader2 className="h-5 w-5 animate-spin" />
-                  ) : (
-                    <Send className="h-5 w-5" />
-                  )}
-                </Button>
-              </div>
-              <p className="text-xs text-muted-foreground mt-2 text-center flex items-center justify-center gap-2">
-                <span>{isHebrew ? 'לחץ על המיקרופון כדי לדבר' : 'Click the mic to speak'}</span>
-                <span className="w-1 h-1 rounded-full bg-muted-foreground/50" />
-                <span>{isHebrew ? 'Enter לשליחה' : 'Enter to send'}</span>
-              </p>
-            </CardContent>
-          </Card>
+            )}
+          </div>
         </div>
       </div>
     </div>
