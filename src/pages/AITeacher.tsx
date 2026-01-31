@@ -21,7 +21,11 @@ import {
   Volume2,
   VolumeX,
   MessageSquare,
-  Headphones
+  Headphones,
+  StopCircle,
+  Play,
+  Pause,
+  Coffee
 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import { Switch } from '@/components/ui/switch';
@@ -40,12 +44,12 @@ interface LearnedWord {
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/ai-teacher`;
 
 const TOPIC_SUGGESTIONS = [
+  { he: '☕ מילים יום-יומיות', en: 'Daily Words' },
   { he: '🛒 קניות בסופר', en: 'Shopping at the supermarket' },
   { he: '✈️ נסיעה לחו"ל', en: 'Traveling abroad' },
   { he: '🍕 הזמנת אוכל במסעדה', en: 'Ordering food at a restaurant' },
   { he: '🏥 ביקור אצל רופא', en: 'Visiting the doctor' },
   { he: '💼 ראיון עבודה', en: 'Job interview' },
-  { he: '🏠 חיפוש דירה', en: 'Apartment hunting' },
 ];
 
 export const AITeacher: React.FC = () => {
@@ -67,26 +71,33 @@ export const AITeacher: React.FC = () => {
   const [isSpeechEnabled, setIsSpeechEnabled] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [availableVoices, setAvailableVoices] = useState<SpeechSynthesisVoice[]>([]);
-  const [selectedVoice, setSelectedVoice] = useState<SpeechSynthesisVoice | null>(null);
+
+  // Separated voices
+  const [englishVoice, setEnglishVoice] = useState<SpeechSynthesisVoice | null>(null);
+  const [hebrewVoice, setHebrewVoice] = useState<SpeechSynthesisVoice | null>(null);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // Load voices and pick a nice one
+  // Load voices and pick nice ones
   useEffect(() => {
     const loadVoices = () => {
       const voices = window.speechSynthesis.getVoices();
       setAvailableVoices(voices);
 
-      // Try to find a "nice" English voice
-      // Priority: Google US English, Microsoft Zira, Samantha, or any English voice
-      const preferred = voices.find(v => v.name.includes("Google US English"))
+      // Find nice English Voice
+      const eng = voices.find(v => v.name.includes("Google US English"))
         || voices.find(v => v.name.includes("Zira"))
         || voices.find(v => v.name.includes("Samantha"))
         || voices.find(v => v.lang.startsWith("en-US"))
         || voices.find(v => v.lang.startsWith("en"));
+      setEnglishVoice(eng || null);
 
-      if (preferred) setSelectedVoice(preferred);
+      // Find Hebrew Voice - Prioritize Google Hebrew if available
+      const heb = voices.find(v => v.name.includes("Google") && (v.lang.includes("he") || v.lang.includes("iw")))
+        || voices.find(v => v.lang.includes("he") || v.lang.includes("iw"))
+        || voices.find(v => v.name.toLowerCase().includes("hebrew"));
+      setHebrewVoice(heb || null);
     };
 
     loadVoices();
@@ -122,6 +133,10 @@ export const AITeacher: React.FC = () => {
   useEffect(() => {
     if (mode === 'conversation') {
       setIsSpeechEnabled(true);
+    } else {
+      // Clean up speech when leaving conversation mode
+      window.speechSynthesis.cancel();
+      setIsSpeaking(false);
     }
   }, [mode]);
 
@@ -129,7 +144,6 @@ export const AITeacher: React.FC = () => {
     if (!user) return;
 
     try {
-      // First try new schema
       const { data: newSchemaData } = await supabase
         .from('user_learned_words')
         .select(`
@@ -157,7 +171,6 @@ export const AITeacher: React.FC = () => {
         return;
       }
 
-      // Fallback to old schema
       const { data: oldSchemaData } = await supabase
         .from('learned_words')
         .select(`
@@ -183,36 +196,44 @@ export const AITeacher: React.FC = () => {
     }
   };
 
+  const stopSpeaking = () => {
+    window.speechSynthesis.cancel();
+    setIsSpeaking(false);
+  };
+
   const speakText = (text: string) => {
-    if (!isSpeechEnabled) return;
+    if (!isSpeechEnabled && mode !== 'conversation') return;
 
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(text);
 
-    // Use selected voice if available
-    if (selectedVoice) {
-      utterance.voice = selectedVoice;
-    }
+    // Detect Language - Simple heuristic
+    // If more than 50% of the first 50 chars are English, treat as English.
+    // Otherwise Hebrew.
+    const sample = text.substring(0, 50);
+    const englishChars = (sample.match(/[A-Za-z]/g) || []).length;
+    const hebrewChars = (sample.match(/[\u0590-\u05FF]/g) || []).length;
 
-    // Try to detect language or fallback to English if mostly English chars
-    const isEnglish = /^[A-Za-z\s.,!?']+$/.test(text.substring(0, 50));
-    utterance.lang = isEnglish ? 'en-US' : 'he-IL';
-    utterance.rate = 0.95; // Slightly slower for clarity, but not too slow
-    utterance.pitch = 1.05; // Slightly higher pitch often sounds friendlier
+    // Default to English if predominantly English, otherwise Hebrew
+    const isEnglishText = englishChars >= hebrewChars;
+
+    if (isEnglishText) {
+      utterance.lang = 'en-US';
+      if (englishVoice) utterance.voice = englishVoice;
+      utterance.rate = 0.95;
+      utterance.pitch = 1.05;
+    } else {
+      utterance.lang = 'he-IL';
+      if (hebrewVoice) utterance.voice = hebrewVoice;
+      utterance.rate = 1.0;
+      utterance.pitch = 1.0;
+    }
 
     utterance.onstart = () => setIsSpeaking(true);
     utterance.onend = () => setIsSpeaking(false);
     utterance.onerror = () => setIsSpeaking(false);
 
     window.speechSynthesis.speak(utterance);
-  };
-
-  const toggleSpeech = () => {
-    if (isSpeaking) {
-      window.speechSynthesis.cancel();
-      setIsSpeaking(false);
-    }
-    setIsSpeechEnabled(!isSpeechEnabled);
   };
 
   const streamChat = useCallback(async ({
@@ -311,7 +332,6 @@ export const AITeacher: React.FC = () => {
 
     const textToSend = input.trim() || transcript;
 
-    // Stop listening if active
     if (isListening) {
       stopListening();
       resetTranscript();
@@ -341,7 +361,6 @@ export const AITeacher: React.FC = () => {
         onDelta: updateAssistant,
         onDone: () => {
           setIsLoading(false);
-          // Speak the full response if enabled or in conversation mode
           if (isSpeechEnabled || mode === 'conversation') {
             speakText(assistantContent);
           }
@@ -349,12 +368,12 @@ export const AITeacher: React.FC = () => {
       });
     } catch (error) {
       console.error('Chat error:', error);
+      setIsLoading(false);
       toast({
         title: isHebrew ? 'שגיאה' : 'Error',
-        description: error instanceof Error ? error.message : (isHebrew ? 'לא ניתן לשלוח הודעה' : 'Could not send message'),
+        description: isHebrew ? 'אירעה שגיאה בחיבור' : 'Connection error occurred',
         variant: 'destructive',
       });
-      setIsLoading(false);
     }
   };
 
@@ -376,7 +395,6 @@ export const AITeacher: React.FC = () => {
     }
   };
 
-  // UI Components helpers
   const renderTopicSuggestions = () => (
     <Card className="glass-card border-white/10 mb-6 animate-fade-in">
       <CardContent className="p-6">
@@ -404,17 +422,11 @@ export const AITeacher: React.FC = () => {
   );
 
   return (
-    <div className="min-h-screen relative py-8" style={{ background: 'var(--gradient-hero)' }}>
+    <div className="min-h-screen relative py-8 overflow-hidden" style={{ background: 'var(--gradient-hero)' }}>
       {/* Background effects */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
-        <div
-          className="absolute top-1/2 -translate-y-1/2 -right-[150px] w-[600px] h-[100vh] rounded-full blur-[180px]"
-          style={{ background: 'hsl(25 85% 45% / 0.15)' }}
-        />
-        <div
-          className="absolute top-1/2 -translate-y-1/2 -left-[150px] w-[500px] h-[90vh] rounded-full blur-[180px]"
-          style={{ background: 'hsl(190 85% 55% / 0.15)' }}
-        />
+        <div className="absolute top-1/2 -translate-y-1/2 -right-[150px] w-[600px] h-[100vh] rounded-full blur-[180px] bg-accent/15" />
+        <div className="absolute top-1/2 -translate-y-1/2 -left-[150px] w-[500px] h-[90vh] rounded-full blur-[180px] bg-primary/15" />
       </div>
 
       <div className="container mx-auto px-4 relative z-10">
@@ -427,13 +439,13 @@ export const AITeacher: React.FC = () => {
                 {isHebrew ? 'מורה AI' : 'AI Teacher'}
               </h1>
               <p className="text-muted-foreground">
-                {isHebrew
-                  ? 'שוחח עם המורה הוירטואלי שלך ותרגל את המילים שלמדת'
-                  : 'Chat with your virtual teacher and practice learned words'}
+                {mode === 'conversation'
+                  ? (isHebrew ? 'מצב שיחה קולית - דבר בחופשיות' : 'Voice Conversation Mode - Speak freely')
+                  : (isHebrew ? 'מצב צ\'אט - תרגול בכתיבה' : 'Chat Mode - Practice writing')}
               </p>
             </div>
 
-            <div className="glass-card p-1 rounded-full flex items-center bg-black/20 border-white/5">
+            <div className="glass-card p-1 rounded-full flex items-center bg-black/20 border-white/5 self-start md:self-center">
               <button
                 onClick={() => setMode('text')}
                 className={`px-6 py-2 rounded-full transition-all duration-300 flex items-center gap-2 text-sm font-medium ${mode === 'text'
@@ -461,12 +473,12 @@ export const AITeacher: React.FC = () => {
           <div className="relative min-h-[500px]">
             {mode === 'text' ? (
               /* TEXT MODE DEFAULT UI */
-              <div className="space-y-4">
+              <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
                 {messages.length === 0 && renderTopicSuggestions()}
 
-                <Card className="glass-card border-white/10 overflow-hidden h-[60vh] flex flex-col">
+                <Card className="glass-card border-white/10 overflow-hidden h-[60vh] flex flex-col shadow-2xl">
                   <CardContent className="p-0 flex-1 flex flex-col overflow-hidden">
-                    <div className="flex-1 overflow-y-auto p-4 space-y-6">
+                    <div className="flex-1 overflow-y-auto p-4 space-y-6 scroll-smooth">
                       {messages.length === 0 ? (
                         <div className="h-full flex flex-col items-center justify-center text-center text-muted-foreground opacity-50">
                           <Bot className="h-20 w-20 mb-6 stroke-[1.5]" />
@@ -486,7 +498,7 @@ export const AITeacher: React.FC = () => {
                               }`}>
                               {message.role === 'user' ? <User className="h-5 w-5" /> : <Bot className="h-5 w-5" />}
                             </div>
-                            <div className={`flex-1 max-w-[85%] rounded-2xl px-6 py-4 shadow-md ${message.role === 'user'
+                            <div className={`flex-1 max-w-[85%] rounded-2xl px-6 py-4 shadow-md backdrop-blur-sm ${message.role === 'user'
                               ? 'bg-primary/20 border border-primary/20 text-white rounded-br-sm'
                               : 'bg-white/5 border border-white/10 text-gray-200 rounded-bl-sm'
                               }`}>
@@ -494,21 +506,33 @@ export const AITeacher: React.FC = () => {
                                 <ReactMarkdown>{message.content}</ReactMarkdown>
                               </div>
                               {message.role === 'assistant' && (
-                                <div className="mt-3 flex justify-end">
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="h-8 w-8 rounded-full bg-white/5 hover:bg-white/10 transition-colors"
-                                    onClick={() => speakText(message.content)}
-                                  >
-                                    <Volume2 className="h-4 w-4 text-gray-400" />
-                                  </Button>
+                                <div className="mt-3 flex justify-end gap-2">
+                                  {isSpeaking ? (
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      className="h-8 w-8 rounded-full bg-red-500/20 text-red-400 hover:bg-red-500/30"
+                                      onClick={stopSpeaking}
+                                    >
+                                      <StopCircle className="h-4 w-4" />
+                                    </Button>
+                                  ) : (
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      className="h-8 w-8 rounded-full bg-white/5 hover:bg-white/10 transition-colors"
+                                      onClick={() => speakText(message.content)}
+                                    >
+                                      <Volume2 className="h-4 w-4 text-gray-400" />
+                                    </Button>
+                                  )}
                                 </div>
                               )}
                             </div>
                           </div>
                         ))
                       )}
+
                       {isLoading && (
                         <div className={`flex gap-3 ${isRTL ? 'flex-row-reverse' : 'flex-row'}`}>
                           <div className="flex-shrink-0 w-10 h-10 rounded-full bg-slate-800 border border-white/10 flex items-center justify-center">
@@ -551,88 +575,98 @@ export const AITeacher: React.FC = () => {
                 </Card>
               </div>
             ) : (
-              /* CONVERSATION MODE UI */
-              <div className="flex flex-col items-center justify-center min-h-[60vh] animate-in fade-in zoom-in duration-300">
-                <div className="relative mb-12">
-                  {/* Avatar Circle with Pulse Effect */}
-                  <div className={`w-48 h-48 rounded-full flex items-center justify-center relative z-10 transition-all duration-500 ${isSpeaking
-                      ? 'bg-gradient-to-br from-accent to-orange-600 shadow-[0_0_60px_rgba(255,100,0,0.4)] scale-110'
+              /* CONVERSATION MODE UI - Clean & Pleasant */
+              <div className="flex flex-col items-center justify-center min-h-[60vh] animate-in fade-in zoom-in duration-500">
+
+                {/* Visualizer / Avatar */}
+                <div className="relative mb-16">
+                  {/* Main Circle */}
+                  <div className={`w-56 h-56 rounded-full flex items-center justify-center relative z-10 transition-all duration-700 ${isSpeaking
+                      ? 'bg-gradient-to-br from-accent to-orange-600 shadow-[0_0_80px_rgba(255,100,0,0.5)] scale-110'
                       : (isListening
-                        ? 'bg-gradient-to-br from-primary to-blue-600 shadow-[0_0_60px_rgba(59,130,246,0.4)] scale-105'
-                        : 'bg-gradient-to-br from-slate-700 to-slate-900 border-4 border-white/10 shadow-2xl')
+                        ? 'bg-gradient-to-br from-primary to-blue-600 shadow-[0_0_80px_rgba(59,130,246,0.5)] scale-105'
+                        : 'bg-gradient-to-br from-slate-800 to-slate-950 border border-white/10 shadow-2xl')
                     }`}>
                     {isSpeaking ? (
-                      <Volume2 className="h-20 w-20 text-white animate-pulse" />
+                      <div className="text-white flex flex-col items-center">
+                        <Volume2 className="h-20 w-20 mb-2 animate-pulse" />
+                        <span className="text-xs font-bold tracking-widest uppercase opacity-80">{isHebrew ? 'מדבר' : 'SPEAKING'}</span>
+                      </div>
                     ) : isListening ? (
-                      <Mic className="h-20 w-20 text-white animate-pulse" />
+                      <div className="text-white flex flex-col items-center">
+                        <Mic className="h-20 w-20 mb-2 animate-pulse" />
+                        <span className="text-xs font-bold tracking-widest uppercase opacity-80">{isHebrew ? 'מקשיב' : 'LISTENING'}</span>
+                      </div>
                     ) : (
-                      <Bot className="h-20 w-20 text-white/80" />
+                      <div className="text-white/50 flex flex-col items-center">
+                        <Bot className="h-24 w-24 mb-2 stroke-[1]" />
+                      </div>
                     )}
                   </div>
 
-                  {/* Background Glow Rings */}
+                  {/* Animated Rings */}
                   {isSpeaking && (
                     <>
-                      <div className="absolute inset-0 rounded-full border-4 border-accent/30 animate-ping" />
-                      <div className="absolute inset-[-20px] rounded-full border-2 border-accent/20 animate-pulse delay-75" />
+                      <div className="absolute inset-[-10px] rounded-full border border-accent/30 animate-[spin_4s_linear_infinite]" />
+                      <div className="absolute inset-[-25px] rounded-full border border-accent/10 animate-[spin_8s_linear_infinite_reverse]" />
+                      <div className="absolute inset-[-50px] rounded-full bg-accent/5 blur-3xl animate-pulse" />
                     </>
                   )}
                   {isListening && (
                     <>
-                      <div className="absolute inset-0 rounded-full border-4 border-primary/30 animate-ping" />
-                      <div className="absolute inset-[-20px] rounded-full border-2 border-primary/20 animate-pulse delay-75" />
+                      <div className="absolute inset-[-10px] rounded-full border border-primary/30 animate-[spin_4s_linear_infinite]" />
+                      <div className="absolute inset-[-25px] rounded-full border border-primary/10 animate-[spin_8s_linear_infinite_reverse]" />
+                      <div className="absolute inset-[-50px] rounded-full bg-primary/5 blur-3xl animate-pulse" />
                     </>
                   )}
                 </div>
 
-                {/* Status Text */}
-                <div className="text-center mb-8 h-8">
-                  {isSpeaking ? (
-                    <span className="text-accent font-medium text-lg animate-pulse">
-                      {isHebrew ? 'מורה מדבר...' : 'Teacher is speaking...'}
-                    </span>
-                  ) : isListening ? (
-                    <span className="text-primary font-medium text-lg animate-pulse">
-                      {isHebrew ? 'מקשיב לך...' : 'Listening to you...'}
-                    </span>
-                  ) : (
-                    <span className="text-muted-foreground text-lg">
-                      {isHebrew ? 'לחץ לדבר' : 'Tap to speak'}
-                    </span>
+                {/* Main Controls */}
+                <div className="flex items-center gap-8 mb-12">
+                  {/* Listening Control */}
+                  <Button
+                    onClick={isListening ? stopListening : startListening}
+                    className={`h-24 w-24 rounded-full shadow-2xl transition-all duration-300 transform hover:scale-105 ${isListening
+                        ? 'bg-white text-primary border-4 border-primary'
+                        : (isSpeaking ? 'bg-black/20 text-gray-500 border border-white/10' : 'bg-primary text-white border-none shadow-[0_0_40px_rgba(59,130,246,0.3)]')
+                      }`}
+                    disabled={isLoading || isSpeaking}
+                  >
+                    {isListening ? <MicOff className="h-8 w-8" /> : <Mic className="h-10 w-10" />}
+                  </Button>
+
+                  {/* Stop Speaking Control */}
+                  {isSpeaking && (
+                    <Button
+                      onClick={stopSpeaking}
+                      className="h-24 w-24 rounded-full bg-red-500 hover:bg-red-600 text-white shadow-[0_0_40px_rgba(239,68,68,0.4)] animate-in zoom-in duration-300"
+                    >
+                      <div className="flex flex-col items-center">
+                        <Pause className="h-10 w-10 fill-current" />
+                        <span className="text-[10px] uppercase font-bold mt-1">{isHebrew ? 'עצור' : 'PAUSE'}</span>
+                      </div>
+                    </Button>
                   )}
                 </div>
 
-                {/* Controls */}
-                <div className="flex items-center gap-6">
-                  <Button
-                    size="lg"
-                    className={`h-20 w-20 rounded-full shadow-2xl transition-all duration-300 hover:scale-110 ${isListening
-                        ? 'bg-red-500 hover:bg-red-600 animate-pulse'
-                        : 'bg-white text-black hover:bg-gray-200'
-                      }`}
-                    onClick={isListening ? stopListening : startListening}
-                  >
-                    {isListening ? (
-                      <MicOff className="h-8 w-8" />
-                    ) : (
-                      <Mic className="h-8 w-8" />
-                    )}
-                  </Button>
+                {/* Subtitles / Preview */}
+                <div className="max-w-xl w-full text-center px-4 min-h-[100px] flex items-center justify-center">
+                  {isLoading ? (
+                    <div className="flex items-center gap-3 text-muted-foreground animate-pulse">
+                      <Loader2 className="h-5 w-5 animate-spin" />
+                      <span className="text-lg">{isHebrew ? 'מעבד תשובה...' : 'Processing response...'}</span>
+                    </div>
+                  ) : (
+                    messages.length > 0 && (
+                      <div className="bg-black/40 backdrop-blur-md border border-white/10 p-6 rounded-2xl shadow-xl transition-all duration-500 hover:bg-black/50">
+                        <p className="text-xl md:text-2xl text-white/90 font-light leading-relaxed">
+                          "{messages[messages.length - 1].content}"
+                        </p>
+                      </div>
+                    )
+                  )}
                 </div>
 
-                {/* Last Message Preview */}
-                {messages.length > 0 && (
-                  <div className="mt-12 max-w-lg w-full">
-                    <div className="glass-card p-6 rounded-2xl border-white/5 bg-black/40">
-                      <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-2">
-                        {messages[messages.length - 1].role === 'user' ? (isHebrew ? 'אתה' : 'You') : (isHebrew ? 'מורה' : 'Teacher')}
-                      </h3>
-                      <p className="text-lg text-white/90 leading-relaxed">
-                        {messages[messages.length - 1].content}
-                      </p>
-                    </div>
-                  </div>
-                )}
               </div>
             )}
           </div>
