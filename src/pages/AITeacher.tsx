@@ -258,18 +258,18 @@ export const AITeacher: React.FC = () => {
   };
 
   return (
-    <div className="h-screen w-full overflow-hidden relative" style={{ background: 'var(--gradient-hero)' }}>
+    <div className="flex-1 flex flex-col w-full overflow-hidden relative" style={{ height: 'calc(100vh - 4.5rem)' }}>
       {/* Background */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
         <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-primary/10 blur-[150px]" />
         <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-accent/10 blur-[150px]" />
       </div>
 
-      <div className="h-full w-full max-w-5xl mx-auto px-4 relative z-10 flex flex-col pt-4 pb-4 overflow-hidden">
-        <div className="flex flex-col h-full gap-4 overflow-hidden">
+      <div className="flex-1 w-full max-w-5xl mx-auto px-4 relative z-10 flex flex-col pt-3 pb-3 overflow-hidden">
+        <div className="flex flex-col h-full gap-3 overflow-hidden">
 
           {/* Header */}
-          <div className="flex items-center justify-between bg-black/30 backdrop-blur-2xl border border-white/10 p-5 rounded-[2rem] shadow-2xl flex-shrink-0 transition-all duration-500">
+          <div className="flex items-center justify-between bg-black/40 backdrop-blur-2xl border border-white/10 p-4 rounded-[1.8rem] shadow-2xl flex-shrink-0">
             <div className="flex items-center gap-4">
               <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary to-blue-600 flex items-center justify-center shadow-2xl shadow-primary/20 transform hover:rotate-3 transition-transform">
                 <Bot className="h-8 w-8 text-white" />
@@ -294,7 +294,7 @@ export const AITeacher: React.FC = () => {
           </div>
 
           {/* Combined Experience */}
-          <Card className="flex-1 glass-card border-white/10 overflow-hidden flex flex-col relative shadow-2xl">
+          <Card className="flex-1 glass-card border-white/10 overflow-hidden flex flex-col relative shadow-2xl min-h-0">
 
             {/* Topic Suggestions Landing */}
             {messages.length === 0 && (
