@@ -207,29 +207,35 @@ export const AITeacher: React.FC = () => {
 
     window.speechSynthesis.cancel();
 
-    // Remove emojis specifically for speech (keeping text visual)
-    const textForSpeech = text.replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F700}-\u{1F77F}\u{1F780}-\u{1F7FF}\u{1F800}-\u{1F8FF}\u{1F900}-\u{1F9FF}\u{1FA00}-\u{1FA6F}\u{1FA70}-\u{1FAFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, '');
+    // 1. Remove emojis
+    let processedText = text.replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{1F700}-\u{1F77F}\u{1F780}-\u{1F7FF}\u{1F800}-\u{1F8FF}\u{1F900}-\u{1F9FF}\u{1FA00}-\u{1FA6F}\u{1FA70}-\u{1FAFF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, '');
 
-    const utterance = new SpeechSynthesisUtterance(textForSpeech);
+    // 2. Remove markdown characters (specifically bold ** and italic _)
+    processedText = processedText.replace(/\*\*/g, '').replace(/\*/g, '').replace(/__/g, '').replace(/_/g, '');
+
+    // 3. Clean up double spaces or lines
+    processedText = processedText.replace(/\s+/g, ' ').trim();
+
+    const utterance = new SpeechSynthesisUtterance(processedText);
 
     // Detect Language - Simple heuristic
-    const sample = textForSpeech.substring(0, 50);
+    const sample = processedText.substring(0, 50);
     const englishChars = (sample.match(/[A-Za-z]/g) || []).length;
     const hebrewChars = (sample.match(/[\u0590-\u05FF]/g) || []).length;
 
-    // Default to English if predominantly English, otherwise Hebrew
+    // Default to English if predominantly English
     const isEnglishText = englishChars >= hebrewChars;
 
     if (isEnglishText) {
       utterance.lang = 'en-US';
       if (englishVoice) utterance.voice = englishVoice;
-      utterance.rate = 1.0;
+      utterance.rate = 0.9;
       utterance.pitch = 1.0;
     } else {
       utterance.lang = 'he-IL';
       if (hebrewVoice) utterance.voice = hebrewVoice;
-      utterance.rate = 0.9;
-      utterance.pitch = 1.0;
+      utterance.rate = 0.8; // Slowing down helps with robotic feel
+      utterance.pitch = 1.1; // Higher pitch reduces "heaviness"
     }
 
     utterance.onstart = () => setIsSpeaking(true);
