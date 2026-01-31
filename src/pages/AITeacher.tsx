@@ -57,28 +57,38 @@ const cleanForSpeech = (text: string) => {
   return processed.replace(/\s+/g, ' ').trim();
 };
 
-// Component to render text with highlighting
-const HighlightableText: React.FC<{ text: string; readingIndex: number; isActive: boolean }> = ({ text, readingIndex, isActive }) => {
+const HighlightableText: React.FC<{ text: string; readingCharIndex: number; isActive: boolean }> = ({ text, readingCharIndex, isActive }) => {
+  // If not active, just render markdown normally
   if (!isActive) return <ReactMarkdown className="prose prose-sm prose-invert max-w-none leading-relaxed">{text}</ReactMarkdown>;
 
-  // A very simplified approach to highlight based on charIndex
-  // Standard Markdown renderer makes char-based highlighting hard.
-  // We'll show the markdown but add an overlay/indicator if needed, 
-  // or just render as plain text for the "active" message to ensure perfect syncing.
+  // When active, we want to highlight the word.
+  // Because markdown makes this hard, we'll strip markdown for the highlight view 
+  // but keep it for the base view.
+  const words = text.split(/(\s+)/); // Preserve spaces
+  let currentCharCount = 0;
+
   return (
-    <div className="relative">
-      <div className="prose prose-sm prose-invert max-w-none leading-relaxed opacity-30">
-        <ReactMarkdown>{text}</ReactMarkdown>
-      </div>
-      <div className="absolute top-0 left-0 prose prose-sm prose-invert max-w-none leading-relaxed select-none pointer-events-none text-accent font-bold">
-        {/* This is a visual trick: we show the markdown version dimmed, 
-            and a highlighted version could go here. For now, we'll keep it simple 
-            and just show a reading status or keep markdown. */}
-        <ReactMarkdown>{text}</ReactMarkdown>
-      </div>
-      {isActive && <div className="mt-2 h-1 w-full bg-white/5 rounded-full overflow-hidden">
-        <div className="h-full bg-accent animate-pulse" style={{ width: `${Math.min(100, (readingIndex / text.length) * 100)}%` }} />
-      </div>}
+    <div className="prose prose-sm prose-invert max-w-none leading-relaxed">
+      {words.map((word, i) => {
+        const start = currentCharCount;
+        const end = currentCharCount + word.length;
+        currentCharCount = end;
+
+        // Check if this word is currently being read (basic check)
+        const isReading = readingCharIndex >= start && readingCharIndex < end && word.trim().length > 0;
+
+        return (
+          <span
+            key={i}
+            className={`transition-all duration-200 rounded px-0.5 ${isReading
+              ? 'bg-accent text-white font-bold scale-110 shadow-[0_0_10px_rgba(255,100,0,0.5)]'
+              : ''
+              }`}
+          >
+            {word}
+          </span>
+        );
+      })}
     </div>
   );
 };
@@ -307,7 +317,7 @@ export const AITeacher: React.FC = () => {
 
                     <HighlightableText
                       text={m.content}
-                      readingIndex={readingCharIndex}
+                      readingCharIndex={readingCharIndex}
                       isActive={readingMessageId === m.id}
                     />
 
@@ -355,16 +365,21 @@ export const AITeacher: React.FC = () => {
                 )}
 
                 <div className="flex gap-3 md:gap-5 items-end">
-                  {/* Mode Toggle Button */}
-                  <Button
-                    onClick={() => {
-                      setMode(mode === 'chat' ? 'voice' : 'chat');
-                      if (isSpeaking) window.speechSynthesis.cancel();
-                    }}
-                    className={`h-[60px] w-[60px] rounded-2xl flex-shrink-0 transition-all duration-500 p-0 ${mode === 'voice' ? 'bg-accent text-white shadow-xl shadow-accent/20' : 'bg-white/5 border border-white/10 text-gray-400 hover:text-white'}`}
-                  >
-                    {mode === 'chat' ? <MessageSquare className="h-6 w-6" /> : <Headphones className="h-6 w-6" />}
-                  </Button>
+                  {/* Mode Toggle Button with Label */}
+                  <div className="flex flex-col items-center gap-1.5 flex-shrink-0 animate-in fade-in slide-in-from-bottom-2 duration-500">
+                    <span className="text-[10px] font-black uppercase tracking-widest text-accent/80 whitespace-nowrap">
+                      {isHebrew ? 'מצב שיחה' : 'VOICE MODE'}
+                    </span>
+                    <Button
+                      onClick={() => {
+                        setMode(mode === 'chat' ? 'voice' : 'chat');
+                        if (isSpeaking) window.speechSynthesis.cancel();
+                      }}
+                      className={`h-[60px] w-[60px] rounded-2xl transition-all duration-500 p-0 ${mode === 'voice' ? 'bg-accent text-white shadow-xl shadow-accent/40 scale-105' : 'bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:bg-white/10'}`}
+                    >
+                      {mode === 'chat' ? <MessageSquare className="h-6 w-6" /> : <Headphones className="h-6 w-6" />}
+                    </Button>
+                  </div>
 
                   <div className="flex-1 relative group">
                     <Textarea
