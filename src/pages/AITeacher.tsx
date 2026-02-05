@@ -60,7 +60,7 @@ const cleanForSpeech = (text: string) => {
 
 const HighlightableText: React.FC<{ text: string; readingCharIndex: number; isActive: boolean }> = ({ text, readingCharIndex, isActive }) => {
   // If not active, just render markdown normally
-  if (!isActive) return <ReactMarkdown className="prose prose-sm prose-invert max-w-none leading-relaxed">{text}</ReactMarkdown>;
+  if (!isActive) return <div className="prose prose-sm prose-invert max-w-none leading-relaxed"><ReactMarkdown>{text}</ReactMarkdown></div>;
 
   // When active, we want to highlight the word.
   // Because markdown makes this hard, we'll strip markdown for the highlight view 
