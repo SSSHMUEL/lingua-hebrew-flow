@@ -71,3 +71,6 @@ verify_jwt = false
 
 [functions.ai-teacher]
 verify_jwt = false
+
+[functions.populate-user-words]
+verify_jwt = false
