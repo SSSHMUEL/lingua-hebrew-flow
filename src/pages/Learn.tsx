@@ -193,35 +193,30 @@ export const Learn: React.FC = () => {
     }
   }, [user, letters, language, isHebrew]);
 
-  // Load vocabulary data
-  const loadLearningData = useCallback(async () => {
+  // Helper function to maintain minimum words
+  const maintainMinimumWords = useCallback(async () => {
     if (!user) return;
-    setLoading(true);
 
     try {
-      // 1. Check if we need to refill (less than 10 'new' words)
-      console.log('Checking refill needed...');
+      console.log('Checking word queue status...');
       const { count, error: countError } = await supabase
         .from('user_words')
         .select('*', { count: 'exact', head: true })
         .eq('user_id', user.id)
-        .eq('status', 'new');
+        .in('status', ['new', 'queued']);
 
-      if (countError) console.error('Error checking new count:', countError);
-      console.log('New words count:', count);
+      if (countError) {
+        console.error('Error checking queue count:', countError);
+        return;
+      }
 
-      if (count !== null && count < 10) {
-        // Refill logic: Fetch next 20 words
+      console.log('Current queue count (new+queued):', count);
 
-        // Get user profile for interests
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('interests')
-          .eq('user_id', user.id)
-          .single();
+      if (count !== null && count < 20) {
+        const needed = 20 - count;
+        console.log(`Refill needed. Fetching ${needed} words...`);
 
-        const userInterests = profile?.interests || [];
-
+        // Fetch existing IDs to exclude
         const { data: existingWords } = await supabase
           .from('user_words')
           .select('word_id')
@@ -236,42 +231,23 @@ export const Learn: React.FC = () => {
         };
         const levelValues = levelMap[learningLevel] || ['basic'];
 
-        // Build query for candidates
-        let query = supabase
+        // Fetch candidates
+        const { data: candidates, error: candidatesError } = await supabase
           .from('vocabulary_words')
           .select('id, priority, level, category')
-          .in('level', levelValues);
-
-        // Optional: Filter by interests if available
-        // Note: strict filtering by interests might reduce pool too much, 
-        // prioritizing by interests would be better but requires complex query.
-        // For now, if user has interests, we could try to filter, or we rely on priority.
-        // The requirement says "Match... learning_level and interests".
-        if (userInterests.length > 0) {
-          // We can't easily prioritize via simple query without a function, 
-          // so we might filter or just rely on global priority. 
-          // Let's filter if category is in interests, OR simply fetch and sort in client if pool is small?
-          // Strategy: Fetch high priority words first. The "Match" might be soft.
-          // Let's rely on standard priority for now as 'priority' column handles importance.
-          // If we want to strictly enforce interests:
-          // .in('category', userInterests)
-          // But this might yield 0 results. Let's stick to level + priority which is safer for availability.
-        }
-
-        const { data: candidates, error: candidatesError } = await query
+          .in('level', levelValues)
           .order('priority', { ascending: false })
-          .limit(50)
+          .limit(50 + needed)
           .returns<any[]>();
 
         if (candidatesError) console.error('Error fetching candidates:', candidatesError);
-        console.log('Candidates found:', candidates?.length);
 
         if (candidates) {
           const newWords = candidates
             .filter(w => !existingIds.has(w.id))
-            .slice(0, 20);
+            .slice(0, needed);
 
-          console.log('Adding new words:', newWords.length);
+          console.log(`Adding ${newWords.length} new words to queue`);
 
           if (newWords.length > 0) {
             const { error: insertError } = await supabase.from('user_words').insert(
@@ -283,9 +259,23 @@ export const Learn: React.FC = () => {
               }))
             );
             if (insertError) console.error('Error inserting new words:', insertError);
+            else console.log('Successfully refilled queue.');
           }
         }
       }
+    } catch (err) {
+      console.error('Error in maintainMinimumWords:', err);
+    }
+  }, [user, learningLevel]);
+
+  // Load vocabulary data
+  const loadLearningData = useCallback(async () => {
+    if (!user) return;
+    setLoading(true);
+
+    try {
+      // 1. Check if we need to refill (Strict Threshold)
+      await maintainMinimumWords();
 
       // 2. Smart Lesson Query
       // Fetch user_words joined with vocabulary_words, excluding 'learned'
@@ -348,7 +338,7 @@ export const Learn: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [user, learningLevel, isHebrew]);
+  }, [user, learningLevel, isHebrew, maintainMinimumWords]);
 
   useEffect(() => {
     if (!user || levelLoading) return;
@@ -428,8 +418,12 @@ export const Learn: React.FC = () => {
       await refreshDailyLimit();
     } catch (error) {
       console.error('Error marking as learned:', error);
+    } finally {
+      // Continuous Check: refills queue if needed
+      maintainMinimumWords();
     }
-  };
+  }
+
 
   const speakItem = () => {
     if ('speechSynthesis' in window) {
@@ -632,7 +626,7 @@ export const Learn: React.FC = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+    </div >
   );
 };
 
