@@ -153,8 +153,31 @@ export const AITeacher: React.FC = () => {
   const loadLearnedWords = async () => {
     if (!user) return;
     try {
-      // Logic for words...
-    } catch (e) { }
+      const { data, error } = await supabase
+        .from('learned_words')
+        .select(`
+          vocabulary_words (
+            english_word,
+            hebrew_translation
+          )
+        `)
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+
+      if (data) {
+        const words = data
+          .map((item: any) => item.vocabulary_words)
+          .filter(Boolean)
+          .map((w: any) => ({
+            hebrew: w.hebrew_translation,
+            english: w.english_word
+          }));
+        setLearnedWords(words);
+      }
+    } catch (e) {
+      console.error('Error loading learned words:', e);
+    }
   };
 
   const speakText = (text: string, messageId: string) => {
