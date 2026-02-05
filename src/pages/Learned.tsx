@@ -59,75 +59,89 @@ export const Learned: React.FC = () => {
     setLoading(true);
 
     try {
-      // Get all learned_words entries
-      const { data: learnedData, error: learnedError } = await supabase
+      // Get learned words from user_words
+      const { data: userWords, error: userWordsError } = await supabase
+        .from('user_words')
+        .select(`
+            id,
+            updated_at,
+            word_id,
+            vocabulary_words!user_words_word_id_fkey (
+                id, english_word, hebrew_translation, category, example_sentence
+            )
+        `)
+        .eq('user_id', user!.id)
+        .eq('status', 'learned')
+        .order('updated_at', { ascending: false });
+
+      if (userWordsError) throw userWordsError;
+
+      // Also get learned letters from learned_words (legacy support for letters if they aren't in user_words)
+      // Note: If letters are not in vocabulary_words, we stick to learned_words for them.
+      const { data: learnedLetters, error: learnedLettersError } = await supabase
         .from('learned_words')
         .select('id, vocabulary_word_id, word_pair, learned_at')
-        .eq('user_id', user!.id)
-        .order('learned_at', { ascending: false });
+        .eq('user_id', user!.id);
 
-      if (learnedError) throw learnedError;
+      // We need to fetch Letter details for the learned letters
+      let letterItems: LearnedItem[] = [];
+      if (learnedLetters && learnedLetters.length > 0) {
+        const letterIds = learnedLetters.map(l => l.vocabulary_word_id);
+        const { data: lettersData } = await supabase
+          .from('letters')
+          .select('id, english_letter, hebrew_letter, phonetic_description')
+          .in('id', letterIds);
 
-      if (!learnedData || learnedData.length === 0) {
-        setLearnedItems([]);
-        setLoading(false);
-        return;
+        const lettersMap = new Map(lettersData?.map(l => [l.id, l]) || []);
+
+        letterItems = learnedLetters.map(item => {
+          const letter = lettersMap.get(item.vocabulary_word_id);
+          if (letter) {
+            return {
+              id: item.id,
+              vocabulary_word_id: item.vocabulary_word_id,
+              word_pair: item.word_pair,
+              learned_at: item.learned_at,
+              english_word: letter.english_letter,
+              hebrew_translation: letter.hebrew_letter,
+              category: isHebrew ? 'אותיות' : 'Letters',
+              example_sentence: letter.phonetic_description || '',
+              isLetter: true,
+              // Store source table for unmark
+              source: 'learned_words'
+            } as LearnedItem & { source?: string };
+          }
+          return null;
+        }).filter(item => item !== null) as LearnedItem[];
       }
 
-      // Get vocabulary words data
-      const vocabIds = learnedData.map(item => item.vocabulary_word_id);
-      const { data: vocabData } = await supabase
-        .from('vocabulary_words')
-        .select('id, english_word, hebrew_translation, category, example_sentence')
-        .in('id', vocabIds);
+      const wordItems: LearnedItem[] = userWords?.map(item => {
+        const vocab = item.vocabulary_words;
+        if (!vocab) return null;
+        // vocabulary_words type might need casting if array or single object depending on relationship.
+        // In one-to-many, it returns array? user_words -> vocabulary_words (word_id -> id) is many-to-one.
+        // So it returns an object.
+        const v = vocab as any;
+        return {
+          id: item.id, // user_words id
+          vocabulary_word_id: item.word_id,
+          word_pair: `${v.english_word} - ${v.hebrew_translation}`,
+          learned_at: item.updated_at, // Use updated_at as learned time
+          english_word: v.english_word,
+          hebrew_translation: v.hebrew_translation,
+          category: v.category,
+          example_sentence: v.example_sentence,
+          isLetter: false,
+          source: 'user_words'
+        };
+      }).filter(item => item !== null) as LearnedItem[] || [];
 
-      // Get letters data
-      const { data: lettersData } = await supabase
-        .from('letters')
-        .select('id, english_letter, hebrew_letter, phonetic_description')
-        .in('id', vocabIds);
+      // Combine and Sort
+      const allItems = [...wordItems, ...letterItems].sort((a, b) =>
+        new Date(b.learned_at).getTime() - new Date(a.learned_at).getTime()
+      );
 
-      const vocabMap = new Map(vocabData?.map(v => [v.id, v]) || []);
-      const lettersMap = new Map(lettersData?.map(l => [l.id, l]) || []);
-
-      // Combine the data
-      const items: LearnedItem[] = learnedData.map(item => {
-        const vocab = vocabMap.get(item.vocabulary_word_id);
-        const letter = lettersMap.get(item.vocabulary_word_id);
-
-        if (vocab) {
-          return {
-            ...item,
-            english_word: vocab.english_word,
-            hebrew_translation: vocab.hebrew_translation,
-            category: vocab.category,
-            example_sentence: vocab.example_sentence,
-            isLetter: false
-          };
-        } else if (letter) {
-          return {
-            ...item,
-            english_word: letter.english_letter,
-            hebrew_translation: letter.hebrew_letter,
-            category: isHebrew ? 'אותיות' : 'Letters',
-            example_sentence: letter.phonetic_description || '',
-            isLetter: true
-          };
-        } else {
-          // Parse from word_pair if no match found
-          const [source, target] = item.word_pair.split(' - ');
-          return {
-            ...item,
-            english_word: isHebrew ? target : source,
-            hebrew_translation: isHebrew ? source : target,
-            category: isHebrew ? 'אותיות' : 'Letters',
-            example_sentence: '',
-            isLetter: true
-          };
-        }
-      });
-
-      setLearnedItems(items);
+      setLearnedItems(allItems);
     } catch (error) {
       console.error('Error loading learned items:', error);
       toast({
@@ -140,12 +154,25 @@ export const Learned: React.FC = () => {
     }
   };
 
-  const unmarkAsLearned = async (itemId: string, displayWord: string) => {
+  const unmarkAsLearned = async (itemId: string, displayWord: string, source?: string) => {
     try {
-      const { error } = await supabase
-        .from('learned_words')
-        .delete()
-        .eq('id', itemId);
+      let error;
+
+      if (source === 'user_words') {
+        // Update status back to 'new' (or 'queued'?) - let's set to 'new' so it goes back to pool
+        const { error: updateError } = await supabase
+          .from('user_words')
+          .update({ status: 'new' })
+          .eq('id', itemId);
+        error = updateError;
+      } else {
+        // Legacy: delete from learned_words
+        const { error: deleteError } = await supabase
+          .from('learned_words')
+          .delete()
+          .eq('id', itemId);
+        error = deleteError;
+      }
 
       if (error) throw error;
 
@@ -156,6 +183,7 @@ export const Learned: React.FC = () => {
         description: isHebrew ? `"${displayWord}" הוסר מהרשימה` : `"${displayWord}" removed from list`
       });
     } catch (error) {
+      console.error("Error removing item: ", error);
       toast({
         title: isHebrew ? "שגיאה" : "Error",
         description: isHebrew ? "לא ניתן להסיר" : "Could not remove",
@@ -310,7 +338,7 @@ export const Learned: React.FC = () => {
                         )}
 
                         <Button
-                          onClick={() => unmarkAsLearned(item.id, item.english_word || '')}
+                          onClick={() => unmarkAsLearned(item.id, item.english_word || '', (item as any).source)}
                           variant="ghost"
                           size="sm"
                           className="w-full text-destructive/70 hover:text-destructive hover:bg-destructive/10 rounded-full"
