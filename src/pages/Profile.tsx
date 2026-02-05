@@ -93,7 +93,11 @@ const Profile: React.FC = () => {
         .single();
 
       if (profile) {
-        setEnglishLevel(profile.english_level || "");
+        let level = profile.english_level?.toLowerCase() || "";
+        // Normalize 'basic' to 'elementary' to match UI options
+        if (level === 'basic') level = 'elementary';
+
+        setEnglishLevel(level);
         setSourceLanguage(profile.source_language || "hebrew");
         setTargetLanguage(profile.target_language || "english");
       }
