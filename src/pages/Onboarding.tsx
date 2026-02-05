@@ -3,53 +3,85 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, ArrowRight, GraduationCap, Languages, BookOpen, Sparkles } from "lucide-react";
+import { ArrowLeft, ArrowRight, Users, GraduationCap, Briefcase, Sparkles, Loader2 } from "lucide-react";
 import { useLanguage, LanguageCode } from "@/contexts/LanguageContext";
+
+// Audience types with their icons and descriptions
+const AUDIENCES = {
+  kids: {
+    icon: Users,
+    emoji: "🎮",
+    labelEn: "Kids",
+    labelHe: "ילדים",
+    descEn: "Fun learning with games, animals, and school topics",
+    descHe: "למידה כיפית עם משחקים, חיות ונושאי בית ספר",
+  },
+  students: {
+    icon: GraduationCap,
+    emoji: "📚",
+    labelEn: "Students",
+    labelHe: "תלמידים",
+    descEn: "Academic vocabulary for school and university",
+    descHe: "אוצר מילים אקדמי לבית ספר ואוניברסיטה",
+  },
+  business: {
+    icon: Briefcase,
+    emoji: "💼",
+    labelEn: "Business Professionals",
+    labelHe: "אנשי עסקים",
+    descEn: "Professional vocabulary for work and meetings",
+    descHe: "אוצר מילים מקצועי לעבודה ופגישות",
+  },
+};
+
+// Interests per audience type
+const INTERESTS_BY_AUDIENCE = {
+  kids: [
+    { id: "טבע", labelEn: "Animals & Nature", labelHe: "חיות וטבע", icon: "🐾" },
+    { id: "חינוך", labelEn: "School", labelHe: "בית ספר", icon: "🏫" },
+    { id: "בידור", labelEn: "Games & Entertainment", labelHe: "משחקים ובידור", icon: "🎮" },
+    { id: "אוכל", labelEn: "Food", labelHe: "אוכל", icon: "🍕" },
+    { id: "ספורט", labelEn: "Sports", labelHe: "ספורט", icon: "⚽" },
+    { id: "בסיסי", labelEn: "Basic Words", labelHe: "מילים בסיסיות", icon: "🔤" },
+  ],
+  students: [
+    { id: "חינוך", labelEn: "Education", labelHe: "חינוך", icon: "📚" },
+    { id: "טכנולוגיה", labelEn: "Technology", labelHe: "טכנולוגיה", icon: "💻" },
+    { id: "מדע", labelEn: "Science", labelHe: "מדע", icon: "🔬" },
+    { id: "בריאות", labelEn: "Health", labelHe: "בריאות", icon: "🏥" },
+    { id: "נסיעות", labelEn: "Travel", labelHe: "נסיעות", icon: "✈️" },
+    { id: "בידור", labelEn: "Entertainment", labelHe: "בידור", icon: "🎬" },
+  ],
+  business: [
+    { id: "עסקים", labelEn: "Business", labelHe: "עסקים", icon: "💼" },
+    { id: "כלכלה", labelEn: "Economy & Finance", labelHe: "כלכלה ופיננסים", icon: "📈" },
+    { id: "טכנולוגיה", labelEn: "Technology", labelHe: "טכנולוגיה", icon: "💻" },
+    { id: "שיווק", labelEn: "Marketing", labelHe: "שיווק", icon: "📣" },
+    { id: "מקצועות", labelEn: "Professional", labelHe: "מקצועי", icon: "👔" },
+    { id: "נסיעות", labelEn: "Travel", labelHe: "נסיעות", icon: "✈️" },
+  ],
+};
 
 const Onboarding = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { t, setLearningDirection, language, isRTL } = useLanguage();
+  const { setLearningDirection } = useLanguage();
 
   const [step, setStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [checkingAuth, setCheckingAuth] = useState(true);
 
-  const [learningDirection, setLearningDirectionLocal] = useState<'he-en' | 'en-he'>('he-en');
-  const [level, setLevel] = useState("");
-  const [selectedTopics, setSelectedTopics] = useState<string[]>([]);
+  // Step 1: Audience type
+  const [audienceType, setAudienceType] = useState<'kids' | 'students' | 'business' | null>(null);
+  // Step 2: Interests based on audience
+  const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
 
-  // Dynamic content based on language direction
-  const getLevels = () => {
-    const isEnglishUI = learningDirection === 'en-he';
-    return [
-      { id: "letters", label: isEnglishUI ? "Letters Only" : "אותיות בלבד", description: isEnglishUI ? "Learn the alphabet first" : "לימוד האלפבית האנגלי והמקבילות בעברית", icon: "🔤" },
-      { id: "beginner", label: isEnglishUI ? "Beginner" : "מתחיל", description: isEnglishUI ? "I'm just starting to learn" : "אני רק מתחיל ללמוד", icon: "🌱" },
-      { id: "elementary", label: isEnglishUI ? "Elementary" : "בסיסי", description: isEnglishUI ? "I know basic words and simple phrases" : "אני מכיר מילים בסיסיות וביטויים פשוטים", icon: "📚" },
-      { id: "intermediate", label: isEnglishUI ? "Intermediate" : "בינוני", description: isEnglishUI ? "I can have simple conversations" : "אני יכול לנהל שיחה פשוטה", icon: "💬" },
-      { id: "advanced", label: isEnglishUI ? "Advanced" : "מתקדם", description: isEnglishUI ? "I have high proficiency" : "אני שולט ברמה גבוהה", icon: "🎓" },
-    ];
-  };
-
-  const getTopics = () => {
-    const isEnglishUI = learningDirection === 'en-he';
-    return [
-      { id: "business", label: isEnglishUI ? "Business" : "עסקים", icon: "💼" },
-      { id: "travel", label: isEnglishUI ? "Travel" : "טיולים", icon: "✈️" },
-      { id: "technology", label: isEnglishUI ? "Technology" : "טכנולוגיה", icon: "💻" },
-      { id: "food", label: isEnglishUI ? "Food" : "אוכל", icon: "🍕" },
-      { id: "sports", label: isEnglishUI ? "Sports" : "ספורט", icon: "⚽" },
-      { id: "movies", label: isEnglishUI ? "Movies" : "סרטים", icon: "🎬" },
-      { id: "music", label: isEnglishUI ? "Music" : "מוזיקה", icon: "🎵" },
-      { id: "health", label: isEnglishUI ? "Health" : "בריאות", icon: "🏥" },
-      { id: "education", label: isEnglishUI ? "Education" : "חינוך", icon: "📚" },
-      { id: "shopping", label: isEnglishUI ? "Shopping" : "קניות", icon: "🛍️" },
-    ];
-  };
+  // Language direction - default to Hebrew UI (he-en learning)
+  const [learningDirection] = useState<'he-en' | 'en-he'>('he-en');
+  const isEnglishUI = learningDirection === 'en-he';
+  const currentDir = isEnglishUI ? 'ltr' : 'rtl';
 
   useEffect(() => {
     const checkOnboardingStatus = async () => {
@@ -76,27 +108,19 @@ const Onboarding = () => {
     checkOnboardingStatus();
   }, [navigate]);
 
-  const handleDirectionChange = (direction: 'he-en' | 'en-he') => {
-    setLearningDirectionLocal(direction);
-    // Immediately update the UI language
-    const source: LanguageCode = direction === 'he-en' ? 'he' : 'en';
-    const target: LanguageCode = direction === 'he-en' ? 'en' : 'he';
-    setLearningDirection(source, target);
-  };
-
-  const handleTopicToggle = (topicId: string) => {
-    setSelectedTopics(prev =>
-      prev.includes(topicId)
-        ? prev.filter(id => id !== topicId)
-        : [...prev, topicId]
+  const handleInterestToggle = (interestId: string) => {
+    setSelectedInterests(prev =>
+      prev.includes(interestId)
+        ? prev.filter(id => id !== interestId)
+        : [...prev, interestId]
     );
   };
 
   const handleNext = () => {
-    if (step === 2 && !level) {
+    if (step === 1 && !audienceType) {
       toast({
-        title: learningDirection === 'en-he' ? "Select your level" : "בחר רמה",
-        description: learningDirection === 'en-he' ? "Please select your language level to continue" : "יש לבחור את הרמה שלך כדי להמשיך",
+        title: isEnglishUI ? "Select your profile" : "בחר את הפרופיל שלך",
+        description: isEnglishUI ? "Please select who you are" : "בחר מי אתה כדי להמשיך",
         variant: "destructive",
       });
       return;
@@ -109,6 +133,8 @@ const Onboarding = () => {
   };
 
   const handleComplete = async () => {
+    if (!audienceType) return;
+    
     setIsLoading(true);
 
     try {
@@ -119,8 +145,10 @@ const Onboarding = () => {
         return;
       }
 
-      const sourceLanguage = learningDirection === 'he-en' ? 'hebrew' : 'english';
-      const targetLanguage = learningDirection === 'he-en' ? 'english' : 'hebrew';
+      // Set default learning direction (Hebrew to English)
+      const sourceLanguage = 'hebrew';
+      const targetLanguage = 'english';
+      setLearningDirection('he' as LanguageCode, 'en' as LanguageCode);
 
       // First check if profile exists
       const { data: existingProfile } = await supabase
@@ -129,43 +157,42 @@ const Onboarding = () => {
         .eq("user_id", user.id)
         .single();
 
+      const profileData = {
+        english_level: audienceType, // Store audience type in english_level for now
+        source_language: sourceLanguage,
+        target_language: targetLanguage,
+        onboarding_completed: true,
+        interests: selectedInterests,
+      };
+
       let profileError;
 
       if (existingProfile) {
-        // Update existing profile
         const result = await supabase
           .from("profiles")
-          .update({
-            english_level: level,
-            source_language: sourceLanguage,
-            target_language: targetLanguage,
-            onboarding_completed: true,
-          })
+          .update(profileData)
           .eq("user_id", user.id);
         profileError = result.error;
       } else {
-        // Create new profile (upsert)
         const result = await supabase
           .from("profiles")
           .insert({
             user_id: user.id,
-            english_level: level,
-            source_language: sourceLanguage,
-            target_language: targetLanguage,
-            onboarding_completed: true,
+            ...profileData,
           });
         profileError = result.error;
       }
 
       if (profileError) throw profileError;
 
-      if (selectedTopics.length > 0) {
+      // Save topic preferences
+      if (selectedInterests.length > 0) {
         await supabase
           .from("user_topic_preferences")
           .delete()
           .eq("user_id", user.id);
 
-        const topicRecords = selectedTopics.map(topicId => ({
+        const topicRecords = selectedInterests.map(topicId => ({
           user_id: user.id,
           topic_id: topicId,
         }));
@@ -177,9 +204,22 @@ const Onboarding = () => {
         if (topicsError) throw topicsError;
       }
 
+      // Call edge function to populate initial words
+      try {
+        await supabase.functions.invoke('populate-user-words', {
+          body: {
+            audienceType,
+            interests: selectedInterests,
+          }
+        });
+      } catch (e) {
+        console.error("Error populating words:", e);
+        // Don't fail onboarding if word population fails
+      }
+
       toast({
-        title: learningDirection === 'en-he' ? "Welcome! 🎉" : "ברוך הבא! 🎉",
-        description: learningDirection === 'en-he'
+        title: isEnglishUI ? "Welcome! 🎉" : "ברוך הבא! 🎉",
+        description: isEnglishUI
           ? "Registration complete. You have 30 days free trial!"
           : "ההרשמה הושלמה בהצלחה. יש לך 30 יום ניסיון חינם!",
       });
@@ -188,8 +228,8 @@ const Onboarding = () => {
     } catch (error: any) {
       console.error("Error completing onboarding:", error);
       toast({
-        title: learningDirection === 'en-he' ? "Error" : "שגיאה",
-        description: learningDirection === 'en-he' ? "Error saving data" : "אירעה שגיאה בשמירת הנתונים",
+        title: isEnglishUI ? "Error" : "שגיאה",
+        description: isEnglishUI ? "Error saving data" : "אירעה שגיאה בשמירת הנתונים",
         variant: "destructive",
       });
     } finally {
@@ -205,12 +245,11 @@ const Onboarding = () => {
     );
   }
 
-  const isEnglishUI = learningDirection === 'en-he';
-  const currentDir = isEnglishUI ? 'ltr' : 'rtl';
+  const availableInterests = audienceType ? INTERESTS_BY_AUDIENCE[audienceType] : [];
 
   return (
     <div className="min-h-screen relative overflow-hidden py-8 px-4" style={{ background: 'var(--gradient-hero)' }} dir={currentDir}>
-      {/* Fixed background effect - Orange glow on right, Cyan on left */}
+      {/* Background effects */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
         <div
           className="absolute top-1/2 -translate-y-1/2 -right-[150px] w-[600px] h-[100vh] rounded-full blur-[180px]"
@@ -225,7 +264,7 @@ const Onboarding = () => {
       <div className="max-w-2xl mx-auto relative z-10">
         {/* Progress indicator */}
         <div className="flex items-center justify-center gap-2 mb-8">
-          {[1, 2, 3].map((s) => (
+          {[1, 2].map((s) => (
             <div
               key={s}
               className={`h-2 rounded-full transition-all duration-300 ${s === step
@@ -238,145 +277,106 @@ const Onboarding = () => {
           ))}
         </div>
 
-        {/* Step 1: Language Direction */}
+        {/* Step 1: Audience Type Selection */}
         {step === 1 && (
           <Card className="border-0 shadow-xl bg-card/80 backdrop-blur">
             <CardHeader className="text-center pb-2">
               <div className="mx-auto w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-                <Languages className="w-8 h-8 text-primary" />
+                <Users className="w-8 h-8 text-primary" />
               </div>
               <CardTitle className="text-2xl">
-                {isEnglishUI ? "Which direction do you want to learn?" : "באיזה כיוון תרצה ללמוד?"}
+                {isEnglishUI ? "Who are you?" : "מי אתה?"}
               </CardTitle>
               <CardDescription>
-                {isEnglishUI ? "Choose your preferred learning direction" : "בחר את כיוון הלמידה המועדף עליך"}
+                {isEnglishUI ? "Choose your profile to get personalized content" : "בחר את הפרופיל שלך לקבלת תוכן מותאם אישית"}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <RadioGroup value={learningDirection} onValueChange={(v) => handleDirectionChange(v as 'he-en' | 'en-he')}>
-                <div
-                  className={`flex items-center p-6 rounded-xl border-2 transition-all cursor-pointer hover:border-primary/50 ${learningDirection === 'he-en'
-                      ? "border-primary bg-primary/5"
-                      : "border-border"
+              {(Object.keys(AUDIENCES) as Array<keyof typeof AUDIENCES>).map((key) => {
+                const audience = AUDIENCES[key];
+                const Icon = audience.icon;
+                const isSelected = audienceType === key;
+                
+                return (
+                  <div
+                    key={key}
+                    className={`flex items-center p-6 rounded-xl border-2 transition-all cursor-pointer hover:border-primary/50 hover:scale-[1.02] ${
+                      isSelected
+                        ? "border-primary bg-primary/5 shadow-lg"
+                        : "border-border"
                     }`}
-                  onClick={() => handleDirectionChange('he-en')}
-                >
-                  <RadioGroupItem value="he-en" id="he-en" />
-                  <Label htmlFor="he-en" className={`flex-1 cursor-pointer ${isEnglishUI ? 'ml-4' : 'mr-4'}`}>
-                    <div className="flex items-center gap-3 mb-1">
-                      <span className="text-2xl">🇮🇱</span>
-                      <span className="text-xl">→</span>
-                      <span className="text-2xl">🇺🇸</span>
+                    onClick={() => {
+                      setAudienceType(key);
+                      setSelectedInterests([]); // Reset interests when changing audience
+                    }}
+                  >
+                    <div className={`w-14 h-14 rounded-full flex items-center justify-center text-3xl ${
+                      isSelected ? "bg-primary/20" : "bg-muted"
+                    }`}>
+                      {audience.emoji}
                     </div>
-                    <div className="font-semibold text-lg">
-                      {isEnglishUI ? "Hebrew to English" : "מעברית לאנגלית"}
+                    <div className={`flex-1 ${isEnglishUI ? 'ml-4' : 'mr-4'}`}>
+                      <div className="font-bold text-lg">
+                        {isEnglishUI ? audience.labelEn : audience.labelHe}
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        {isEnglishUI ? audience.descEn : audience.descHe}
+                      </div>
                     </div>
-                    <div className="text-sm text-muted-foreground">
-                      {isEnglishUI ? "I speak Hebrew and want to learn English" : "אני דובר עברית ורוצה ללמוד אנגלית"}
+                    <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
+                      isSelected ? "border-primary bg-primary" : "border-muted-foreground"
+                    }`}>
+                      {isSelected && <div className="w-2 h-2 rounded-full bg-white" />}
                     </div>
-                  </Label>
-                </div>
-
-                <div
-                  className={`flex items-center p-6 rounded-xl border-2 transition-all cursor-pointer hover:border-primary/50 ${learningDirection === 'en-he'
-                      ? "border-primary bg-primary/5"
-                      : "border-border"
-                    }`}
-                  onClick={() => handleDirectionChange('en-he')}
-                >
-                  <RadioGroupItem value="en-he" id="en-he" />
-                  <Label htmlFor="en-he" className={`flex-1 cursor-pointer ${isEnglishUI ? 'ml-4' : 'mr-4'}`}>
-                    <div className="flex items-center gap-3 mb-1">
-                      <span className="text-2xl">🇺🇸</span>
-                      <span className="text-xl">→</span>
-                      <span className="text-2xl">🇮🇱</span>
-                    </div>
-                    <div className="font-semibold text-lg">
-                      {isEnglishUI ? "English to Hebrew" : "מאנגלית לעברית"}
-                    </div>
-                    <div className="text-sm text-muted-foreground">
-                      {isEnglishUI ? "I speak English and want to learn Hebrew" : "אני דובר אנגלית ורוצה ללמוד עברית"}
-                    </div>
-                  </Label>
-                </div>
-              </RadioGroup>
+                  </div>
+                );
+              })}
             </CardContent>
           </Card>
         )}
 
-        {/* Step 2: Language Level */}
+        {/* Step 2: Interests Selection */}
         {step === 2 && (
           <Card className="border-0 shadow-xl bg-card/80 backdrop-blur">
             <CardHeader className="text-center pb-2">
               <div className="mx-auto w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-                <GraduationCap className="w-8 h-8 text-primary" />
+                <Sparkles className="w-8 h-8 text-primary" />
               </div>
               <CardTitle className="text-2xl">
-                {isEnglishUI ? "What's your language level?" : "מה רמת השפה שלך?"}
+                {isEnglishUI ? "What interests you?" : "מה מעניין אותך?"}
               </CardTitle>
               <CardDescription>
-                {isEnglishUI ? "This helps us customize content to your level" : "זה יעזור לנו להתאים את התוכן ברמה המתאימה לך"}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <RadioGroup value={level} onValueChange={setLevel}>
-                {getLevels().map((lvl) => (
-                  <div
-                    key={lvl.id}
-                    className={`flex items-center p-4 rounded-xl border-2 transition-all cursor-pointer hover:border-primary/50 ${level === lvl.id
-                        ? "border-primary bg-primary/5"
-                        : "border-border"
-                      }`}
-                    onClick={() => setLevel(lvl.id)}
-                  >
-                    <RadioGroupItem value={lvl.id} id={lvl.id} />
-                    <Label htmlFor={lvl.id} className={`flex-1 cursor-pointer ${isEnglishUI ? 'ml-3' : 'mr-3'}`}>
-                      <div className="flex items-center gap-2">
-                        <span className="text-xl">{lvl.icon}</span>
-                        <span className="font-semibold">{lvl.label}</span>
-                      </div>
-                      <div className="text-sm text-muted-foreground">{lvl.description}</div>
-                    </Label>
-                  </div>
-                ))}
-              </RadioGroup>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Step 3: Topics */}
-        {step === 3 && (
-          <Card className="border-0 shadow-xl bg-card/80 backdrop-blur">
-            <CardHeader className="text-center pb-2">
-              <div className="mx-auto w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-                <BookOpen className="w-8 h-8 text-primary" />
-              </div>
-              <CardTitle className="text-2xl">
-                {isEnglishUI ? "What topics interest you?" : "באילו נושאים אתה מתעניין?"}
-              </CardTitle>
-              <CardDescription>
-                {isEnglishUI ? "Choose topics you're interested in (optional)" : "בחר נושאים שמעניינים אותך (אופציונלי)"}
+                {isEnglishUI 
+                  ? "Choose topics you'd like to learn about (select at least one)" 
+                  : "בחר נושאים שתרצה ללמוד עליהם (בחר לפחות אחד)"}
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                {getTopics().map((topic) => (
-                  <div
-                    key={topic.id}
-                    className={`flex items-center gap-2 p-3 rounded-xl border-2 transition-all cursor-pointer hover:border-primary/50 ${selectedTopics.includes(topic.id)
-                        ? "border-primary bg-primary/5"
-                        : "border-border"
+              <div className="grid grid-cols-2 gap-3">
+                {availableInterests.map((interest) => {
+                  const isSelected = selectedInterests.includes(interest.id);
+                  
+                  return (
+                    <div
+                      key={interest.id}
+                      className={`flex items-center gap-3 p-4 rounded-xl border-2 transition-all cursor-pointer hover:border-primary/50 ${
+                        isSelected
+                          ? "border-primary bg-primary/5"
+                          : "border-border"
                       }`}
-                    onClick={() => handleTopicToggle(topic.id)}
-                  >
-                    <Checkbox
-                      checked={selectedTopics.includes(topic.id)}
-                      onCheckedChange={() => handleTopicToggle(topic.id)}
-                    />
-                    <span className="text-lg">{topic.icon}</span>
-                    <span className="font-medium text-sm">{topic.label}</span>
-                  </div>
-                ))}
+                      onClick={() => handleInterestToggle(interest.id)}
+                    >
+                      <Checkbox
+                        checked={isSelected}
+                        onCheckedChange={() => handleInterestToggle(interest.id)}
+                      />
+                      <span className="text-2xl">{interest.icon}</span>
+                      <span className="font-medium text-sm">
+                        {isEnglishUI ? interest.labelEn : interest.labelHe}
+                      </span>
+                    </div>
+                  );
+                })}
               </div>
 
               {/* Trial info */}
@@ -390,7 +390,7 @@ const Onboarding = () => {
                       {isEnglishUI ? "30 Days Free Trial!" : "30 ימי ניסיון חינם!"}
                     </h4>
                     <p className="text-sm text-muted-foreground">
-                      {isEnglishUI ? "No payment details required. Decide later." : "ללא צורך בפרטי תשלום. תוכל להחליט אחר כך."}
+                      {isEnglishUI ? "No payment details required" : "ללא צורך בפרטי תשלום"}
                     </p>
                   </div>
                 </div>
@@ -410,8 +410,8 @@ const Onboarding = () => {
                 </>
               ) : (
                 <>
-                  <ArrowRight className="w-4 h-4" />
                   חזרה
+                  <ArrowRight className="w-4 h-4" />
                 </>
               )}
             </Button>
@@ -419,25 +419,37 @@ const Onboarding = () => {
             <div />
           )}
 
-          {step < 3 ? (
-            <Button onClick={handleNext} className="gap-2">
+          {step < 2 ? (
+            <Button onClick={handleNext} className="gap-2" disabled={!audienceType}>
               {isEnglishUI ? (
                 <>
-                  Continue
+                  Next
                   <ArrowRight className="w-4 h-4" />
                 </>
               ) : (
                 <>
-                  המשך
                   <ArrowLeft className="w-4 h-4" />
+                  הבא
                 </>
               )}
             </Button>
           ) : (
-            <Button onClick={handleComplete} disabled={isLoading} className="gap-2">
-              {isLoading
-                ? (isEnglishUI ? "Saving..." : "שומר...")
-                : (isEnglishUI ? "Let's Start! 🚀" : "בואו נתחיל! 🚀")}
+            <Button
+              onClick={handleComplete}
+              disabled={isLoading || selectedInterests.length === 0}
+              className="gap-2"
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  {isEnglishUI ? "Setting up..." : "מגדיר..."}
+                </>
+              ) : (
+                <>
+                  {isEnglishUI ? "Start Learning" : "התחל ללמוד"}
+                  <Sparkles className="w-4 h-4" />
+                </>
+              )}
             </Button>
           )}
         </div>

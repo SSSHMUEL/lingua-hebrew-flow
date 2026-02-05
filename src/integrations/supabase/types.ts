@@ -133,10 +133,12 @@ export type Database = {
       }
       profiles: {
         Row: {
+          audience_type: Database["public"]["Enums"]["audience_type"] | null
           created_at: string
           display_name: string | null
           english_level: string | null
           id: string
+          interests: string[] | null
           onboarding_completed: boolean | null
           source_language: string | null
           target_language: string | null
@@ -144,10 +146,12 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          audience_type?: Database["public"]["Enums"]["audience_type"] | null
           created_at?: string
           display_name?: string | null
           english_level?: string | null
           id?: string
+          interests?: string[] | null
           onboarding_completed?: boolean | null
           source_language?: string | null
           target_language?: string | null
@@ -155,10 +159,12 @@ export type Database = {
           user_id: string
         }
         Update: {
+          audience_type?: Database["public"]["Enums"]["audience_type"] | null
           created_at?: string
           display_name?: string | null
           english_level?: string | null
           id?: string
+          interests?: string[] | null
           onboarding_completed?: boolean | null
           source_language?: string | null
           target_language?: string | null
@@ -343,8 +349,50 @@ export type Database = {
         }
         Relationships: []
       }
+      user_words: {
+        Row: {
+          created_at: string
+          id: string
+          last_seen: string | null
+          status: Database["public"]["Enums"]["word_status"]
+          updated_at: string
+          user_id: string
+          view_count: number
+          word_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          last_seen?: string | null
+          status?: Database["public"]["Enums"]["word_status"]
+          updated_at?: string
+          user_id: string
+          view_count?: number
+          word_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          last_seen?: string | null
+          status?: Database["public"]["Enums"]["word_status"]
+          updated_at?: string
+          user_id?: string
+          view_count?: number
+          word_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_words_word_id_fkey"
+            columns: ["word_id"]
+            isOneToOne: false
+            referencedRelation: "vocabulary_words"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       vocabulary_words: {
         Row: {
+          audience_levels: string[] | null
           category: string
           created_at: string
           english_word: string
@@ -357,6 +405,7 @@ export type Database = {
           word_pair: string | null
         }
         Insert: {
+          audience_levels?: string[] | null
           category: string
           created_at?: string
           english_word: string
@@ -369,6 +418,7 @@ export type Database = {
           word_pair?: string | null
         }
         Update: {
+          audience_levels?: string[] | null
           category?: string
           created_at?: string
           english_word?: string
@@ -491,7 +541,8 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      audience_type: "kids" | "students" | "business"
+      word_status: "new" | "queued" | "learned"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -618,6 +669,9 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      audience_type: ["kids", "students", "business"],
+      word_status: ["new", "queued", "learned"],
+    },
   },
 } as const
