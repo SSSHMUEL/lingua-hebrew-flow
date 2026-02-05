@@ -167,6 +167,42 @@ export type Database = {
         }
         Relationships: []
       }
+      profiles_backup_today: {
+        Row: {
+          created_at: string | null
+          display_name: string | null
+          english_level: string | null
+          id: string | null
+          onboarding_completed: boolean | null
+          source_language: string | null
+          target_language: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          display_name?: string | null
+          english_level?: string | null
+          id?: string | null
+          onboarding_completed?: boolean | null
+          source_language?: string | null
+          target_language?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          display_name?: string | null
+          english_level?: string | null
+          id?: string | null
+          onboarding_completed?: boolean | null
+          source_language?: string | null
+          target_language?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       subscriptions: {
         Row: {
           cancel_at: string | null
@@ -422,6 +458,30 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      words_backup_today: {
+        Row: {
+          created_at: string | null
+          id: string | null
+          language_id: string | null
+          pronunciation: string | null
+          word_text: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string | null
+          language_id?: string | null
+          pronunciation?: string | null
+          word_text?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string | null
+          language_id?: string | null
+          pronunciation?: string | null
+          word_text?: string | null
+        }
+        Relationships: []
       }
     }
     Views: {
