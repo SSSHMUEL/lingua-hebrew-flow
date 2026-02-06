@@ -149,40 +149,35 @@ export const Learn: React.FC = () => {
 
   // --- Initialization ---
 
-  const loadLessonData = useCallback(async () => {
+  const triggerRefill = useCallback(async () => {
     if (!user) return;
-    setLoading(true);
-
     try {
-      // 1. Fetch Profile for Level and Category to fulfill refill requirements
       const { data: profile } = await supabase
         .from('profiles')
         .select('english_level, interests')
         .eq('user_id', user.id)
         .single();
-
       const userLevel = profile?.english_level || 'beginner';
-      // Use the first interest as the category for refill if available
       const userCategory = (profile as any)?.interests?.[0] || 'general';
-
-      // 2. Automated Refill via RPC
-      // Trigger this RPC call whenever the Learn or Lesson page is initialized.
       const { error: refillError } = await (supabase as any).rpc('maintain_minimum_words', {
-        p_user_id: user.id,
-        p_level: userLevel,
-        p_category: userCategory,
-        p_min_count: 20
+        p_user_id: user.id, p_level: userLevel, p_category: userCategory, p_min_count: 20
       });
+      if (refillError) throw refillError;
+    } catch (err) {
+      console.error("Refill process failed:", err);
+    }
+  }, [user]);
 
-      if (refillError) {
-        console.error("Refill RPC failed:", refillError);
-        // We continue even if refill fails, to show existing words if any
-      }
+  const loadLessonData = useCallback(async () => {
+    if (!user) return;
+    setLoading(true);
+
+    try {
+      await triggerRefill();
 
       // 3. Fetch Next Lesson Batch (Exactly 7 words)
       // Sorting: Status queued first, then Status new ordered by priority DESC (10 to 1)
-      const { data: userWordsData, error } = await supabase
-        .from('user_words')
+      const { data: userWordsData, error } = await supabase.from('user_words')
         .select(`
           id,
           status,
@@ -461,6 +456,9 @@ export const Learn: React.FC = () => {
         .from('user_words')
         .update({ status: 'learned', updated_at: new Date().toISOString() } as any)
         .in('id', finalUniqueIds);
+
+      // Trigger refill at end of lesson to ensure we have words for next time
+      await triggerRefill();
 
       refreshDailyLimit();
     } catch (e) {
