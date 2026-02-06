@@ -38,7 +38,7 @@ import {
 
 interface VocabularyWord {
   id: string;
-  user_word_id: string;
+  user_word_id?: string;
   english_word: string;
   hebrew_translation: string;
   category: string;
@@ -252,6 +252,11 @@ export const Learn: React.FC = () => {
       types.push('speech-challenge'); // Give it higher weight if enabled
     }
 
+    // Safeguard: Filter out context-completion if no example sentence
+    if (!currentWord.example_sentence) {
+      types = types.filter(t => t !== 'context-completion');
+    }
+
     const randomType = types[Math.floor(Math.random() * types.length)];
     setChallengeType(randomType);
     setTimerActive(false);
@@ -284,7 +289,8 @@ export const Learn: React.FC = () => {
 
     } else if (randomType === 'word-assembly') {
       // Scrambled letters
-      const word = currentWord.english_word.toUpperCase();
+      // Scrambled letters
+      const word = (currentWord.english_word || '').toUpperCase();
       const letters = word.split('').map((char, i) => ({ char, id: i }));
       setTargetLetters(word.split(''));
       setAvailableLetters(shuffleArray(letters));
@@ -497,7 +503,7 @@ export const Learn: React.FC = () => {
               </div>
             )}
           </div>
-          <Progress value={progress} className="h-2 bg-white/5" indicatorClassName="bg-gradient-to-r from-primary to-accent transition-all duration-500" />
+          <Progress value={progress} className="h-2 bg-white/5" />
         </div>
 
         {/* --- STUDY CARD --- */}
@@ -555,15 +561,26 @@ export const Learn: React.FC = () => {
             <Card className="flex-1 glass-card border-white/10 flex flex-col animate-in zoom-in-95 duration-300 min-h-0">
               <CardHeader className="text-center pb-2">
                 <div className="flex justify-between items-center mb-2">
-                  <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest border border-white/10 px-2 py-1 rounded bg-black/20">
-                    {challengeType === 'multiple-choice' && (isHebrew ? 'מבחן אמריקאי' : 'MULTIPLE CHOICE')}
-                    {challengeType === 'flash-reaction' && (isHebrew ? 'תגובה מהירה' : 'FLASH REACTION')}
-                    {challengeType === 'context-completion' && (isHebrew ? 'השלמת משפט' : 'COMPLETE THE SENTENCE')}
-                    {challengeType === 'word-assembly' && (isHebrew ? 'הרכבת מילה' : 'SPELLING')}
-                    {challengeType === 'true-false' && (isHebrew ? 'אמת או שקר' : 'TRUE OR FALSE')}
-                    {challengeType === 'listening-match' && (isHebrew ? 'הבנת הנשמע' : 'LISTENING')}
-                    {challengeType === 'speech-challenge' && (isHebrew ? 'דיבור' : 'SPEAKING')}
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest border border-white/10 px-2 py-1 rounded bg-black/20">
+                      {challengeType === 'multiple-choice' && (isHebrew ? 'מבחן אמריקאי' : 'MULTIPLE CHOICE')}
+                      {challengeType === 'flash-reaction' && (isHebrew ? 'תגובה מהירה' : 'FLASH REACTION')}
+                      {challengeType === 'context-completion' && (isHebrew ? 'השלמת משפט' : 'COMPLETE THE SENTENCE')}
+                      {challengeType === 'word-assembly' && (isHebrew ? 'הרכבת מילה' : 'SPELLING')}
+                      {challengeType === 'true-false' && (isHebrew ? 'אמת או שקר' : 'TRUE OR FALSE')}
+                      {challengeType === 'listening-match' && (isHebrew ? 'הבנת הנשמע' : 'LISTENING')}
+                      {challengeType === 'speech-challenge' && (isHebrew ? 'דיבור' : 'SPEAKING')}
+                    </span>
+                    <Button
+                      variant="ghost"
+                      onClick={() => startChallenge()}
+                      disabled={!!feedbackStatus}
+                      className="h-6 px-2 flex items-center gap-1.5 rounded-full hover:bg-white/10 text-muted-foreground hover:text-white transition-colors border border-white/10"
+                    >
+                      <Shuffle className="h-3 w-3" />
+                      <span className="text-[9px] font-bold whitespace-nowrap">{isHebrew ? 'החלף משחק' : 'Shuffle Game'}</span>
+                    </Button>
+                  </div>
                   {comboPoints > 0 && (
                     <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/50 animate-pulse">
                       <Zap className="h-3 w-3 mr-1" /> {comboPoints}
@@ -589,22 +606,51 @@ export const Learn: React.FC = () => {
                   )}
 
                   {challengeType === 'context-completion' && (
-                    <div className="text-xl md:text-2xl font-medium leading-relaxed text-gray-200">
+                    <div className="space-y-6">
                       {(() => {
-                        const parts = currentWord.example_sentence.split(new RegExp(`(${currentWord.english_word})`, 'gi'));
-                        return parts.map((part, i) => {
-                          if (part.toLowerCase() === currentWord.english_word.toLowerCase()) {
-                            return (
-                              <span key={i} className={`inline-block min-w-[80px] border-b-2 px-2 text-center transition-all ${contextInput
-                                  ? (feedbackStatus === 'success' ? 'border-green-500 text-green-400 font-bold' : 'border-red-500 text-red-400')
-                                  : 'border-white/30 text-transparent'
-                                }`}>
-                                {contextInput || '_______'}
-                              </span>
-                            );
-                          }
-                          return <span key={i}>{part}</span>;
-                        });
+                        if (!currentWord.example_sentence) return null;
+
+                        // Try to separate English and Hebrew parts
+                        // Usually formatted as "English - Hebrew" or vice versa
+                        const segments = currentWord.example_sentence.split(/\s*-\s*/);
+
+                        // Find the segment that contains the English word (the one we'll add a blank to)
+                        const englishIdx = segments.findIndex(s =>
+                          s.toLowerCase().includes(currentWord.english_word.toLowerCase())
+                        );
+
+                        const engPart = englishIdx !== -1 ? segments[englishIdx] : segments[0];
+                        const hebPart = segments.filter((_, i) => i !== englishIdx).join(' ');
+
+                        // Escape regex characters for robustness
+                        const escapedWord = currentWord.english_word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                        const parts = engPart.split(new RegExp(`(${escapedWord})`, 'gi'));
+
+                        return (
+                          <>
+                            <div className="text-xl md:text-2xl font-medium leading-relaxed text-gray-200" dir="ltr">
+                              {parts.map((part, i) => {
+                                if (part.toLowerCase() === currentWord.english_word.toLowerCase()) {
+                                  return (
+                                    <span key={i} className={`inline-block min-w-[80px] border-b-2 px-2 text-center transition-all ${contextInput
+                                      ? (feedbackStatus === 'success' ? 'border-green-500 text-green-400 font-bold' : 'border-red-500 text-red-400')
+                                      : 'border-white/30 text-transparent'
+                                      }`}>
+                                      {contextInput || '_______'}
+                                    </span>
+                                  );
+                                }
+                                return <span key={i}>{part}</span>;
+                              })}
+                            </div>
+
+                            {hebPart && (
+                              <div className="text-lg text-muted-foreground font-bold opacity-80 mt-2" dir="rtl">
+                                {hebPart}
+                              </div>
+                            )}
+                          </>
+                        );
                       })()}
                     </div>
                   )}
@@ -626,10 +672,26 @@ export const Learn: React.FC = () => {
                   {challengeType === 'speech-challenge' && (
                     <div className="flex flex-col items-center py-4 gap-4">
                       <h2 className="text-3xl font-black text-white">{currentWord.english_word}</h2>
-                      <div className={`h-24 w-24 rounded-full flex items-center justify-center transition-all duration-300 ${isListening ? 'bg-red-500/20 text-red-500 border-red-500 animate-pulse' : 'bg-white/5 text-gray-400'}`}>
-                        <Mic className="h-10 w-10" />
-                      </div>
+                      <button
+                        onClick={() => !isListening && startListening()}
+                        disabled={isListening || !!feedbackStatus}
+                        className={`h-24 w-24 rounded-full flex items-center justify-center transition-all duration-300 pointer-events-auto cursor-pointer ${isListening ? 'bg-red-500/20 text-red-500 border-red-500 animate-pulse shadow-[0_0_20px_rgba(239,68,68,0.2)]' : 'bg-white/5 text-gray-400 hover:bg-white/10 hover:text-primary'}`}
+                      >
+                        {isListening ? <Mic className="h-10 w-10" /> : <MicOff className="h-10 w-10" />}
+                      </button>
                       <p className="text-sm text-balance text-muted-foreground min-h-[1.5rem]">{transcript || (isHebrew ? 'אמור את המילה...' : 'Say the word...')}</p>
+
+                      {!isListening && !feedbackStatus && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => startListening()}
+                          className="mt-2 glass-button text-xs gap-2"
+                        >
+                          <RotateCcw className="h-3 w-3" />
+                          {isHebrew ? 'הקלט שוב' : 'Record Again'}
+                        </Button>
+                      )}
                     </div>
                   )}
 
@@ -641,7 +703,7 @@ export const Learn: React.FC = () => {
                 {challengeType === 'word-assembly' && (
                   <div className="space-y-6">
                     {/* Assembled Slots */}
-                    <div className="flex justify-center gap-2 min-h-[3rem]">
+                    <div className="flex justify-center gap-2 min-h-[3rem]" dir="ltr">
                       {assembledLetters.map((char, i) => (
                         <div key={i} className="w-10 h-12 bg-white/10 border border-white/20 rounded flex items-center justify-center text-xl font-bold animate-in zoom-in">
                           {char}
@@ -653,7 +715,7 @@ export const Learn: React.FC = () => {
                       ))}
                     </div>
                     {/* Available Letters */}
-                    <div className="flex flex-wrap justify-center gap-2">
+                    <div className="flex flex-wrap justify-center gap-2" dir="ltr">
                       {availableLetters.map((l) => (
                         <Button key={l.id} onClick={() => handleLetterClick(l)} variant="outline" className="w-10 h-12 text-lg font-bold p-0 border-white/20 hover:bg-white/10">
                           {l.char}
@@ -707,7 +769,7 @@ export const Learn: React.FC = () => {
         )}
 
       </div>
-    </div>
+    </div >
   );
 };
 
