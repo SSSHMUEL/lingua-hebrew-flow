@@ -133,7 +133,7 @@ export const Learn: React.FC = () => {
 
   // Challenge Specific State
   const [options, setOptions] = useState<string[]>([]);
-  const [assembledLetters, setAssembledLetters] = useState<string[]>([]);
+  const [assembledLetters, setAssembledLetters] = useState<{ char: string, id: number }[]>([]);
   const [targetLetters, setTargetLetters] = useState<string[]>([]);
   const [availableLetters, setAvailableLetters] = useState<{ char: string, id: number }[]>([]);
   const [showFlashText, setShowFlashText] = useState(true);
@@ -394,13 +394,13 @@ export const Learn: React.FC = () => {
 
     // Move from available to assembled
     const newAvailable = availableLetters.filter(l => l.id !== charObj.id);
-    const newAssembled = [...assembledLetters, charObj.char]; // Store just chars for simple check or obj
+    const newAssembled = [...assembledLetters, charObj];
     setAvailableLetters(newAvailable);
     setAssembledLetters(newAssembled);
 
     // Check if full word assembled
     if (newAssembled.length === currentWord.english_word.length) {
-      const assembledWord = newAssembled.join('');
+      const assembledWord = newAssembled.map(l => l.char).join('');
       if (assembledWord === currentWord.english_word.toUpperCase()) {
         setFeedbackStatus('success');
         setTimeout(handleSuccess, 1200);
@@ -416,6 +416,14 @@ export const Learn: React.FC = () => {
         }, 1000);
       }
     }
+  };
+
+  const handleAssembledLetterClick = (charObj: { char: string, id: number }) => {
+    if (feedbackStatus) return;
+
+    // Move from assembled back to available
+    setAssembledLetters(prev => prev.filter(l => l.id !== charObj.id));
+    setAvailableLetters(prev => [...prev, charObj]);
   };
 
   const handleSuccess = () => {
@@ -736,10 +744,14 @@ export const Learn: React.FC = () => {
                   <div className="space-y-6">
                     {/* Assembled Slots */}
                     <div className="flex justify-center gap-2 min-h-[3rem]" dir="ltr">
-                      {assembledLetters.map((char, i) => (
-                        <div key={i} className="w-10 h-12 bg-white/10 border border-white/20 rounded flex items-center justify-center text-xl font-bold animate-in zoom-in">
-                          {char}
-                        </div>
+                      {assembledLetters.map((l, i) => (
+                        <button
+                          key={`${l.id}-${i}`}
+                          onClick={() => handleAssembledLetterClick(l)}
+                          className="w-10 h-12 bg-primary/20 border border-primary/40 text-primary rounded flex items-center justify-center text-xl font-bold animate-in zoom-in hover:bg-primary/30 transition-colors"
+                        >
+                          {l.char}
+                        </button>
                       ))}
                       {/* Empty Slots */}
                       {Array.from({ length: Math.max(0, currentWord.english_word.length - assembledLetters.length) }).map((_, i) => (
