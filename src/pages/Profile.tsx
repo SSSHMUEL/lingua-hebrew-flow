@@ -68,9 +68,10 @@ const Profile: React.FC = () => {
 
     (async () => {
       const { count: learnedCount } = await supabase
-        .from('learned_words')
+        .from('user_words')
         .select('*', { count: 'exact', head: true })
-        .eq('user_id', user.id);
+        .eq('user_id', user.id)
+        .eq('status', 'learned');
       const { count: totalCount } = await supabase
         .from('vocabulary_words')
         .select('*', { count: 'exact', head: true });

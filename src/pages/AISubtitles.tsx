@@ -154,14 +154,15 @@ export const AISubtitles: React.FC = () => {
 
     try {
       const { data: learnedWords } = await supabase
-        .from('learned_words')
+        .from('user_words')
         .select(`
           vocabulary_words (
             english_word,
             hebrew_translation
           )
         `)
-        .eq('user_id', user.id);
+        .eq('user_id', user.id)
+        .eq('status', 'learned');
 
       if (!learnedWords || learnedWords.length === 0) return subs;
 

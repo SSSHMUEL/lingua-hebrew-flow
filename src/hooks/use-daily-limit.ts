@@ -57,10 +57,11 @@ export const useDailyLimit = (userId: string | undefined) => {
     const todayISO = today.toISOString();
 
     const { count } = await supabase
-      .from('learned_words')
+      .from('user_words')
       .select('*', { count: 'exact', head: true })
       .eq('user_id', userId)
-      .gte('learned_at', todayISO);
+      .eq('status', 'learned')
+      .gte('updated_at', todayISO);
 
     return count || 0;
   }, [userId]);

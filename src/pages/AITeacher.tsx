@@ -154,14 +154,15 @@ export const AITeacher: React.FC = () => {
     if (!user) return;
     try {
       const { data, error } = await supabase
-        .from('learned_words')
+        .from('user_words')
         .select(`
           vocabulary_words (
             english_word,
             hebrew_translation
           )
         `)
-        .eq('user_id', user.id);
+        .eq('user_id', user.id)
+        .eq('status', 'learned');
 
       if (error) throw error;
 

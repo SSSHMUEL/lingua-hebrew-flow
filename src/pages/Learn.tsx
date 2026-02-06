@@ -46,6 +46,7 @@ interface VocabularyWord {
   pronunciation?: string;
   word_pair: string;
   level?: string;
+  priority?: number;
 }
 
 type ChallengeType =
@@ -153,7 +154,33 @@ export const Learn: React.FC = () => {
     setLoading(true);
 
     try {
-      // 1. Fetch User Words (Target Lesson Batch: 7 words)
+      // 1. Fetch Profile for Level and Category to fulfill refill requirements
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('english_level, interests')
+        .eq('user_id', user.id)
+        .single();
+
+      const userLevel = profile?.english_level || 'beginner';
+      // Use the first interest as the category for refill if available
+      const userCategory = (profile as any)?.interests?.[0] || 'general';
+
+      // 2. Automated Refill via RPC
+      // Trigger this RPC call whenever the Learn or Lesson page is initialized.
+      const { error: refillError } = await (supabase as any).rpc('maintain_minimum_words', {
+        p_user_id: user.id,
+        p_level: userLevel,
+        p_category: userCategory,
+        p_min_count: 20
+      });
+
+      if (refillError) {
+        console.error("Refill RPC failed:", refillError);
+        // We continue even if refill fails, to show existing words if any
+      }
+
+      // 3. Fetch Next Lesson Batch (Exactly 7 words)
+      // Sorting: Status queued first, then Status new ordered by priority DESC (10 to 1)
       const { data: userWordsData, error } = await supabase
         .from('user_words')
         .select(`
@@ -167,11 +194,14 @@ export const Learn: React.FC = () => {
             example_sentence,
             pronunciation,
             word_pair,
-            level
+            level,
+            priority
           )
         `)
         .eq('user_id', user.id)
         .in('status', ['new', 'queued'])
+        .order('status', { ascending: false }) // 'queued' (q) > 'new' (n)
+        .order('priority', { foreignTable: 'vocabulary_words', ascending: false })
         .limit(7);
 
       if (error) throw error;
@@ -181,7 +211,7 @@ export const Learn: React.FC = () => {
         user_word_id: item.id
       })) as VocabularyWord[];
 
-      // 2. Fetch Distractors
+      // 4. Fetch Distractors
       const { data: distractorData } = await supabase
         .from('vocabulary_words')
         .select('*')
@@ -198,7 +228,11 @@ export const Learn: React.FC = () => {
 
     } catch (err) {
       console.error("Error loading lesson:", err);
-      toast({ title: isHebrew ? "שגיאה" : "Error", description: isHebrew ? "לא ניתן לטעון שיעור" : "Failed to load lesson", variant: "destructive" });
+      toast({
+        title: isHebrew ? "שגיאה בטעינה" : "Error loading",
+        description: isHebrew ? "לא הצלחנו לטעון את המילים לשיעור." : "Could not load words for lesson.",
+        variant: "destructive"
+      });
     } finally {
       setLoading(false);
     }

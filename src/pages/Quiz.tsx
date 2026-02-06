@@ -91,11 +91,11 @@ const Quiz: React.FC = () => {
     const isCorrect = opt === current.hebrew_translation;
     setCorrect(isCorrect);
     if (isCorrect) {
-      const { error } = await supabase.from('learned_words').insert({
+      const { error } = await supabase.from('user_words').upsert({
         user_id: user.id,
-        vocabulary_word_id: current.id,
-        word_pair: current.word_pair || `${current.hebrew_translation} - ${current.english_word}`,
-      });
+        word_id: current.id,
+        status: 'learned'
+      }, { onConflict: 'user_id, word_id' });
       if (!error) {
         toast({
           title: isHebrew ? 'כל הכבוד!' : 'Great job!',
