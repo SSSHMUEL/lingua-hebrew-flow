@@ -126,9 +126,16 @@ const Onboarding = () => {
   const { toast } = useToast();
   const { setLearningDirection } = useLanguage();
 
-  const [step, setStep] = useState(1);
+  const [step, setStep] = useState(() => {
+    const saved = sessionStorage.getItem("onboarding_step");
+    return saved ? parseInt(saved) : 1;
+  });
   const [isLoading, setIsLoading] = useState(false);
   const [checkingAuth, setCheckingAuth] = useState(true);
+
+  useEffect(() => {
+    sessionStorage.setItem("onboarding_step", step.toString());
+  }, [step]);
 
   // Selection states
   const [selectedSegment, setSelectedSegment] = useState<keyof typeof ONBOARDING_DATA | null>(null);
@@ -219,10 +226,11 @@ const Onboarding = () => {
       // Set default learning direction (Hebrew to English)
       const sourceLanguage = 'hebrew';
       const targetLanguage = 'english';
-      // Update profile in ONE call to avoid race conditions
+      // Use upsert to ensure the profile record exists (especially for new users)
       const { error: profileError } = await supabase
         .from("profiles")
-        .update({
+        .upsert({
+          user_id: user.id,
           segment_type: selectedSegment,
           skill_level: selectedLevelId,
           interest_topics: selectedTopics,
@@ -231,8 +239,7 @@ const Onboarding = () => {
           target_language: targetLanguage,
           english_level: selectedLevelId, // backward compatibility
           interests: selectedTopics, // backward compatibility
-        } as any)
-        .eq("user_id", user.id);
+        } as any, { onConflict: 'user_id' });
 
       if (profileError) throw profileError;
 
@@ -279,9 +286,14 @@ const Onboarding = () => {
           : "ההרשמה הושלמה בהצלחה. יש לך 30 יום ניסיון חינם!",
       });
 
-      // Small delay to ensure DB propagation before navigation
-      await new Promise(r => setTimeout(r, 800));
-      navigate("/");
+      // Clear the step storage before redirect
+      sessionStorage.removeItem("onboarding_step");
+
+      // Use window.location.href for a full page reload to ensure OnboardingGuard 
+      // and all providers pick up the fresh database state.
+      setTimeout(() => {
+        window.location.href = "/";
+      }, 1000);
     } catch (error: any) {
       console.error("Error completing onboarding:", error);
       toast({
