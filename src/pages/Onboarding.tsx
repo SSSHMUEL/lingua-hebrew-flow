@@ -165,6 +165,12 @@ const Onboarding = () => {
     checkOnboardingStatus();
   }, [navigate]);
 
+  const handleLevelSelect = (levelId: string) => {
+    setSelectedLevelId(levelId);
+    setSelectedTopics([]);
+    setStep(3); // Auto-advance to topics
+  };
+
   const handleTopicToggle = (topicId: string) => {
     setSelectedTopics(prev =>
       prev.includes(topicId)
@@ -213,27 +219,26 @@ const Onboarding = () => {
       // Set default learning direction (Hebrew to English)
       const sourceLanguage = 'hebrew';
       const targetLanguage = 'english';
-      setLearningDirection('he' as LanguageCode, 'en' as LanguageCode);
-
-      // Save to profiles table with new logic
-      const profileData = {
-        segment_type: selectedSegment,
-        skill_level: selectedLevelId,
-        interest_topics: selectedTopics,
-        onboarding_completed: true,
-        source_language: sourceLanguage,
-        target_language: targetLanguage,
-        // Keep these for backward compatibility if any parts of the app use them
-        english_level: selectedLevelId,
-        interests: selectedTopics,
-      };
-
+      // Update profile in ONE call to avoid race conditions
       const { error: profileError } = await supabase
         .from("profiles")
-        .update(profileData)
+        .update({
+          segment_type: selectedSegment,
+          skill_level: selectedLevelId,
+          interest_topics: selectedTopics,
+          onboarding_completed: true,
+          source_language: sourceLanguage,
+          target_language: targetLanguage,
+          english_level: selectedLevelId, // backward compatibility
+          interests: selectedTopics, // backward compatibility
+        } as any)
         .eq("user_id", user.id);
 
       if (profileError) throw profileError;
+
+      // Update local state for language without triggering separate DB call
+      document.documentElement.dir = 'rtl';
+      document.documentElement.lang = 'he';
 
       // Save to user_topic_preferences for compatibility
       if (selectedTopics.length > 0) {
@@ -274,6 +279,8 @@ const Onboarding = () => {
           : "ההרשמה הושלמה בהצלחה. יש לך 30 יום ניסיון חינם!",
       });
 
+      // Small delay to ensure DB propagation before navigation
+      await new Promise(r => setTimeout(r, 800));
       navigate("/");
     } catch (error: any) {
       console.error("Error completing onboarding:", error);
@@ -414,10 +421,7 @@ const Onboarding = () => {
                       ? "border-primary bg-primary/5 shadow-md"
                       : "border-border bg-background/50"
                       }`}
-                    onClick={() => {
-                      setSelectedLevelId(level.id);
-                      setSelectedTopics([]);
-                    }}
+                    onClick={() => handleLevelSelect(level.id)}
                   >
                     <div className={`w-12 h-12 rounded-full flex items-center justify-center ${isSelected ? "bg-primary/20 text-primary" : "bg-muted text-muted-foreground"
                       }`}>
