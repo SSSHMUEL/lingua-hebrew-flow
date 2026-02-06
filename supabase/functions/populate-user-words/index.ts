@@ -14,7 +14,7 @@ serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    
+
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     // Get the user from the authorization header
@@ -28,7 +28,7 @@ serve(async (req) => {
 
     const token = authHeader.replace('Bearer ', '');
     const { data: { user }, error: userError } = await supabase.auth.getUser(token);
-    
+
     if (userError || !user) {
       return new Response(
         JSON.stringify({ error: 'Invalid user token' }),
@@ -36,7 +36,7 @@ serve(async (req) => {
       );
     }
 
-    const { audienceType, interests } = await req.json();
+    const { audienceType, interests, skillLevel } = await req.json();
 
     if (!audienceType || !interests || !Array.isArray(interests)) {
       return new Response(
@@ -45,21 +45,36 @@ serve(async (req) => {
       );
     }
 
-    // Map audience type to vocabulary level
-    const levelMap: Record<string, string[]> = {
-      'kids': ['basic', 'בסיסי'],
-      'students': ['basic', 'intermediate', 'בסיסי'],
-      'business': ['intermediate', 'advanced', 'עסקים'],
+    // Map CEFR levels to database levels
+    const levelMapping: Record<string, string[]> = {
+      'Letters': ['basic', 'בסיסי'],
+      'A1': ['basic', 'בסיסי'],
+      'A2': ['basic', 'intermediate'],
+      'B1': ['intermediate'],
+      'B2': ['intermediate', 'advanced'],
+      'C1': ['advanced'],
+      'C2': ['advanced'],
     };
 
-    const levels = levelMap[audienceType] || ['basic'];
+    // Fallback if skillLevel is missing but audienceType exists
+    const audienceFallback: Record<string, string[]> = {
+      'kids': ['basic', 'בסיסי'],
+      'students': ['basic', 'intermediate'],
+      'business': ['intermediate', 'advanced'],
+    };
+
+    const targetLevels = skillLevel ? levelMapping[skillLevel] : audienceFallback[audienceType] || ['basic'];
 
     // Get words matching the user's interests and appropriate level
-    // First, get words from selected categories
     let query = supabase
       .from('vocabulary_words')
       .select('id, category, level')
       .in('category', interests);
+
+    // Optionally filter by level if available in the database
+    if (targetLevels && targetLevels.length > 0) {
+      query = query.in('level', targetLevels);
+    }
 
     const { data: words, error: wordsError } = await query.limit(100);
 
@@ -136,8 +151,8 @@ serve(async (req) => {
     }
 
     return new Response(
-      JSON.stringify({ 
-        success: true, 
+      JSON.stringify({
+        success: true,
         wordsAdded: selectedWords.length,
         categories: [...new Set(selectedWords.map(w => w.category))]
       }),

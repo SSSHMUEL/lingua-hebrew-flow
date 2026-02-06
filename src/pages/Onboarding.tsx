@@ -5,63 +5,120 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, ArrowRight, Users, GraduationCap, Briefcase, Sparkles, Loader2 } from "lucide-react";
+import { ArrowLeft, ArrowRight, Users, GraduationCap, Briefcase, Sparkles, Loader2, BookOpen, Crown } from "lucide-react";
 import { useLanguage, LanguageCode } from "@/contexts/LanguageContext";
 
-// Audience types with their icons and descriptions
-const AUDIENCES = {
+// New Onboarding Data Structure
+const ONBOARDING_DATA = {
   kids: {
+    id: "kids",
     icon: Users,
     emoji: "🎮",
-    labelEn: "Kids",
-    labelHe: "ילדים",
-    descEn: "Fun learning with games, animals, and school topics",
-    descHe: "למידה כיפית עם משחקים, חיות ונושאי בית ספר",
+    labelEn: "Kids & Teens",
+    labelHe: "ילדים ונוער",
+    descEn: "Fun learning for kids and teenagers",
+    descHe: "למידה מהנה המותאמת לילדים ולבני נוער",
+    levels: [
+      {
+        id: "Letters",
+        labelEn: "Letters",
+        labelHe: "אותיות",
+        categories: [
+          { id: "בסיסי", labelEn: "The ABC", labelHe: "ה-ABC", icon: "🔤" },
+          { id: "בסיסי", labelEn: "First Sounds", labelHe: "צלילים ראשונים", icon: "🔊" },
+          { id: "בסיסי", labelEn: "Similar Letters", labelHe: "אותיות דומות", icon: "📝" },
+        ]
+      },
+      {
+        id: "A1",
+        labelEn: "Beginners (A1)",
+        labelHe: "מתחילים (A1)",
+        categories: [
+          { id: "טבע", labelEn: "Animals", labelHe: "בעלי חיים", icon: "🐾" },
+          { id: "בסיסי", labelEn: "Colors & Numbers", labelHe: "צבעים ומספרים", icon: "🎨" },
+          { id: "בידור", labelEn: "Games", labelHe: "משחקים", icon: "🎮" },
+          { id: "חיים יומיומיים", labelEn: "Home & Family", labelHe: "בית ומשפחה", icon: "🏠" },
+        ]
+      },
+      {
+        id: "A2",
+        labelEn: "Advanced (A2)",
+        labelHe: "מתקדמים (A2)",
+        categories: [
+          { id: "חינוך", labelEn: "School", labelHe: "בית ספר", icon: "🏫" },
+          { id: "בידור", labelEn: "Hobbies", labelHe: "תחביבים", icon: "🎨" },
+          { id: "אדם", labelEn: "Friends", labelHe: "חברים", icon: "🤝" },
+          { id: "מזג אוויר", labelEn: "Weather", labelHe: "מזג אוויר", icon: "🌤️" },
+        ]
+      }
+    ]
   },
   students: {
+    id: "students",
     icon: GraduationCap,
     emoji: "📚",
-    labelEn: "Students",
-    labelHe: "תלמידים",
-    descEn: "Academic vocabulary for school and university",
-    descHe: "אוצר מילים אקדמי לבית ספר ואוניברסיטה",
+    labelEn: "Students & Adults",
+    labelHe: "סטודנטים ומבוגרים",
+    descEn: "General English for academic and daily use",
+    descHe: "אנגלית כללית לשימוש אקדמי ויומיומי",
+    levels: [
+      {
+        id: "B1",
+        labelEn: "Intermediate (B1)",
+        labelHe: "בינוני (B1)",
+        categories: [
+          { id: "נסיעות", labelEn: "Travel & Trips", labelHe: "נסיעות וטיולים", icon: "✈️" },
+          { id: "קניות", labelEn: "Shopping", labelHe: "קניות", icon: "🛍️" },
+          { id: "בידור", labelEn: "Leisure Activities", labelHe: "פעילויות פנאי", icon: "🎬" },
+          { id: "בריאות", labelEn: "Health", labelHe: "בריאות", icon: "🏥" },
+        ]
+      },
+      {
+        id: "B2",
+        labelEn: "Upper-Intermediate (B2)",
+        labelHe: "בינוני-גבוה (B2)",
+        categories: [
+          { id: "בסיסי", labelEn: "Current Events", labelHe: "אקטואליה", icon: "📰" },
+          { id: "עסקים", labelEn: "World of Work", labelHe: "עולם העבודה", icon: "💼" },
+          { id: "בידור", labelEn: "Culture & Cinema", labelHe: "תרבות וקולנוע", icon: "🍿" },
+          { id: "טכנולוגיה", labelEn: "Basic Technology", labelHe: "טכנולוגיה בסיסית", icon: "💻" },
+        ]
+      }
+    ]
   },
   business: {
+    id: "business",
     icon: Briefcase,
     emoji: "💼",
-    labelEn: "Business Professionals",
+    labelEn: "Business & Professional",
     labelHe: "אנשי עסקים",
-    descEn: "Professional vocabulary for work and meetings",
-    descHe: "אוצר מילים מקצועי לעבודה ופגישות",
-  },
-};
-
-// Interests per audience type
-const INTERESTS_BY_AUDIENCE = {
-  kids: [
-    { id: "טבע", labelEn: "Animals & Nature", labelHe: "חיות וטבע", icon: "🐾" },
-    { id: "חינוך", labelEn: "School", labelHe: "בית ספר", icon: "🏫" },
-    { id: "בידור", labelEn: "Games & Entertainment", labelHe: "משחקים ובידור", icon: "🎮" },
-    { id: "אוכל", labelEn: "Food", labelHe: "אוכל", icon: "🍕" },
-    { id: "ספורט", labelEn: "Sports", labelHe: "ספורט", icon: "⚽" },
-    { id: "בסיסי", labelEn: "Basic Words", labelHe: "מילים בסיסיות", icon: "🔤" },
-  ],
-  students: [
-    { id: "חינוך", labelEn: "Education", labelHe: "חינוך", icon: "📚" },
-    { id: "טכנולוגיה", labelEn: "Technology", labelHe: "טכנולוגיה", icon: "💻" },
-    { id: "מדע", labelEn: "Science", labelHe: "מדע", icon: "🔬" },
-    { id: "בריאות", labelEn: "Health", labelHe: "בריאות", icon: "🏥" },
-    { id: "נסיעות", labelEn: "Travel", labelHe: "נסיעות", icon: "✈️" },
-    { id: "בידור", labelEn: "Entertainment", labelHe: "בידור", icon: "🎬" },
-  ],
-  business: [
-    { id: "עסקים", labelEn: "Business", labelHe: "עסקים", icon: "💼" },
-    { id: "כלכלה", labelEn: "Economy & Finance", labelHe: "כלכלה ופיננסים", icon: "📈" },
-    { id: "טכנולוגיה", labelEn: "Technology", labelHe: "טכנולוגיה", icon: "💻" },
-    { id: "שיווק", labelEn: "Marketing", labelHe: "שיווק", icon: "📣" },
-    { id: "מקצועות", labelEn: "Professional", labelHe: "מקצועי", icon: "👔" },
-    { id: "נסיעות", labelEn: "Travel", labelHe: "נסיעות", icon: "✈️" },
-  ],
+    descEn: "Professional English for the corporate world",
+    descHe: "אנגלית מקצועית לעולם העסקים והניהול",
+    levels: [
+      {
+        id: "C1",
+        labelEn: "Advanced (C1)",
+        labelHe: "מתקדם (C1)",
+        categories: [
+          { id: "כלכלה", labelEn: "Management & Economy", labelHe: "ניהול וכלכלה", icon: "📊" },
+          { id: "עסקים", labelEn: "Marketing & Sales", labelHe: "שיווק ומכירות", icon: "📢" },
+          { id: "Technology", labelEn: "Entrepreneurship & Startups", labelHe: "יזמות וסטארטאפים", icon: "🚀" },
+          { id: "עסקים", labelEn: "Negotiation", labelHe: "משא ומתן", icon: "🤝" },
+        ]
+      },
+      {
+        id: "C2",
+        labelEn: "Expert (C2)",
+        labelHe: "מומחה (C2)",
+        categories: [
+          { id: "Technology", labelEn: "Data Analysis", labelHe: "ניתוח נתונים", icon: "📉" },
+          { id: "כלכלה", labelEn: "Capital Market", labelHe: "שוק ההון", icon: "💹" },
+          { id: "עסקים", labelEn: "Law & Contracts", labelHe: "משפטים וחוזים", icon: "⚖️" },
+          { id: "עסקים", labelEn: "Global Leadership", labelHe: "מנהיגות גלובלית", icon: "🌍" },
+        ]
+      }
+    ]
+  }
 };
 
 const Onboarding = () => {
@@ -73,10 +130,10 @@ const Onboarding = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [checkingAuth, setCheckingAuth] = useState(true);
 
-  // Step 1: Audience type
-  const [audienceType, setAudienceType] = useState<'kids' | 'students' | 'business' | null>(null);
-  // Step 2: Interests based on audience
-  const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
+  // Selection states
+  const [selectedSegment, setSelectedSegment] = useState<keyof typeof ONBOARDING_DATA | null>(null);
+  const [selectedLevelId, setSelectedLevelId] = useState<string | null>(null);
+  const [selectedTopics, setSelectedTopics] = useState<string[]>([]);
 
   // Language direction - default to Hebrew UI (he-en learning)
   const [learningDirection] = useState<'he-en' | 'en-he'>('he-en');
@@ -108,19 +165,27 @@ const Onboarding = () => {
     checkOnboardingStatus();
   }, [navigate]);
 
-  const handleInterestToggle = (interestId: string) => {
-    setSelectedInterests(prev =>
-      prev.includes(interestId)
-        ? prev.filter(id => id !== interestId)
-        : [...prev, interestId]
+  const handleTopicToggle = (topicId: string) => {
+    setSelectedTopics(prev =>
+      prev.includes(topicId)
+        ? prev.filter(id => id !== topicId)
+        : [...prev, topicId]
     );
   };
 
   const handleNext = () => {
-    if (step === 1 && !audienceType) {
+    if (step === 1 && !selectedSegment) {
       toast({
         title: isEnglishUI ? "Select your profile" : "בחר את הפרופיל שלך",
         description: isEnglishUI ? "Please select who you are" : "בחר מי אתה כדי להמשיך",
+        variant: "destructive",
+      });
+      return;
+    }
+    if (step === 2 && !selectedLevelId) {
+      toast({
+        title: isEnglishUI ? "Select your level" : "בחר את הרמה שלך",
+        description: isEnglishUI ? "Please select your English level" : "בחר את רמת האנגלית שלך כדי להמשיך",
         variant: "destructive",
       });
       return;
@@ -133,8 +198,8 @@ const Onboarding = () => {
   };
 
   const handleComplete = async () => {
-    if (!audienceType) return;
-    
+    if (!selectedSegment || !selectedLevelId) return;
+
     setIsLoading(true);
 
     try {
@@ -150,49 +215,34 @@ const Onboarding = () => {
       const targetLanguage = 'english';
       setLearningDirection('he' as LanguageCode, 'en' as LanguageCode);
 
-      // First check if profile exists
-      const { data: existingProfile } = await supabase
-        .from("profiles")
-        .select("id")
-        .eq("user_id", user.id)
-        .single();
-
+      // Save to profiles table with new logic
       const profileData = {
-        english_level: audienceType, // Store audience type in english_level for now
+        segment_type: selectedSegment,
+        skill_level: selectedLevelId,
+        interest_topics: selectedTopics,
+        onboarding_completed: true,
         source_language: sourceLanguage,
         target_language: targetLanguage,
-        onboarding_completed: true,
-        interests: selectedInterests,
+        // Keep these for backward compatibility if any parts of the app use them
+        english_level: selectedLevelId,
+        interests: selectedTopics,
       };
 
-      let profileError;
-
-      if (existingProfile) {
-        const result = await supabase
-          .from("profiles")
-          .update(profileData)
-          .eq("user_id", user.id);
-        profileError = result.error;
-      } else {
-        const result = await supabase
-          .from("profiles")
-          .insert({
-            user_id: user.id,
-            ...profileData,
-          });
-        profileError = result.error;
-      }
+      const { error: profileError } = await supabase
+        .from("profiles")
+        .update(profileData)
+        .eq("user_id", user.id);
 
       if (profileError) throw profileError;
 
-      // Save topic preferences
-      if (selectedInterests.length > 0) {
+      // Save to user_topic_preferences for compatibility
+      if (selectedTopics.length > 0) {
         await supabase
           .from("user_topic_preferences")
           .delete()
           .eq("user_id", user.id);
 
-        const topicRecords = selectedInterests.map(topicId => ({
+        const topicRecords = selectedTopics.map(topicId => ({
           user_id: user.id,
           topic_id: topicId,
         }));
@@ -208,13 +258,13 @@ const Onboarding = () => {
       try {
         await supabase.functions.invoke('populate-user-words', {
           body: {
-            audienceType,
-            interests: selectedInterests,
+            audienceType: selectedSegment,
+            interests: selectedTopics,
+            skillLevel: selectedLevelId
           }
         });
       } catch (e) {
         console.error("Error populating words:", e);
-        // Don't fail onboarding if word population fails
       }
 
       toast({
@@ -245,7 +295,9 @@ const Onboarding = () => {
     );
   }
 
-  const availableInterests = audienceType ? INTERESTS_BY_AUDIENCE[audienceType] : [];
+  const currentSegment = selectedSegment ? ONBOARDING_DATA[selectedSegment] : null;
+  const currentLevel = currentSegment ? currentSegment.levels.find(l => l.id === selectedLevelId) : null;
+  const availableCategories = currentLevel ? currentLevel.categories : [];
 
   return (
     <div className="min-h-screen relative overflow-hidden py-8 px-4" style={{ background: 'var(--gradient-hero)' }} dir={currentDir}>
@@ -264,69 +316,69 @@ const Onboarding = () => {
       <div className="max-w-2xl mx-auto relative z-10">
         {/* Progress indicator */}
         <div className="flex items-center justify-center gap-2 mb-8">
-          {[1, 2].map((s) => (
+          {[1, 2, 3].map((s) => (
             <div
               key={s}
               className={`h-2 rounded-full transition-all duration-300 ${s === step
-                  ? "w-12 bg-primary"
-                  : s < step
-                    ? "w-8 bg-primary/60"
-                    : "w-8 bg-muted"
+                ? "w-12 bg-primary"
+                : s < step
+                  ? "w-8 bg-primary/60"
+                  : "w-8 bg-muted"
                 }`}
             />
           ))}
         </div>
 
-        {/* Step 1: Audience Type Selection */}
+        {/* Step 1: Segment Selection */}
         {step === 1 && (
           <Card className="border-0 shadow-xl bg-card/80 backdrop-blur">
             <CardHeader className="text-center pb-2">
               <div className="mx-auto w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
                 <Users className="w-8 h-8 text-primary" />
               </div>
-              <CardTitle className="text-2xl">
+              <CardTitle className="text-2xl font-bold">
                 {isEnglishUI ? "Who are you?" : "מי אתה?"}
               </CardTitle>
-              <CardDescription>
-                {isEnglishUI ? "Choose your profile to get personalized content" : "בחר את הפרופיל שלך לקבלת תוכן מותאם אישית"}
+              <CardDescription className="text-lg">
+                {isEnglishUI
+                  ? "Choose the group that best describes you"
+                  : "בחר את הקבוצה שמתארת אותך הכי טוב"}
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              {(Object.keys(AUDIENCES) as Array<keyof typeof AUDIENCES>).map((key) => {
-                const audience = AUDIENCES[key];
-                const Icon = audience.icon;
-                const isSelected = audienceType === key;
-                
+            <CardContent className="space-y-4 pt-4">
+              {(Object.keys(ONBOARDING_DATA) as Array<keyof typeof ONBOARDING_DATA>).map((key) => {
+                const segment = ONBOARDING_DATA[key];
+                const Icon = segment.icon;
+                const isSelected = selectedSegment === key;
+
                 return (
                   <div
                     key={key}
-                    className={`flex items-center p-6 rounded-xl border-2 transition-all cursor-pointer hover:border-primary/50 hover:scale-[1.02] ${
-                      isSelected
-                        ? "border-primary bg-primary/5 shadow-lg"
-                        : "border-border"
-                    }`}
+                    className={`flex items-center p-6 rounded-2xl border-2 transition-all cursor-pointer hover:border-primary/50 hover:scale-[1.01] ${isSelected
+                      ? "border-primary bg-primary/5 shadow-md"
+                      : "border-border bg-background/50"
+                      }`}
                     onClick={() => {
-                      setAudienceType(key);
-                      setSelectedInterests([]); // Reset interests when changing audience
+                      setSelectedSegment(key);
+                      setSelectedLevelId(null);
+                      setSelectedTopics([]);
                     }}
                   >
-                    <div className={`w-14 h-14 rounded-full flex items-center justify-center text-3xl ${
-                      isSelected ? "bg-primary/20" : "bg-muted"
-                    }`}>
-                      {audience.emoji}
+                    <div className={`w-14 h-14 rounded-full flex items-center justify-center text-3xl ${isSelected ? "bg-primary/20" : "bg-muted"
+                      }`}>
+                      {segment.emoji}
                     </div>
-                    <div className={`flex-1 ${isEnglishUI ? 'ml-4' : 'mr-4'}`}>
-                      <div className="font-bold text-lg">
-                        {isEnglishUI ? audience.labelEn : audience.labelHe}
+                    <div className={`flex-1 ${isEnglishUI ? 'ml-4' : 'mr-4'} ${!isEnglishUI ? 'text-right' : 'text-left'}`}>
+                      <div className="font-bold text-xl mb-1">
+                        {isEnglishUI ? segment.labelEn : segment.labelHe}
                       </div>
-                      <div className="text-sm text-muted-foreground">
-                        {isEnglishUI ? audience.descEn : audience.descHe}
+                      <div className="text-sm text-muted-foreground leading-relaxed">
+                        {isEnglishUI ? segment.descEn : segment.descHe}
                       </div>
                     </div>
-                    <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
-                      isSelected ? "border-primary bg-primary" : "border-muted-foreground"
-                    }`}>
-                      {isSelected && <div className="w-2 h-2 rounded-full bg-white" />}
+                    <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0 ${isSelected ? "border-primary bg-primary" : "border-muted-foreground"
+                      }`}>
+                      {isSelected && <div className="w-2.5 h-2.5 rounded-full bg-white" />}
                     </div>
                   </div>
                 );
@@ -335,62 +387,114 @@ const Onboarding = () => {
           </Card>
         )}
 
-        {/* Step 2: Interests Selection */}
-        {step === 2 && (
+        {/* Step 2: Level Selection */}
+        {step === 2 && currentSegment && (
+          <Card className="border-0 shadow-xl bg-card/80 backdrop-blur">
+            <CardHeader className="text-center pb-2">
+              <div className="mx-auto w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                <Crown className="w-8 h-8 text-primary" />
+              </div>
+              <CardTitle className="text-2xl font-bold">
+                {isEnglishUI ? "What is your level?" : "מה הרמה שלך?"}
+              </CardTitle>
+              <CardDescription className="text-lg">
+                {isEnglishUI
+                  ? `Select your starting level for ${currentSegment.labelEn}`
+                  : `בחר את רמת הפתיחה שלך עבור ${currentSegment.labelHe}`}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4 pt-4">
+              {currentSegment.levels.map((level) => {
+                const isSelected = selectedLevelId === level.id;
+
+                return (
+                  <div
+                    key={level.id}
+                    className={`flex items-center p-5 rounded-2xl border-2 transition-all cursor-pointer hover:border-primary/50 hover:scale-[1.01] ${isSelected
+                      ? "border-primary bg-primary/5 shadow-md"
+                      : "border-border bg-background/50"
+                      }`}
+                    onClick={() => {
+                      setSelectedLevelId(level.id);
+                      setSelectedTopics([]);
+                    }}
+                  >
+                    <div className={`w-12 h-12 rounded-full flex items-center justify-center ${isSelected ? "bg-primary/20 text-primary" : "bg-muted text-muted-foreground"
+                      }`}>
+                      <BookOpen className="w-6 h-6" />
+                    </div>
+                    <div className={`flex-1 ${isEnglishUI ? 'ml-4' : 'mr-4'} ${!isEnglishUI ? 'text-right' : 'text-left'}`}>
+                      <div className="font-bold text-lg">
+                        {isEnglishUI ? level.labelEn : level.labelHe}
+                      </div>
+                    </div>
+                    <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0 ${isSelected ? "border-primary bg-primary" : "border-muted-foreground"
+                      }`}>
+                      {isSelected && <div className="w-2.5 h-2.5 rounded-full bg-white" />}
+                    </div>
+                  </div>
+                );
+              })}
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Step 3: Topics Selection */}
+        {step === 3 && currentLevel && (
           <Card className="border-0 shadow-xl bg-card/80 backdrop-blur">
             <CardHeader className="text-center pb-2">
               <div className="mx-auto w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
                 <Sparkles className="w-8 h-8 text-primary" />
               </div>
-              <CardTitle className="text-2xl">
-                {isEnglishUI ? "What interests you?" : "מה מעניין אותך?"}
+              <CardTitle className="text-2xl font-bold">
+                {isEnglishUI ? "Which topics interest you?" : "איזה קטגוריות מעניינות אותך?"}
               </CardTitle>
-              <CardDescription>
-                {isEnglishUI 
-                  ? "Choose topics you'd like to learn about (select at least one)" 
-                  : "בחר נושאים שתרצה ללמוד עליהם (בחר לפחות אחד)"}
+              <CardDescription className="text-lg">
+                {isEnglishUI
+                  ? "Choose what you'd like to talk about"
+                  : "בחר את התכנים שתרצה לראות בתוסף"}
               </CardDescription>
             </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 gap-3">
-                {availableInterests.map((interest) => {
-                  const isSelected = selectedInterests.includes(interest.id);
-                  
+            <CardContent className="pt-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {availableCategories.map((category) => {
+                  const isSelected = selectedTopics.includes(category.id);
+
                   return (
                     <div
-                      key={interest.id}
-                      className={`flex items-center gap-3 p-4 rounded-xl border-2 transition-all cursor-pointer hover:border-primary/50 ${
-                        isSelected
-                          ? "border-primary bg-primary/5"
-                          : "border-border"
-                      }`}
-                      onClick={() => handleInterestToggle(interest.id)}
+                      key={category.id}
+                      className={`flex items-center gap-4 p-5 rounded-2xl border-2 transition-all cursor-pointer hover:border-primary/50 ${isSelected
+                        ? "border-primary bg-primary/5 shadow-sm"
+                        : "border-border bg-background/50"
+                        }`}
+                      onClick={() => handleTopicToggle(category.id)}
                     >
                       <Checkbox
                         checked={isSelected}
-                        onCheckedChange={() => handleInterestToggle(interest.id)}
+                        className="w-5 h-5"
+                        onCheckedChange={() => handleTopicToggle(category.id)}
                       />
-                      <span className="text-2xl">{interest.icon}</span>
-                      <span className="font-medium text-sm">
-                        {isEnglishUI ? interest.labelEn : interest.labelHe}
+                      <span className="text-3xl">{category.icon}</span>
+                      <span className={`font-semibold text-base ${!isEnglishUI ? 'text-right' : 'text-left'}`}>
+                        {isEnglishUI ? category.labelEn : category.labelHe}
                       </span>
                     </div>
                   );
                 })}
               </div>
 
-              {/* Trial info */}
-              <div className="mt-8 p-4 rounded-xl bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
-                    <Sparkles className="w-5 h-5 text-primary" />
+              {/* Promo info */}
+              <div className="mt-8 p-6 rounded-2xl bg-gradient-to-r from-primary/15 to-primary/5 border border-primary/20">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
+                    <Sparkles className="w-6 h-6 text-primary" />
                   </div>
                   <div className={isEnglishUI ? 'text-left' : 'text-right'}>
-                    <h4 className="font-semibold text-primary">
+                    <h4 className="font-bold text-primary text-base">
                       {isEnglishUI ? "30 Days Free Trial!" : "30 ימי ניסיון חינם!"}
                     </h4>
                     <p className="text-sm text-muted-foreground">
-                      {isEnglishUI ? "No payment details required" : "ללא צורך בפרטי תשלום"}
+                      {isEnglishUI ? "Start your journey with full access to all features" : "התחל את המסע שלך עם גישה מלאה לכל התכונות"}
                     </p>
                   </div>
                 </div>
@@ -400,18 +504,18 @@ const Onboarding = () => {
         )}
 
         {/* Navigation buttons */}
-        <div className="flex justify-between mt-6">
+        <div className="flex justify-between mt-8">
           {step > 1 ? (
-            <Button variant="outline" onClick={handleBack} className="gap-2">
+            <Button variant="ghost" onClick={handleBack} className="gap-2 text-muted-foreground hover:text-foreground">
               {isEnglishUI ? (
                 <>
-                  <ArrowLeft className="w-4 h-4" />
+                  <ArrowLeft className="w-5 h-5" />
                   Back
                 </>
               ) : (
                 <>
                   חזרה
-                  <ArrowRight className="w-4 h-4" />
+                  <ArrowRight className="w-5 h-5" />
                 </>
               )}
             </Button>
@@ -419,16 +523,20 @@ const Onboarding = () => {
             <div />
           )}
 
-          {step < 2 ? (
-            <Button onClick={handleNext} className="gap-2" disabled={!audienceType}>
+          {step < 3 ? (
+            <Button
+              onClick={handleNext}
+              className="gap-2 px-8 py-6 text-lg rounded-xl shadow-lg hover:shadow-primary/20"
+              disabled={step === 1 ? !selectedSegment : !selectedLevelId}
+            >
               {isEnglishUI ? (
                 <>
                   Next
-                  <ArrowRight className="w-4 h-4" />
+                  <ArrowRight className="w-5 h-5" />
                 </>
               ) : (
                 <>
-                  <ArrowLeft className="w-4 h-4" />
+                  <ArrowLeft className="w-5 h-5" />
                   הבא
                 </>
               )}
@@ -436,18 +544,18 @@ const Onboarding = () => {
           ) : (
             <Button
               onClick={handleComplete}
-              disabled={isLoading || selectedInterests.length === 0}
-              className="gap-2"
+              disabled={isLoading || selectedTopics.length === 0}
+              className="gap-2 px-8 py-6 text-lg rounded-xl shadow-lg hover:shadow-primary/20"
             >
               {isLoading ? (
                 <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <Loader2 className="w-5 h-5 animate-spin" />
                   {isEnglishUI ? "Setting up..." : "מגדיר..."}
                 </>
               ) : (
                 <>
                   {isEnglishUI ? "Start Learning" : "התחל ללמוד"}
-                  <Sparkles className="w-4 h-4" />
+                  <Sparkles className="w-5 h-5" />
                 </>
               )}
             </Button>
@@ -459,3 +567,4 @@ const Onboarding = () => {
 };
 
 export default Onboarding;
+

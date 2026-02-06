@@ -26,6 +26,7 @@ const Profile: React.FC = () => {
   const [selectedTopics, setSelectedTopics] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [englishLevel, setEnglishLevel] = useState("");
+  const [segmentType, setSegmentType] = useState("");
   const [sourceLanguage, setSourceLanguage] = useState("hebrew");
   const [targetLanguage, setTargetLanguage] = useState("english");
   const [showUpgrade, setShowUpgrade] = useState(false);
@@ -33,28 +34,97 @@ const Profile: React.FC = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isGoogleUser, setIsGoogleUser] = useState(false);
 
-  const learningLevels = [
-    { id: "letters", label: isHebrew ? "אותיות בלבד" : "Letters Only", icon: "🔤", description: isHebrew ? "לימוד האלפבית" : "Learn the alphabet" },
-    { id: "beginner", label: isHebrew ? "מתחיל" : "Beginner", icon: "🌱", description: isHebrew ? "מתחיל ללמוד" : "Just starting" },
-    { id: "elementary", label: isHebrew ? "בסיסי" : "Elementary", icon: "📚", description: isHebrew ? "מילים בסיסיות" : "Basic words" },
-    { id: "intermediate", label: isHebrew ? "בינוני" : "Intermediate", icon: "💬", description: isHebrew ? "שיחות פשוטות" : "Simple conversations" },
-    { id: "advanced", label: isHebrew ? "מתקדם" : "Advanced", icon: "🎓", description: isHebrew ? "רמה גבוהה" : "High proficiency" },
+  const segments = [
+    {
+      id: "kids",
+      label: isHebrew ? "ילדים ונוער" : "Kids & Teens",
+      emoji: "🎮",
+      levels: [
+        {
+          id: "Letters",
+          label: isHebrew ? "אותיות" : "Letters",
+          icon: "🔤",
+          description: isHebrew ? "לימוד האלפבית" : "Learn the alphabet",
+          categories: ["בסיסי"]
+        },
+        {
+          id: "A1",
+          label: isHebrew ? "מתחילים (A1)" : "Beginner (A1)",
+          icon: "🌱",
+          description: isHebrew ? "מתחיל ללמוד" : "Just starting",
+          categories: ["טבע", "בסיסי", "בידור", "חיים יומיומיים"]
+        },
+        {
+          id: "A2",
+          label: isHebrew ? "מתקדמים (A2)" : "Advanced (A2)",
+          icon: "📚",
+          description: isHebrew ? "מילים בסיסיות" : "Basic words",
+          categories: ["חינוך", "בידור", "אדם", "מזג אוויר"]
+        }
+      ]
+    },
+    {
+      id: "students",
+      label: isHebrew ? "סטודנטים ומבוגרים" : "Students & Adults",
+      emoji: "📚",
+      levels: [
+        {
+          id: "B1",
+          label: isHebrew ? "בינוני (B1)" : "Intermediate (B1)",
+          icon: "💬",
+          description: isHebrew ? "שיחות פשוטות" : "Simple conversations",
+          categories: ["נסיעות", "קניות", "בידור", "בריאות"]
+        },
+        {
+          id: "B2",
+          label: isHebrew ? "בינוני-גבוה (B2)" : "Upper-Intermediate (B2)",
+          icon: "🌍",
+          description: isHebrew ? "אנגלית יומיומית" : "Daily English",
+          categories: ["בסיסי", "עסקים", "בידור", "טכנולוגיה"]
+        }
+      ]
+    },
+    {
+      id: "business",
+      label: isHebrew ? "אנשי עסקים" : "Business & Professional",
+      emoji: "💼",
+      levels: [
+        {
+          id: "C1",
+          label: isHebrew ? "מתקדם (C1)" : "Advanced (C1)",
+          icon: "🎓",
+          description: isHebrew ? "רמה גבוהה" : "High proficiency",
+          categories: ["כלכלה", "עסקים", "Technology", "עסקים"]
+        },
+        {
+          id: "C2",
+          label: isHebrew ? "מומחה (C2)" : "Expert (C2)",
+          icon: "🏆",
+          description: isHebrew ? "שליטה מלאה" : "Expert level",
+          categories: ["Technology", "כלכלה", "עסקים", "עסקים"]
+        }
+      ]
+    },
   ];
 
-  const availableTopics = [
-    { id: 'basic', name: isHebrew ? 'מילים בסיסיות' : 'Basic Words', description: isHebrew ? 'מילים חיוניות לשיחה יומיומית' : 'Essential words for daily conversation' },
-    { id: 'business', name: isHebrew ? 'עסקים' : 'Business', description: isHebrew ? 'מונחים עסקיים ומקצועיים' : 'Business and professional terms' },
-    { id: 'technology', name: isHebrew ? 'טכנולוגיה' : 'Technology', description: isHebrew ? 'מילים מעולם הטכנולוגיה והמחשבים' : 'Words from the tech world' },
-    { id: 'travel', name: isHebrew ? 'טיולים' : 'Travel', description: isHebrew ? 'מילים שימושיות לנסיעות בחו"ל' : 'Useful words for travel abroad' },
-    { id: 'food', name: isHebrew ? 'אוכל' : 'Food', description: isHebrew ? 'מילים הקשורות למזון ובישול' : 'Words related to food and cooking' },
-    { id: 'health', name: isHebrew ? 'בריאות' : 'Health', description: isHebrew ? 'מונחים רפואיים ובריאותיים' : 'Medical and health terms' },
-    { id: 'education', name: isHebrew ? 'חינוך' : 'Education', description: isHebrew ? 'מילים הקשורות לחינוך ולמידה' : 'Words related to education and learning' },
-    { id: 'entertainment', name: isHebrew ? 'בידור' : 'Entertainment', description: isHebrew ? 'מילים מעולם הבידור והתרבות' : 'Words from entertainment and culture' }
-  ];
-
-  useEffect(() => {
-    document.title = isHebrew ? `פרופיל | TALK FIX` : `Profile | TALK FIX`;
-  }, [isHebrew]);
+  const categoryMetadata: Record<string, { label: string, icon: string }> = {
+    "בסיסי": { label: isHebrew ? "בסיסי" : "Basic", icon: "⭐" },
+    "חיים יומיומיים": { label: isHebrew ? "בית ומשפחה" : "Home & Family", icon: "🏠" },
+    "טבע": { label: isHebrew ? "בעלי חיים" : "Animals", icon: "🐾" },
+    "בידור": { label: isHebrew ? "פנאי ומשחקים" : "Leisure & Games", icon: "🎮" },
+    "חינוך": { label: isHebrew ? "בית ספר ולימודים" : "School & Education", icon: "🏫" },
+    "אדם": { label: isHebrew ? "חברים וחברה" : "Friends & Society", icon: "🤝" },
+    "מזג אוויר": { label: isHebrew ? "מזג אוויר" : "Weather", icon: "🌤️" },
+    "נסיעות": { label: isHebrew ? "טיולים ונסיעות" : "Travel", icon: "✈️" },
+    "קניות": { label: isHebrew ? "קניות" : "Shopping", icon: "🛍️" },
+    "בריאות": { label: isHebrew ? "בריאות" : "Health", icon: "🏥" },
+    "עסקים": { label: isHebrew ? "עולם העבודה" : "Business", icon: "💼" },
+    "טכנולוגיה": { label: isHebrew ? "טכנולוגיה" : "Technology", icon: "💻" },
+    "כלכלה": { label: isHebrew ? "ניהול ופיננסים" : "Finance", icon: "📊" },
+    "Technology": { label: isHebrew ? "הייטק ויזמות" : "High-Tech", icon: "🚀" },
+    "מקצועות": { label: isHebrew ? "מקצועות" : "Professions", icon: "👔" },
+    "אוכל": { label: isHebrew ? "אוכל" : "Food", icon: "🍕" },
+  };
 
   useEffect(() => {
     if (!user) {
@@ -78,31 +148,18 @@ const Profile: React.FC = () => {
       setLearned(learnedCount || 0);
       setTotal(totalCount || 0);
 
-      const { data: preferences } = await supabase
-        .from('user_topic_preferences')
-        .select('topic_id')
-        .eq('user_id', user.id);
-
-      if (preferences) {
-        setSelectedTopics(preferences.map((p: any) => p.topic_id));
-      }
-
-      const { data: profile } = await supabase
+      const { data: profileData } = await supabase
         .from('profiles')
-        .select('english_level, source_language, target_language')
+        .select('*')
         .eq('user_id', user.id)
         .single();
 
+      const profile = profileData as any;
+
       if (profile) {
-        let level = profile.english_level?.trim().toLowerCase() || "";
-
-        // Normalize legacy/alternative values to match UI options
-        if (level === 'basic') level = 'elementary';
-        if (level === 'letters only') level = 'letters';
-        if (level === 'upper-intermediate' || level === 'upper intermediate') level = 'advanced';
-        if (level === 'pro') level = 'advanced';
-
-        setEnglishLevel(level);
+        setEnglishLevel(profile.skill_level || profile.english_level || "");
+        setSegmentType(profile.segment_type || "");
+        setSelectedTopics(profile.interest_topics || []);
         setSourceLanguage(profile.source_language || "hebrew");
         setTargetLanguage(profile.target_language || "english");
       }
@@ -123,6 +180,12 @@ const Profile: React.FC = () => {
     if (!user) return;
     setLoading(true);
     try {
+      // Save to profiles table (new array column)
+      await supabase.from('profiles').update({
+        interest_topics: selectedTopics
+      } as any).eq('user_id', user.id);
+
+      // Also keep user_topic_preferences in sync for compatibility
       await supabase.from('user_topic_preferences').delete().eq('user_id', user.id);
       if (selectedTopics.length > 0) {
         const preferences = selectedTopics.map(topicId => ({
@@ -145,10 +208,12 @@ const Profile: React.FC = () => {
     setLoading(true);
     try {
       const { error } = await supabase.from('profiles').update({
-        english_level: englishLevel,
+        skill_level: englishLevel,
+        english_level: englishLevel, // for backward compatibility
+        segment_type: segmentType,
         source_language: sourceLanguage,
         target_language: targetLanguage,
-      }).eq('user_id', user.id);
+      } as any).eq('user_id', user.id);
       if (error) throw error;
       setLanguage(sourceLanguage === 'english' ? 'en' : 'he');
       toast({ title: isHebrew ? "הצלחה!" : "Success!", description: isHebrew ? "ההגדרות נשמרו" : "Settings saved" });
@@ -195,6 +260,18 @@ const Profile: React.FC = () => {
       toast({ title: isHebrew ? "שגיאה" : "Error", variant: "destructive" });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const currentSegment = segments.find(s => s.id === segmentType) || segments[1]; // default to students
+  const currentLevel = currentSegment.levels.find(l => l.id === englishLevel) || currentSegment.levels[0];
+  const availableCategoriesForLevel = currentLevel.categories;
+
+  const handleSegmentChange = (newSegmentId: string) => {
+    setSegmentType(newSegmentId);
+    const newSegment = segments.find(s => s.id === newSegmentId);
+    if (newSegment && newSegment.levels.length > 0) {
+      setEnglishLevel(newSegment.levels[0].id);
     }
   };
 
@@ -283,9 +360,9 @@ const Profile: React.FC = () => {
           </Card>
         </div>
 
-        <div className="grid md:grid-cols-5 gap-8 mb-8">
-          {/* Security Card - Column 2/5 */}
-          <Card className="glass-card md:col-span-2 rounded-[2.5rem]">
+        <div className="grid md:grid-cols-12 gap-8 mb-8">
+          {/* Security Card */}
+          <Card className="glass-card md:col-span-4 rounded-[2.5rem]">
             <CardContent className="p-8">
               <div className="flex items-center gap-4 mb-8">
                 <h3 className="text-2xl font-black italic tracking-tighter">{t('profile.security')}</h3>
@@ -324,37 +401,53 @@ const Profile: React.FC = () => {
             </CardContent>
           </Card>
 
-          {/* Language & Level Card - Column 3/5 */}
-          <Card className="glass-card md:col-span-3 rounded-[2.5rem]">
+          {/* Language & Level Card */}
+          <Card className="glass-card md:col-span-8 rounded-[2.5rem]">
             <CardContent className="p-8">
               <div className="flex items-center gap-4 mb-8">
                 <h3 className="text-2xl font-black italic tracking-tighter">{t('profile.languageAndLevel')}</h3>
                 <Languages className="h-6 w-6 text-primary" />
               </div>
 
-              <div className="grid md:grid-cols-2 gap-8">
+              <div className="grid md:grid-cols-3 gap-8">
                 <div>
                   <p className="text-[10px] font-bold text-muted-foreground tracking-[0.2em] mb-4 uppercase">{t('profile.interfaceLanguage')}</p>
-                  <div className="flex gap-2">
+                  <div className="flex flex-col gap-2">
                     <Button
-                      className={`flex-1 font-bold py-4 rounded-xl transition-all ${language === 'he' ? 'bg-primary text-white shadow-lg' : 'bg-white/5 text-muted-foreground'}`}
+                      className={`font-bold py-4 rounded-xl transition-all ${language === 'he' ? 'bg-primary text-white shadow-lg' : 'bg-white/5 text-muted-foreground'}`}
                       onClick={() => { setLanguage('he'); setSourceLanguage('hebrew'); }}
                     >
                       עברית
                     </Button>
                     <Button
-                      className={`flex-1 font-bold py-4 rounded-xl transition-all ${language === 'en' ? 'bg-primary text-white shadow-lg' : 'bg-white/5 text-muted-foreground'}`}
+                      className={`font-bold py-4 rounded-xl transition-all ${language === 'en' ? 'bg-primary text-white shadow-lg' : 'bg-white/5 text-muted-foreground'}`}
                       onClick={() => { setLanguage('en'); setSourceLanguage('english'); }}
                     >
-                      us English
+                      English
                     </Button>
+                  </div>
+                </div>
+
+                <div>
+                  <p className="text-[10px] font-bold text-muted-foreground tracking-[0.2em] mb-4 uppercase">{isHebrew ? 'סגמנט' : 'Segment'}</p>
+                  <div className="flex flex-col gap-2">
+                    {segments.map(s => (
+                      <Button
+                        key={s.id}
+                        className={`font-bold justify-start px-4 py-4 text-xs rounded-xl transition-all flex items-center gap-2 ${segmentType === s.id ? 'bg-primary text-white' : 'bg-white/5 text-muted-foreground'}`}
+                        onClick={() => handleSegmentChange(s.id)}
+                      >
+                        <span>{s.emoji}</span>
+                        {s.label}
+                      </Button>
+                    ))}
                   </div>
                 </div>
 
                 <div>
                   <p className="text-[10px] font-bold text-muted-foreground tracking-[0.2em] mb-4 uppercase">{t('profile.learningLevel')}</p>
                   <div className="flex flex-wrap gap-2">
-                    {learningLevels.map(lvl => (
+                    {currentSegment.levels.map(lvl => (
                       <Button
                         key={lvl.id}
                         className={`font-bold px-4 py-2 text-xs rounded-xl transition-all flex items-center gap-2 ${englishLevel === lvl.id ? 'bg-primary text-white' : 'bg-white/5 text-muted-foreground'}`}
@@ -369,7 +462,7 @@ const Profile: React.FC = () => {
                 </div>
               </div>
 
-              <Button onClick={saveLanguageSettings} className="w-full mt-10 bg-primary hover:bg-primary/90 text-white font-bold py-7 rounded-2xl shadow-xl shadow-primary/20">
+              <Button onClick={saveLanguageSettings} className="w-full mt-10 bg-primary hover:bg-primary/90 text-white font-black italic text-lg py-7 rounded-2xl shadow-xl shadow-primary/20">
                 {t('profile.applySettings')}
               </Button>
             </CardContent>
@@ -392,38 +485,33 @@ const Profile: React.FC = () => {
               {t('profile.selectCategories')}
             </p>
 
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-              {availableTopics.map(topic => (
-                <div
-                  key={topic.id}
-                  onClick={() => handleTopicToggle(topic.id)}
-                  className={`relative p-8 rounded-[2.5rem] border-2 transition-all cursor-pointer group hover:scale-[1.03] ${selectedTopics.includes(topic.id) ? 'border-primary bg-primary/20 shadow-2xl shadow-primary/20' : 'border-white/5 bg-white/5'}`}
-                >
-                  {selectedTopics.includes(topic.id) && (
-                    <div className="absolute top-4 right-4 bg-primary rounded-full p-1 border-2 border-background">
-                      <CheckCircle2 className="h-3 w-3 text-white" />
-                    </div>
-                  )}
-                  <div className="flex flex-col items-center text-center gap-4">
-                    <div className={`w-12 h-12 rounded-full flex items-center justify-center text-2xl transition-all duration-500 ${selectedTopics.includes(topic.id) ? 'bg-primary/30 scale-110' : 'bg-white/10 opacity-40'}`}>
-                      {topic.id === 'basic' && '⭐'}
-                      {topic.id === 'business' && '💼'}
-                      {topic.id === 'technology' && '💻'}
-                      {topic.id === 'travel' && '✈️'}
-                      {topic.id === 'food' && '🍕'}
-                      {topic.id === 'health' && '🏥'}
-                      {topic.id === 'education' && '📖'}
-                      {topic.id === 'entertainment' && '🎬'}
-                    </div>
-                    <div>
-                      <h4 className={`text-lg font-black tracking-tight italic ${selectedTopics.includes(topic.id) ? 'text-white' : 'text-muted-foreground'}`}>{topic.name}</h4>
-                      <p className="text-[10px] font-bold opacity-30 uppercase tracking-widest mt-1 hidden md:block">
-                        {topic.description.split(' ').slice(0, 3).join(' ')}
-                      </p>
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-6">
+              {availableCategoriesForLevel.map(topicId => {
+                const metadata = categoryMetadata[topicId] || { label: topicId, icon: "⭐" };
+                return (
+                  <div
+                    key={topicId}
+                    onClick={() => handleTopicToggle(topicId)}
+                    className={`relative p-8 rounded-[2.5rem] border-2 transition-all cursor-pointer group hover:scale-[1.03] ${selectedTopics.includes(topicId) ? 'border-primary bg-primary/20 shadow-2xl shadow-primary/20' : 'border-white/5 bg-white/5'}`}
+                  >
+                    {selectedTopics.includes(topicId) && (
+                      <div className="absolute top-4 right-4 bg-primary rounded-full p-1 border-2 border-background">
+                        <CheckCircle2 className="h-3 w-3 text-white" />
+                      </div>
+                    )}
+                    <div className="flex flex-col items-center text-center gap-4">
+                      <div className={`w-14 h-14 rounded-full flex items-center justify-center text-3xl transition-all duration-500 ${selectedTopics.includes(topicId) ? 'bg-primary/30 scale-110' : 'bg-white/10 opacity-40'}`}>
+                        {metadata.icon}
+                      </div>
+                      <div>
+                        <h4 className={`text-lg font-black tracking-tight italic ${selectedTopics.includes(topicId) ? 'text-white' : 'text-muted-foreground'}`}>
+                          {metadata.label}
+                        </h4>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </CardContent>
         </Card>
