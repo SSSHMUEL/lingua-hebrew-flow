@@ -52,14 +52,14 @@ const Profile: React.FC = () => {
           label: isHebrew ? "מתחילים (A1)" : "Beginner (A1)",
           icon: "🌱",
           description: isHebrew ? "מתחיל ללמוד" : "Just starting",
-          categories: ["friends_family", "food_plate", "world_journey", "city_adventure", "animals", "feelings", "play_time", "clothes"]
+          categories: ["החברים והמשפחה שלי", "מה יש לי בצלחת?", "מסע מסביב לעולם", "יוצאים להרפתקה בעיר", "החברים על ארבע", "מה אני מרגיש היום?", "זמן לשחק!", "הבגדים החדשים שלי"]
         },
         {
           id: "A2",
           label: isHebrew ? "מתקדמים (A2)" : "Advanced (A2)",
           icon: "📚",
           description: isHebrew ? "מילים בסיסיות" : "Basic words",
-          categories: ["חינוך", "בידור", "אדם", "מזג אוויר"]
+          categories: ["התחביבים והחוגים שלי", "מטיילים בעולם הגדול", "השף הצעיר במטבח", "הכוח הסודי שלי", "הטכנולוגיה סביבנו", "המקצועות של הגדולים", "השכונה והסביבה שלי", "סיפורים ודמיון"]
         }
       ]
     },
@@ -109,14 +109,22 @@ const Profile: React.FC = () => {
 
   const categoryMetadata: Record<string, { label: string, icon: string }> = {
     "בסיסי": { label: isHebrew ? "בסיסי" : "Basic", icon: "⭐" },
-    "friends_family": { label: isHebrew ? "החברים והמשפחה שלי" : "Family & Friends", icon: "🏠" },
-    "food_plate": { label: isHebrew ? "מה יש לי בצלחת?" : "On My Plate", icon: "🍎" },
-    "world_journey": { label: isHebrew ? "מסע מסביב לעולם" : "Around the World", icon: "🌍" },
-    "city_adventure": { label: isHebrew ? "יוצאים להרפתקה בעיר" : "City Adventure", icon: "🚲" },
-    "animals": { label: isHebrew ? "החברים על ארבע" : "Four-legged friends", icon: "🐶" },
-    "feelings": { label: isHebrew ? "מה אני מרגיש היום?" : "How I Feel", icon: "😊" },
-    "play_time": { label: isHebrew ? "זמן לשחק!" : "Time to Play!", icon: "🎮" },
-    "clothes": { label: isHebrew ? "הבגדים החדשים שלי" : "My New Clothes", icon: "👕" },
+    "החברים והמשפחה שלי": { label: isHebrew ? "החברים והמשפחה שלי" : "Family & Friends", icon: "🏠" },
+    "מה יש לי בצלחת?": { label: isHebrew ? "מה יש לי בצלחת?" : "On My Plate", icon: "🍎" },
+    "מסע מסביב לעולם": { label: isHebrew ? "מסע מסביב לעולם" : "Around the World", icon: "🌍" },
+    "יוצאים להרפתקה בעיר": { label: isHebrew ? "יוצאים להרפתקה בעיר" : "City Adventure", icon: "🚲" },
+    "החברים על ארבע": { label: isHebrew ? "החברים על ארבע" : "Four-legged friends", icon: "🐶" },
+    "מה אני מרגיש היום?": { label: isHebrew ? "מה אני מרגיש היום?" : "How I Feel", icon: "😊" },
+    "זמן לשחק!": { label: isHebrew ? "זמן לשחק!" : "Time to Play!", icon: "🎮" },
+    "הבגדים החדשים שלי": { label: isHebrew ? "הבגדים החדשים שלי" : "My New Clothes", icon: "👕" },
+    "התחביבים והחוגים שלי": { label: isHebrew ? "התחביבים והחוגים שלי" : "Hobbies & Clubs", icon: "🎨" },
+    "מטיילים בעולם הגדול": { label: isHebrew ? "מטיילים בעולם הגדול" : "World Traveler", icon: "✈️" },
+    "השף הצעיר במטבח": { label: isHebrew ? "השף הצעיר במטבח" : "Young Chef", icon: "👨‍🍳" },
+    "הכוח הסודי שלי": { label: isHebrew ? "הכוח הסודי שלי" : "My Secret Power", icon: "💪" },
+    "הטכנולוגיה סביבנו": { label: isHebrew ? "הטכנולוגיה סביבנו" : "Tech Around Us", icon: "💻" },
+    "המקצועות של הגדולים": { label: isHebrew ? "המקצועות של הגדולים" : "Grown-up Jobs", icon: "👷" },
+    "השכונה והסביבה שלי": { label: isHebrew ? "השכונה והסביבה שלי" : "My Neighborhood", icon: "🌳" },
+    "סיפורים ודמיון": { label: isHebrew ? "סיפורים ודמיון" : "Stories & Imagination", icon: "🏰" },
     "חיים יומיומיים": { label: isHebrew ? "בית ומשפחה" : "Home & Family", icon: "🏠" },
     "טבע": { label: isHebrew ? "בעלי חיים" : "Animals", icon: "🐾" },
     "בידור": { label: isHebrew ? "פנאי ומשחקים" : "Leisure & Games", icon: "🎮" },

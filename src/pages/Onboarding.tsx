@@ -34,14 +34,14 @@ const ONBOARDING_DATA = {
         labelEn: "Beginners (A1)",
         labelHe: "מתחילים (A1)",
         categories: [
-          { id: "friends_family", labelEn: "Family & Friends", labelHe: "החברים והמשפחה שלי", icon: "🏠" },
-          { id: "food_plate", labelEn: "On My Plate", labelHe: "מה יש לי בצלחת?", icon: "🍎" },
-          { id: "world_travel", labelEn: "Around the World", labelHe: "מסע מסביב לעולם", icon: "🌍" },
-          { id: "city_adventure", labelEn: "City Adventure", labelHe: "יוצאים להרפתקה בעיר", icon: "🚲" },
-          { id: "animals", labelEn: "Four-legged friends", labelHe: "החברים על ארבע", icon: "🐶" },
-          { id: "feelings", labelEn: "How I Feel", labelHe: "מה אני מרגיש היום?", icon: "😊" },
-          { id: "play_time", labelEn: "Time to Play!", labelHe: "זמן לשחק!", icon: "🎮" },
-          { id: "clothes", labelEn: "My New Clothes", labelHe: "הבגדים החדשים שלי", icon: "👕" },
+          { id: "החברים והמשפחה שלי", labelEn: "Family & Friends", labelHe: "החברים והמשפחה שלי", icon: "🏠" },
+          { id: "מה יש לי בצלחת?", labelEn: "On My Plate", labelHe: "מה יש לי בצלחת?", icon: "🍎" },
+          { id: "מסע מסביב לעולם", labelEn: "Around the World", labelHe: "מסע מסביב לעולם", icon: "🌍" },
+          { id: "יוצאים להרפתקה בעיר", labelEn: "City Adventure", labelHe: "יוצאים להרפתקה בעיר", icon: "🚲" },
+          { id: "החברים על ארבע", labelEn: "Four-legged friends", labelHe: "החברים על ארבע", icon: "🐶" },
+          { id: "מה אני מרגיש היום?", labelEn: "How I Feel", labelHe: "מה אני מרגיש היום?", icon: "😊" },
+          { id: "זמן לשחק!", labelEn: "Time to Play!", labelHe: "זמן לשחק!", icon: "🎮" },
+          { id: "הבגדים החדשים שלי", labelEn: "My New Clothes", labelHe: "הבגדים החדשים שלי", icon: "👕" },
         ]
       },
       {
@@ -49,10 +49,14 @@ const ONBOARDING_DATA = {
         labelEn: "Advanced (A2)",
         labelHe: "מתקדמים (A2)",
         categories: [
-          { id: "חינוך", labelEn: "School", labelHe: "בית ספר", icon: "🏫" },
-          { id: "בידור", labelEn: "Hobbies", labelHe: "תחביבים", icon: "🎨" },
-          { id: "אדם", labelEn: "Friends", labelHe: "חברים", icon: "🤝" },
-          { id: "מזג אוויר", labelEn: "Weather", labelHe: "מזג אוויר", icon: "🌤️" },
+          { id: "התחביבים והחוגים שלי", labelEn: "Hobbies & Clubs", labelHe: "התחביבים והחוגים שלי", icon: "🎨" },
+          { id: "מטיילים בעולם הגדול", labelEn: "World Traveler", labelHe: "מטיילים בעולם הגדול", icon: "✈️" },
+          { id: "השף הצעיר במטבח", labelEn: "Young Chef", labelHe: "השף הצעיר במטבח", icon: "👨‍🍳" },
+          { id: "הכוח הסודי שלי", labelEn: "My Secret Power", labelHe: "הכוח הסודי שלי", icon: "💪" },
+          { id: "הטכנולוגיה סביבנו", labelEn: "Tech Around Us", labelHe: "הטכנולוגיה סביבנו", icon: "💻" },
+          { id: "המקצועות של הגדולים", labelEn: "Grown-up Jobs", labelHe: "המקצועות של הגדולים", icon: "👷" },
+          { id: "השכונה והסביבה שלי", labelEn: "My Neighborhood", labelHe: "השכונה והסביבה שלי", icon: "🌳" },
+          { id: "סיפורים ודמיון", labelEn: "Stories & Imagination", labelHe: "סיפורים ודמיון", icon: "🏰" },
         ]
       }
     ]
