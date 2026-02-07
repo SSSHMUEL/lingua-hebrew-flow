@@ -7,15 +7,17 @@ import { useAuth } from '@/components/AuthProvider';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { HelpCircle, CheckCircle2, XCircle, RefreshCw, Sparkles } from 'lucide-react';
+import { HelpCircle, CheckCircle2, XCircle, RefreshCw, Sparkles, History as HistoryIcon } from 'lucide-react';
 
 interface VocabularyWord {
   id: string;
+  user_word_id?: string;
   english_word: string;
   hebrew_translation: string;
   category: string;
   example_sentence: string;
   word_pair?: string;
+  status?: string;
 }
 
 const getRandomInt = (max: number) => Math.floor(Math.random() * max);
@@ -50,10 +52,26 @@ const Quiz: React.FC = () => {
     }
     (async () => {
       setLoading(true);
-      const { data, error } = await supabase
-        .from('vocabulary_words')
-        .select('*')
-        .order('created_at', { ascending: true });
+      const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+
+      const { data: userWordsData, error } = await supabase.from('user_words')
+        .select(`
+          id,
+          status,
+          vocabulary_words!user_words_word_id_fkey!inner (
+            id,
+            english_word,
+            hebrew_translation,
+            category,
+            example_sentence,
+            word_pair
+          )
+        `)
+        .eq('user_id', user.id)
+        .or(`status.in.(new,queued),and(status.eq.learned,or(last_practiced_at.lt.${sevenDaysAgo},last_practiced_at.is.null))`)
+        .order('priority', { foreignTable: 'vocabulary_words', ascending: false })
+        .limit(20);
+
       if (error) {
         toast({
           title: isHebrew ? 'שגיאה' : 'Error',
@@ -61,7 +79,12 @@ const Quiz: React.FC = () => {
           variant: 'destructive'
         });
       } else {
-        setWords(data || []);
+        const mappedWords = (userWordsData || []).map(item => ({
+          ...(item.vocabulary_words as any),
+          user_word_id: item.id,
+          status: item.status
+        })) as VocabularyWord[];
+        setWords(mappedWords);
       }
       setLoading(false);
     })();
@@ -91,11 +114,12 @@ const Quiz: React.FC = () => {
     const isCorrect = opt === current.hebrew_translation;
     setCorrect(isCorrect);
     if (isCorrect) {
-      const { error } = await supabase.from('user_words').upsert({
-        user_id: user.id,
-        word_id: current.id,
-        status: 'learned'
-      }, { onConflict: 'user_id, word_id' });
+      const { error } = await supabase.from('user_words').update({
+        status: 'learned',
+        last_practiced_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      } as any)
+        .eq('id', current.user_word_id);
       if (!error) {
         toast({
           title: isHebrew ? 'כל הכבוד!' : 'Great job!',
@@ -175,9 +199,17 @@ const Quiz: React.FC = () => {
 
         <Card className="glass-card border-white/10 mb-6">
           <CardHeader className="text-center">
-            <Badge className="mx-auto mb-4 bg-accent/20 text-accent border-accent/30">
-              {current.category}
-            </Badge>
+            <div className="flex justify-center gap-2 mb-4">
+              <Badge className="bg-accent/20 text-accent border-accent/30">
+                {current.category}
+              </Badge>
+              {current.status === 'learned' && (
+                <Badge variant="outline" className="bg-yellow-500/10 text-yellow-500 border-yellow-500/20 flex items-center gap-1">
+                  <HistoryIcon className="h-3 w-3" />
+                  {isHebrew ? 'חזרה' : 'REVIEW'}
+                </Badge>
+              )}
+            </div>
             <CardTitle className="text-4xl md:text-5xl font-bold">{current.english_word}</CardTitle>
           </CardHeader>
           <CardContent>

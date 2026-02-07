@@ -31,7 +31,8 @@ import {
   Headphones,
   Check,
   X,
-  Type
+  Type,
+  History as HistoryIcon
 } from 'lucide-react';
 
 // --- Types ---
@@ -47,6 +48,7 @@ interface VocabularyWord {
   word_pair: string;
   level?: string;
   priority?: number;
+  status?: string;
 }
 
 type ChallengeType =
@@ -176,7 +178,10 @@ export const Learn: React.FC = () => {
       await triggerRefill();
 
       // 3. Fetch Next Lesson Batch (Exactly 7 words)
-      // Sorting: Status queued first, then Status new ordered by priority DESC (10 to 1)
+      // Sorting: Status queued first, then Status new, then older learned words
+      // Ordered by priority DESC (10 to 1)
+      const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+
       const { data: userWordsData, error } = await supabase.from('user_words')
         .select(`
           id,
@@ -194,8 +199,8 @@ export const Learn: React.FC = () => {
           )
         `)
         .eq('user_id', user.id)
-        .in('status', ['new', 'queued'])
-        .order('status', { ascending: false }) // 'queued' (q) > 'new' (n)
+        .or(`status.in.(new,queued),and(status.eq.learned,or(last_practiced_at.lt.${sevenDaysAgo},last_practiced_at.is.null))`)
+        .order('status', { ascending: false }) // 'queued' > 'new' > 'learned'
         .order('priority', { foreignTable: 'vocabulary_words', ascending: false })
         .limit(7);
 
@@ -203,7 +208,8 @@ export const Learn: React.FC = () => {
 
       const lessonBatch = (userWordsData || []).map(item => ({
         ...(item.vocabulary_words as any),
-        user_word_id: item.id
+        user_word_id: item.id,
+        status: item.status
       })) as VocabularyWord[];
 
       // 4. Fetch Distractors
@@ -462,7 +468,7 @@ export const Learn: React.FC = () => {
 
       await supabase
         .from('user_words')
-        .update({ status: 'learned', updated_at: new Date().toISOString() } as any)
+        .update({ status: 'learned', updated_at: new Date().toISOString(), last_practiced_at: new Date().toISOString() } as any)
         .in('id', finalUniqueIds);
 
       // Trigger refill at end of lesson to ensure we have words for next time
@@ -550,9 +556,17 @@ export const Learn: React.FC = () => {
         {viewMode === 'study' && currentWord && (
           <Card className="flex-1 glass-card border-white/10 flex flex-col shadow-2xl animate-in slide-in-from-right-8 duration-500 min-h-0">
             <CardHeader className="text-center pt-6 pb-2">
-              <Badge className="mx-auto mb-2 bg-primary/10 text-primary border-primary/20 hover:bg-primary/20 px-4 py-1.5 rounded-full text-xs font-black tracking-widest uppercase">
-                {currentWord.category || 'Word'}
-              </Badge>
+              <div className="flex justify-center gap-2 mb-2">
+                <Badge className="bg-primary/10 text-primary border-primary/20 hover:bg-primary/20 px-4 py-1.5 rounded-full text-xs font-black tracking-widest uppercase">
+                  {currentWord.category || 'Word'}
+                </Badge>
+                {currentWord.status === 'learned' && (
+                  <Badge variant="outline" className="bg-yellow-500/10 text-yellow-500 border-yellow-500/20 px-3 py-1.5 rounded-full text-xs font-black tracking-widest uppercase flex items-center gap-1">
+                    <HistoryIcon className="h-3 w-3" />
+                    {isHebrew ? 'חזרה' : 'REVIEW'}
+                  </Badge>
+                )}
+              </div>
               <CardTitle className="text-5xl font-black text-white mb-2 tracking-tight drop-shadow-lg">
                 {currentWord.english_word}
               </CardTitle>

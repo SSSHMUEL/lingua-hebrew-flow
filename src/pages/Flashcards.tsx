@@ -7,16 +7,18 @@ import { useAuth } from '@/components/AuthProvider';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Volume2, ArrowLeft, ArrowRight, CheckCircle, FlipHorizontal2, Sparkles } from 'lucide-react';
+import { Volume2, ArrowLeft, ArrowRight, CheckCircle, FlipHorizontal2, Sparkles, History as HistoryIcon } from 'lucide-react';
 
 interface VocabularyWord {
   id: string;
+  user_word_id?: string;
   english_word: string;
   hebrew_translation: string;
   category: string;
   example_sentence: string;
   pronunciation?: string;
   word_pair?: string;
+  status?: string;
 }
 
 const Flashcards: React.FC = () => {
@@ -49,12 +51,26 @@ const Flashcards: React.FC = () => {
     }
     (async () => {
       setLoading(true);
-      // Fetch ALL words for practice, regardless of learned status
-      const { data, error } = await supabase
-        .from('vocabulary_words')
-        .select('*')
-        .order('category', { ascending: true })
-        .order('created_at', { ascending: true });
+      const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+
+      const { data: userWordsData, error } = await supabase.from('user_words')
+        .select(`
+          id,
+          status,
+          vocabulary_words!user_words_word_id_fkey!inner (
+            id,
+            english_word,
+            hebrew_translation,
+            category,
+            example_sentence,
+            pronunciation,
+            word_pair
+          )
+        `)
+        .eq('user_id', user.id)
+        .or(`status.in.(new,queued),and(status.eq.learned,or(last_practiced_at.lt.${sevenDaysAgo},last_practiced_at.is.null))`)
+        .order('priority', { foreignTable: 'vocabulary_words', ascending: false })
+        .limit(20);
 
       if (error) {
         console.error('Error fetching words:', error);
@@ -64,12 +80,12 @@ const Flashcards: React.FC = () => {
           variant: 'destructive'
         });
       } else {
-        if (data && data.length > 0) {
-          setWords(data);
-        } else {
-          // If no words found, maybe fetch some defaults or show specific message
-          console.log('No words found in database');
-        }
+        const mappedWords = (userWordsData || []).map(item => ({
+          ...(item.vocabulary_words as any),
+          user_word_id: item.id,
+          status: item.status
+        })) as VocabularyWord[];
+        setWords(mappedWords);
       }
       setLoading(false);
     })();
@@ -86,11 +102,12 @@ const Flashcards: React.FC = () => {
 
   const markLearned = async () => {
     if (!current || !user) return;
-    const { error } = await supabase.from('user_words').upsert({
-      user_id: user.id,
-      word_id: current.id,
-      status: 'learned'
-    }, { onConflict: 'user_id, word_id' });
+    const { error } = await supabase.from('user_words').update({
+      status: 'learned',
+      last_practiced_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    } as any)
+      .eq('id', current.user_word_id);
     if (error) {
       toast({
         title: isHebrew ? 'שגיאה' : 'Error',
@@ -159,7 +176,16 @@ const Flashcards: React.FC = () => {
             FLASHCARDS
           </Badge>
           <h1 className="text-3xl font-bold">{isHebrew ? 'כרטיסיות אוצר מילים' : 'Vocabulary Flashcards'}</h1>
-          <Badge className="mt-2 glass-card border-white/20">{current.category}</Badge>
+
+          <div className="flex justify-center gap-2 mt-4">
+            <Badge className="glass-card border-white/20">{current.category}</Badge>
+            {current.status === 'learned' && (
+              <Badge variant="outline" className="bg-yellow-500/10 text-yellow-500 border-yellow-500/20 flex items-center gap-1">
+                <HistoryIcon className="h-3 w-3" />
+                {isHebrew ? 'חזרה' : 'REVIEW'}
+              </Badge>
+            )}
+          </div>
         </div>
 
         <Card className="glass-card border-white/10 mb-6">
