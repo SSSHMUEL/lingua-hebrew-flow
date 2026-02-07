@@ -30,6 +30,7 @@ const Privacy = lazy(() => import("./pages/Privacy"));
 const Refund = lazy(() => import("./pages/Refund"));
 const Pricing = lazy(() => import("./pages/Pricing"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
+const PracticeMode = lazy(() => import("./pages/PracticeMode"));
 import { UserWordsSynchronizer } from "@/components/UserWordsSynchronizer";
 
 const queryClient = new QueryClient();
@@ -70,6 +71,7 @@ const AppContent = () => {
           <Route path="/downloads" element={<ProtectedRoute><Downloads /></ProtectedRoute>} />
           <Route path="/ai-teacher" element={<ProtectedRoute><AITeacher /></ProtectedRoute>} />
           <Route path="/practice" element={<ProtectedRoute><Practice /></ProtectedRoute>} />
+          <Route path="/practice/:type" element={<ProtectedRoute><PracticeMode /></ProtectedRoute>} />
           <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
 
           <Route path="*" element={<NotFound />} />

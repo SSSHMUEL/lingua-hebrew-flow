@@ -52,7 +52,7 @@ const Profile: React.FC = () => {
           label: isHebrew ? "מתחילים (A1)" : "Beginner (A1)",
           icon: "🌱",
           description: isHebrew ? "מתחיל ללמוד" : "Just starting",
-          categories: ["טבע", "בסיסי", "בידור", "חיים יומיומיים"]
+          categories: ["friends_family", "food_plate", "world_journey", "city_adventure", "animals", "feelings", "play_time", "clothes"]
         },
         {
           id: "A2",
@@ -109,6 +109,14 @@ const Profile: React.FC = () => {
 
   const categoryMetadata: Record<string, { label: string, icon: string }> = {
     "בסיסי": { label: isHebrew ? "בסיסי" : "Basic", icon: "⭐" },
+    "friends_family": { label: isHebrew ? "החברים והמשפחה שלי" : "Family & Friends", icon: "🏠" },
+    "food_plate": { label: isHebrew ? "מה יש לי בצלחת?" : "On My Plate", icon: "🍎" },
+    "world_journey": { label: isHebrew ? "מסע מסביב לעולם" : "Around the World", icon: "🌍" },
+    "city_adventure": { label: isHebrew ? "יוצאים להרפתקה בעיר" : "City Adventure", icon: "🚲" },
+    "animals": { label: isHebrew ? "החברים על ארבע" : "Four-legged friends", icon: "🐶" },
+    "feelings": { label: isHebrew ? "מה אני מרגיש היום?" : "How I Feel", icon: "😊" },
+    "play_time": { label: isHebrew ? "זמן לשחק!" : "Time to Play!", icon: "🎮" },
+    "clothes": { label: isHebrew ? "הבגדים החדשים שלי" : "My New Clothes", icon: "👕" },
     "חיים יומיומיים": { label: isHebrew ? "בית ומשפחה" : "Home & Family", icon: "🏠" },
     "טבע": { label: isHebrew ? "בעלי חיים" : "Animals", icon: "🐾" },
     "בידור": { label: isHebrew ? "פנאי ומשחקים" : "Leisure & Games", icon: "🎮" },
@@ -488,23 +496,24 @@ const Profile: React.FC = () => {
             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-6">
               {availableCategoriesForLevel.map(topicId => {
                 const metadata = categoryMetadata[topicId] || { label: topicId, icon: "⭐" };
+                const isSelected = selectedTopics.includes(topicId);
                 return (
                   <div
                     key={topicId}
                     onClick={() => handleTopicToggle(topicId)}
-                    className={`relative p-8 rounded-[2.5rem] border-2 transition-all cursor-pointer group hover:scale-[1.03] ${selectedTopics.includes(topicId) ? 'border-primary bg-primary/20 shadow-2xl shadow-primary/20' : 'border-white/5 bg-white/5'}`}
+                    className={`relative p-8 rounded-[2.5rem] border-4 transition-all cursor-pointer group hover:scale-[1.05] active:scale-[0.95] ${isSelected ? 'border-primary bg-primary/10 shadow-2xl shadow-primary/20' : 'border-white/5 bg-white/5 hover:border-white/20'}`}
                   >
-                    {selectedTopics.includes(topicId) && (
-                      <div className="absolute top-4 right-4 bg-primary rounded-full p-1 border-2 border-background">
+                    {isSelected && (
+                      <div className="absolute top-4 right-4 bg-primary rounded-full p-1.5 border-2 border-background shadow-lg animate-in zoom-in duration-300">
                         <CheckCircle2 className="h-3 w-3 text-white" />
                       </div>
                     )}
                     <div className="flex flex-col items-center text-center gap-4">
-                      <div className={`w-14 h-14 rounded-full flex items-center justify-center text-3xl transition-all duration-500 ${selectedTopics.includes(topicId) ? 'bg-primary/30 scale-110' : 'bg-white/10 opacity-40'}`}>
+                      <div className={`text-6xl mb-2 transition-transform duration-500 group-hover:rotate-12 ${isSelected ? 'scale-110' : 'opacity-40'}`}>
                         {metadata.icon}
                       </div>
                       <div>
-                        <h4 className={`text-lg font-black tracking-tight italic ${selectedTopics.includes(topicId) ? 'text-white' : 'text-muted-foreground'}`}>
+                        <h4 className={`text-sm sm:text-lg font-black tracking-tight italic ${isSelected ? 'text-primary' : 'text-muted-foreground'}`}>
                           {metadata.label}
                         </h4>
                       </div>
