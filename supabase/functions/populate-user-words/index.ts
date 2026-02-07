@@ -51,7 +51,7 @@ serve(async (req) => {
       'A1': ['basic', 'בסיסי'],
       'A2': ['basic', 'intermediate'],
       'B1': ['intermediate'],
-      'B2': ['intermediate', 'advanced'],
+      'B2': ['advanced'],
       'C1': ['advanced'],
       'C2': ['advanced'],
     };

@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, ArrowRight, Users, GraduationCap, Briefcase, Sparkles, Loader2, BookOpen, Crown, Star, Compass, Rocket, Globe, MessageCircle, Trophy, Target } from "lucide-react";
+import { ArrowLeft, ArrowRight, Users, GraduationCap, Briefcase, Sparkles, Loader2, BookOpen, Crown, Star, Compass, Rocket, Globe, MessageCircle, Trophy, Target, Leaf, Gavel, Brain, Cpu, Palette, TrendingUp, Stethoscope } from "lucide-react";
 import { useLanguage, LanguageCode } from "@/contexts/LanguageContext";
 
 // New Onboarding Data Structure
@@ -101,10 +101,14 @@ const ONBOARDING_DATA = {
         labelEn: "Upper-Intermediate (B2)",
         labelHe: "בינוני-גבוה (B2)",
         categories: [
-          { id: "בסיסי", labelEn: "Current Events", labelHe: "אקטואליה", icon: "📰" },
-          { id: "עסקים", labelEn: "World of Work", labelHe: "עולם העבודה", icon: "💼" },
-          { id: "בידור", labelEn: "Culture & Cinema", labelHe: "תרבות וקולנוע", icon: "🍿" },
-          { id: "טכנולוגיה", labelEn: "Basic Technology", labelHe: "טכנולוגיה בסיסית", icon: "💻" },
+          { id: "עולם העבודה והקריירה", labelEn: "Work & Career", labelHe: "עולם העבודה והקריירה", icon: "💼", lucideIcon: "Briefcase" },
+          { id: "סביבה, קיימות ואקלים", labelEn: "Environment & Climate", labelHe: "סביבה, קיימות ואקלים", icon: "🌿", lucideIcon: "Leaf" },
+          { id: "חברה, משפט וצדק", labelEn: "Society, Law & Justice", labelHe: "חברה, משפט וצדק", icon: "⚖️", lucideIcon: "Gavel" },
+          { id: "פסיכולוגיה והתנהגות", labelEn: "Psychology & Behavior", labelHe: "פסיכולוגיה והתנהגות", icon: "🧠", lucideIcon: "Brain" },
+          { id: "טכנולוגיה עילית וחדשנות", labelEn: "High-Tech & Innovation", labelHe: "טכנולוגיה עילית וחדשנות", icon: "💻", lucideIcon: "Cpu" },
+          { id: "תרבות, אמנות ותקשורת", labelEn: "Culture, Art & Media", labelHe: "תרבות, אמנות ותקשורת", icon: "🎨", lucideIcon: "Palette" },
+          { id: "כלכלה, כסף והשקעות", labelEn: "Economy & Investments", labelHe: "כלכלה, כסף והשקעות", icon: "📈", lucideIcon: "TrendingUp" },
+          { id: "בריאות, מדע ורפואה", labelEn: "Health & Science", labelHe: "בריאות, מדע ורפואה", icon: "🧪", lucideIcon: "Stethoscope" },
         ]
       }
     ]
@@ -499,36 +503,45 @@ const Onboarding = () => {
                 {availableCategories.map((category: any) => {
                   const isSelected = selectedTopics.includes(category.id);
                   const isB1 = selectedLevelId === 'B1';
+                  const isB2 = selectedLevelId === 'B2';
+                  const isAdultLevel = isB1 || isB2;
 
                   const LucideIconsMap: Record<string, any> = {
-                    Star, Compass, Rocket, Users, Globe, MessageCircle, Trophy, Target
+                    Star, Compass, Rocket, Users, Globe, MessageCircle, Trophy, Target,
+                    Briefcase, Leaf, Gavel, Brain, Cpu, Palette, TrendingUp, Stethoscope
                   };
                   const IconComponent = category.lucideIcon ? LucideIconsMap[category.lucideIcon] : null;
 
                   return (
                     <div
                       key={category.id}
-                      className={`relative flex flex-col items-center justify-center p-6 rounded-[2rem] border-4 transition-all cursor-pointer group hover:scale-[1.05] active:scale-[0.95] ${isB1
-                        ? (isSelected ? "border-slate-400 bg-[#0f172a]/90 shadow-2xl shadow-slate-500/30" : "border-white/5 bg-slate-950/40 hover:border-white/20")
-                        : (isSelected ? "border-primary bg-primary/10 shadow-xl shadow-primary/20" : "border-white/5 bg-background/40 hover:border-white/20")
+                      className={`relative flex flex-col items-center justify-center p-6 transition-all cursor-pointer group hover:scale-[1.05] active:scale-[0.95] ${isB2
+                          ? `rounded-xl border-[1px] ${isSelected ? "border-slate-400 bg-slate-900/90 shadow-2xl shadow-slate-500/10" : "border-white/10 bg-slate-950/20 hover:border-white/30"}`
+                          : `rounded-[2rem] border-4 ${isB1
+                            ? (isSelected ? "border-slate-400 bg-[#0f172a]/90 shadow-2xl shadow-slate-500/30" : "border-white/5 bg-slate-950/40 hover:border-white/20")
+                            : (isSelected ? "border-primary bg-primary/10 shadow-xl shadow-primary/20" : "border-white/5 bg-background/40 hover:border-white/20")
+                          }`
                         }`}
                       onClick={() => handleTopicToggle(category.id)}
                     >
                       {isSelected && (
-                        <div className={`absolute top-3 right-3 rounded-full p-1.5 shadow-lg border-2 border-background animate-in zoom-in duration-300 ${isB1 ? 'bg-slate-400' : 'bg-primary'}`}>
+                        <div className={`absolute top-3 right-3 rounded-full p-1.5 shadow-lg border-2 border-background animate-in zoom-in duration-300 ${isAdultLevel ? 'bg-slate-400' : 'bg-primary'}`}>
                           <Crown className="w-3 h-3 text-white" />
                         </div>
                       )}
-                      <div className={`transition-transform duration-500 group-hover:rotate-12 ${isSelected ? 'scale-110' : 'opacity-80'} ${isB1 ? 'mb-4' : 'text-6xl mb-4'}`}>
-                        {isB1 && IconComponent ? (
-                          <IconComponent className={`w-12 h-12 ${isSelected ? 'text-white' : 'text-slate-400'}`} strokeWidth={1.5} />
+                      <div className={`transition-transform duration-500 group-hover:rotate-12 ${isSelected ? 'scale-110' : 'opacity-80'} ${isAdultLevel ? 'mb-4' : 'text-6xl mb-4'}`}>
+                        {isAdultLevel && IconComponent ? (
+                          <IconComponent className={`${isB2 ? 'w-10 h-10' : 'w-12 h-12'} ${isSelected ? 'text-white' : 'text-slate-400'}`} strokeWidth={isB2 ? 1 : 1.5} />
                         ) : (
                           category.icon
                         )}
                       </div>
-                      <span className={`font-black text-center text-sm sm:text-base leading-tight ${isB1
-                        ? (isSelected ? 'text-white font-bold' : 'text-slate-400')
-                        : (isSelected ? 'text-primary' : 'text-foreground/70')
+                      <span className={`text-center leading-tight ${isB2
+                          ? `text-xs font-semibold uppercase tracking-wider ${isSelected ? 'text-white' : 'text-slate-500'}`
+                          : `font-black text-sm sm:text-base ${isB1
+                            ? (isSelected ? 'text-white font-bold' : 'text-slate-400')
+                            : (isSelected ? 'text-primary' : 'text-foreground/70')
+                          }`
                         }`}>
                         {isEnglishUI ? category.labelEn : category.labelHe}
                       </span>

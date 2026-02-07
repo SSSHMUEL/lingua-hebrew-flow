@@ -10,7 +10,7 @@ import { useAuth } from '@/components/AuthProvider';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Settings, Target, Crown, Languages, User, Users, Shield, Trash2, KeyRound, LogOut, CheckCircle2, Star, Compass, Rocket, Globe, MessageCircle, Trophy } from 'lucide-react';
+import { Settings, Target, Crown, Languages, User, Users, Shield, Trash2, KeyRound, LogOut, CheckCircle2, Star, Compass, Rocket, Globe, MessageCircle, Trophy, Briefcase, Leaf, Gavel, Brain, Cpu, Palette, TrendingUp, Stethoscope } from 'lucide-react';
 import { PayPalCheckout } from '@/components/PayPalCheckout';
 import { useSubscription } from '@/components/SubscriptionGuard';
 import { Input } from '@/components/ui/input';
@@ -87,7 +87,7 @@ const Profile: React.FC = () => {
           label: isHebrew ? "בינוני-גבוה (B2)" : "Upper-Intermediate (B2)",
           icon: "🌍",
           description: isHebrew ? "אנגלית יומיומית" : "Daily English",
-          categories: ["בסיסי", "עסקים", "בידור", "טכנולוגיה"]
+          categories: ["עולם העבודה והקריירה", "סביבה, קיימות ואקלים", "חברה, משפט וצדק", "פסיכולוגיה והתנהגות", "טכנולוגיה עילית וחדשנות", "תרבות, אמנות ותקשורת", "כלכלה, כסף והשקעות", "בריאות, מדע ורפואה"]
         }
       ]
     },
@@ -140,6 +140,14 @@ const Profile: React.FC = () => {
     "סודות השפה והסלנג": { label: isHebrew ? "סודות השפה והסלנג" : "Language & Slang", icon: "💬", lucideIcon: "MessageCircle" },
     "ספורט, אתגרים וניצחונות": { label: isHebrew ? "ספורט, אתגרים וניצחונות" : "Sports & Victory", icon: "🏆", lucideIcon: "Trophy" },
     "השפעה ושינוי בעולם": { label: isHebrew ? "השפעה ושינוי בעולם" : "Impact & Change", icon: "🌍", lucideIcon: "Target" },
+    "עולם העבודה והקריירה": { label: isHebrew ? "עולם העבודה והקריירה" : "Work & Career", icon: "💼", lucideIcon: "Briefcase" },
+    "סביבה, קיימות ואקלים": { label: isHebrew ? "סביבה, קיימות ואקלים" : "Environment & Climate", icon: "🌿", lucideIcon: "Leaf" },
+    "חברה, משפט וצדק": { label: isHebrew ? "חברה, משפט וצדק" : "Society, Law & Justice", icon: "⚖️", lucideIcon: "Gavel" },
+    "פסיכולוגיה והתנהגות": { label: isHebrew ? "פסיכולוגיה והתנהגות" : "Psychology & Behavior", icon: "🧠", lucideIcon: "Brain" },
+    "טכנולוגיה עילית וחדשנות": { label: isHebrew ? "טכנולוגיה עילית וחדשנות" : "High-Tech & Innovation", icon: "💻", lucideIcon: "Cpu" },
+    "תרבות, אמנות ותקשורת": { label: isHebrew ? "תרבות, אמנות ותקשורת" : "Culture, Art & Media", icon: "🎨", lucideIcon: "Palette" },
+    "כלכלה, כסף והשקעות": { label: isHebrew ? "כלכלה, כסף והשקעות" : "Economy & Investments", icon: "📈", lucideIcon: "TrendingUp" },
+    "בריאות, מדע ורפואה": { label: isHebrew ? "בריאות, מדע ורפואה" : "Health & Science", icon: "🧪", lucideIcon: "Stethoscope" },
     "חיים יומיומיים": { label: isHebrew ? "בית ומשפחה" : "Home & Family", icon: "🏠" },
     "טבע": { label: isHebrew ? "בעלי חיים" : "Animals", icon: "🐾" },
     "בידור": { label: isHebrew ? "פנאי ומשחקים" : "Leisure & Games", icon: "🎮" },
@@ -522,9 +530,12 @@ const Profile: React.FC = () => {
                 const metadata = categoryMetadata[topicId] || { label: topicId, icon: "⭐" } as any;
                 const isSelected = selectedTopics.includes(topicId);
                 const isB1 = englishLevel === 'B1';
+                const isB2 = englishLevel === 'B2';
+                const isAdultLevel = isB1 || isB2;
 
                 const LucideIconsMap: Record<string, any> = {
-                  Star, Compass, Rocket, Users, Globe, MessageCircle, Trophy, Target
+                  Star, Compass, Rocket, Users, Globe, MessageCircle, Trophy, Target,
+                  Briefcase, Leaf, Gavel, Brain, Cpu, Palette, TrendingUp, Stethoscope
                 };
                 const IconComponent = (metadata as any).lucideIcon ? LucideIconsMap[(metadata as any).lucideIcon] : null;
 
@@ -532,27 +543,33 @@ const Profile: React.FC = () => {
                   <div
                     key={topicId}
                     onClick={() => handleTopicToggle(topicId)}
-                    className={`relative p-8 rounded-[2.5rem] border-4 transition-all cursor-pointer group hover:scale-[1.05] active:scale-[0.95] ${isB1
-                        ? (isSelected ? "border-slate-400 bg-[#0f172a]/90 shadow-2xl shadow-slate-500/30" : "border-white/5 bg-slate-950/40 hover:border-white/20")
-                        : (isSelected ? "border-primary bg-primary/10 shadow-2xl shadow-primary/20" : "border-white/5 bg-white/5 hover:border-white/20")
+                    className={`relative flex flex-col items-center justify-center p-8 transition-all cursor-pointer group hover:scale-[1.05] active:scale-[0.95] ${isB2
+                        ? `rounded-xl border-[1px] ${isSelected ? "border-slate-400 bg-slate-900/90 shadow-2xl shadow-slate-500/10" : "border-white/10 bg-slate-950/20 hover:border-white/30"}`
+                        : `rounded-[2.5rem] border-4 ${isB1
+                          ? (isSelected ? "border-slate-400 bg-[#0f172a]/90 shadow-2xl shadow-slate-500/30" : "border-white/5 bg-slate-950/40 hover:border-white/20")
+                          : (isSelected ? "border-primary bg-primary/10 shadow-2xl shadow-primary/20" : "border-white/5 bg-white/5 hover:border-white/20")
+                        }`
                       }`}
                   >
                     {isSelected && (
-                      <div className={`absolute top-4 right-4 rounded-full p-1.5 border-2 border-background shadow-lg animate-in zoom-in duration-300 ${isB1 ? 'bg-slate-400' : 'bg-primary'}`}>
+                      <div className={`absolute top-4 right-4 rounded-full p-1.5 border-2 border-background shadow-lg animate-in zoom-in duration-300 ${isAdultLevel ? 'bg-slate-400' : 'bg-primary'}`}>
                         <CheckCircle2 className="h-3 w-3 text-white" />
                       </div>
                     )}
                     <div className="flex flex-col items-center text-center gap-4">
-                      <div className={`transition-transform duration-500 group-hover:rotate-12 ${isSelected ? 'scale-110' : 'opacity-40'} ${isB1 ? 'mb-2' : 'text-6xl mb-2'}`}>
-                        {isB1 && IconComponent ? (
-                          <IconComponent className={`w-16 h-16 ${isSelected ? 'text-white' : 'text-slate-400'}`} strokeWidth={1.5} />
+                      <div className={`transition-transform duration-500 group-hover:rotate-12 ${isSelected ? 'scale-110' : 'opacity-80'} ${isAdultLevel ? 'mb-2' : 'text-6xl mb-2'}`}>
+                        {isAdultLevel && IconComponent ? (
+                          <IconComponent className={`${isB2 ? 'w-12 h-12' : 'w-16 h-16'} ${isSelected ? 'text-white' : 'text-slate-400'}`} strokeWidth={isB2 ? 1 : 1.5} />
                         ) : (
                           <span className={isB1 ? 'text-6xl' : ''}>{metadata.icon}</span>
                         )}
                       </div>
-                      <span className={`font-black tracking-tight leading-tight ${isB1
-                        ? (isSelected ? 'text-white' : 'text-slate-400')
-                        : (isSelected ? 'text-primary' : 'text-foreground/70')
+                      <span className={`text-center leading-tight ${isB2
+                          ? `text-xs font-semibold uppercase tracking-wider ${isSelected ? 'text-white' : 'text-slate-500'}`
+                          : `font-black text-sm sm:text-base tracking-tight ${isB1
+                            ? (isSelected ? 'text-white' : 'text-slate-400')
+                            : (isSelected ? 'text-primary' : 'text-foreground/70')
+                          }`
                         }`}>
                         {metadata.label}
                       </span>
