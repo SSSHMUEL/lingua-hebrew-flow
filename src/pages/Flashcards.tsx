@@ -64,7 +64,8 @@ const Flashcards: React.FC = () => {
             category,
             example_sentence,
             pronunciation,
-            word_pair
+            word_pair,
+            priority
           )
         `)
         .eq('user_id', user.id)

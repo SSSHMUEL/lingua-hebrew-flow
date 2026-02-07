@@ -298,7 +298,7 @@ const Onboarding = () => {
         await supabase.functions.invoke('populate-user-words', {
           body: {
             audienceType: selectedSegment,
-            interests: selectedTopics.join(','),
+            interests: selectedTopics,
             skillLevel: selectedLevelId
           }
         });
@@ -516,11 +516,11 @@ const Onboarding = () => {
                     <div
                       key={category.id}
                       className={`relative flex flex-col items-center justify-center p-6 transition-all cursor-pointer group hover:scale-[1.05] active:scale-[0.95] ${isB2
-                          ? `rounded-xl border-[1px] ${isSelected ? "border-slate-400 bg-slate-900/90 shadow-2xl shadow-slate-500/10" : "border-white/10 bg-slate-950/20 hover:border-white/30"}`
-                          : `rounded-[2rem] border-4 ${isB1
-                            ? (isSelected ? "border-slate-400 bg-[#0f172a]/90 shadow-2xl shadow-slate-500/30" : "border-white/5 bg-slate-950/40 hover:border-white/20")
-                            : (isSelected ? "border-primary bg-primary/10 shadow-xl shadow-primary/20" : "border-white/5 bg-background/40 hover:border-white/20")
-                          }`
+                        ? `rounded-xl border-[1px] ${isSelected ? "border-slate-400 bg-slate-900/90 shadow-2xl shadow-slate-500/10" : "border-white/10 bg-slate-950/20 hover:border-white/30"}`
+                        : `rounded-[2rem] border-4 ${isB1
+                          ? (isSelected ? "border-slate-400 bg-[#0f172a]/90 shadow-2xl shadow-slate-500/30" : "border-white/5 bg-slate-950/40 hover:border-white/20")
+                          : (isSelected ? "border-primary bg-primary/10 shadow-xl shadow-primary/20" : "border-white/5 bg-background/40 hover:border-white/20")
+                        }`
                         }`}
                       onClick={() => handleTopicToggle(category.id)}
                     >
@@ -537,11 +537,11 @@ const Onboarding = () => {
                         )}
                       </div>
                       <span className={`text-center leading-tight ${isB2
-                          ? `text-xs font-semibold uppercase tracking-wider ${isSelected ? 'text-white' : 'text-slate-500'}`
-                          : `font-black text-sm sm:text-base ${isB1
-                            ? (isSelected ? 'text-white font-bold' : 'text-slate-400')
-                            : (isSelected ? 'text-primary' : 'text-foreground/70')
-                          }`
+                        ? `text-xs font-semibold uppercase tracking-wider ${isSelected ? 'text-white' : 'text-slate-500'}`
+                        : `font-black text-sm sm:text-base ${isB1
+                          ? (isSelected ? 'text-white font-bold' : 'text-slate-400')
+                          : (isSelected ? 'text-primary' : 'text-foreground/70')
+                        }`
                         }`}>
                         {isEnglishUI ? category.labelEn : category.labelHe}
                       </span>

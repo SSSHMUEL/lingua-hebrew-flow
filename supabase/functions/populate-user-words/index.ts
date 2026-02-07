@@ -36,11 +36,23 @@ serve(async (req) => {
       );
     }
 
-    const { audienceType, interests, skillLevel } = await req.json();
+    let { audienceType, interests, skillLevel } = await req.json();
 
-    if (!audienceType || !interests || !Array.isArray(interests)) {
+    if (!audienceType || !interests) {
       return new Response(
         JSON.stringify({ error: 'Missing audienceType or interests' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Handle both array and comma-separated string
+    if (typeof interests === 'string') {
+      interests = interests.split(',').map(i => i.trim()).filter(Boolean);
+    }
+
+    if (!Array.isArray(interests) || interests.length === 0) {
+      return new Response(
+        JSON.stringify({ error: 'Interests must be an array or comma-separated string' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }

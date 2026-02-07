@@ -13,7 +13,8 @@ import {
   CheckCircle2,
   BookOpen,
   LayoutGrid,
-  History
+  History,
+  ArrowRight
 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 

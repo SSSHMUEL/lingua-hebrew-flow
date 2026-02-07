@@ -161,11 +161,32 @@ const PracticeMode: React.FC = () => {
 
     const currentWord = lessonQueue[currentWordIndex];
 
+    const triggerRefill = useCallback(async () => {
+        if (!user) return;
+        try {
+            const { data: profile } = await supabase
+                .from('profiles')
+                .select('english_level, interest_topics, interests')
+                .eq('user_id', user.id)
+                .single();
+            const userLevel = profile?.english_level || 'beginner';
+            const userInterests = (profile as any)?.interest_topics || (profile as any)?.interests || [];
+            const userCategory = Array.isArray(userInterests) ? userInterests.join(',') : userInterests;
+
+            await (supabase as any).rpc('maintain_minimum_words', {
+                p_user_id: user.id, p_level: userLevel, p_category: userCategory, p_min_count: 20
+            });
+        } catch (err) {
+            console.error("Refill process failed:", err);
+        }
+    }, [user]);
+
     const loadData = useCallback(async () => {
         if (!user) return;
         setLoading(true);
 
         try {
+            await triggerRefill();
             const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
 
             const { data: userWordsData, error } = await supabase.from('user_words')
@@ -178,7 +199,8 @@ const PracticeMode: React.FC = () => {
             hebrew_translation,
             category,
             example_sentence,
-            pronunciation
+            pronunciation,
+            priority
           )
         `)
                 .eq('user_id', user.id)

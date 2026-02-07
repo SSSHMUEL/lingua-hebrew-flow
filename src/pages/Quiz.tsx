@@ -64,7 +64,8 @@ const Quiz: React.FC = () => {
             hebrew_translation,
             category,
             example_sentence,
-            word_pair
+            word_pair,
+            priority
           )
         `)
         .eq('user_id', user.id)
