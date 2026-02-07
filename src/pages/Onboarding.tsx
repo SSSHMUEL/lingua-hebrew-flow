@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, ArrowRight, Users, GraduationCap, Briefcase, Sparkles, Loader2, BookOpen, Crown } from "lucide-react";
+import { ArrowLeft, ArrowRight, Users, GraduationCap, Briefcase, Sparkles, Loader2, BookOpen, Crown, Star, Compass, Rocket, Globe, MessageCircle, Trophy, Target } from "lucide-react";
 import { useLanguage, LanguageCode } from "@/contexts/LanguageContext";
 
 // New Onboarding Data Structure
@@ -57,6 +57,21 @@ const ONBOARDING_DATA = {
           { id: "המקצועות של הגדולים", labelEn: "Grown-up Jobs", labelHe: "המקצועות של הגדולים", icon: "👷" },
           { id: "השכונה והסביבה שלי", labelEn: "My Neighborhood", labelHe: "השכונה והסביבה שלי", icon: "🌳" },
           { id: "סיפורים ודמיון", labelEn: "Stories & Imagination", labelHe: "סיפורים ודמיון", icon: "🏰" },
+        ]
+      },
+      {
+        id: "B1",
+        labelEn: "Experts (B1)",
+        labelHe: "מומחי האנגלית (B1)",
+        categories: [
+          { id: "החלומות והעתיד שלי", labelEn: "Dreams & Future", labelHe: "החלומות והעתיד שלי", icon: "🌟", lucideIcon: "Star" },
+          { id: "מסביב לעולם ב-80 מילים", labelEn: "Around the World", labelHe: "מסביב לעולם ב-80 מילים", icon: "🧭", lucideIcon: "Compass" },
+          { id: "חדשות ומדע מקרוב", labelEn: "News & Science", labelHe: "חדשות ומדע מקרוב", icon: "🚀", lucideIcon: "Rocket" },
+          { id: "חברים ודילמות חברתיות", labelEn: "Friends & Society", labelHe: "חברים ודילמות חברתיות", icon: "🤝", lucideIcon: "Users" },
+          { id: "עולם הדיגיטל והרשת", labelEn: "Digital World", labelHe: "עולם הדיגיטל והרשת", icon: "🌐", lucideIcon: "Globe" },
+          { id: "סודות השפה והסלנג", labelEn: "Language & Slang", labelHe: "סודות השפה והסלנג", icon: "💬", lucideIcon: "MessageCircle" },
+          { id: "ספורט, אתגרים וניצחונות", labelEn: "Sports & Victory", labelHe: "ספורט, אתגרים וניצחונות", icon: "🏆", lucideIcon: "Trophy" },
+          { id: "השפעה ושינוי בעולם", labelEn: "Impact & Change", labelHe: "השפעה ושינוי בעולם", icon: "🌍", lucideIcon: "Target" },
         ]
       }
     ]
@@ -481,27 +496,40 @@ const Onboarding = () => {
             </CardHeader>
             <CardContent className="pt-4">
               <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                {availableCategories.map((category) => {
+                {availableCategories.map((category: any) => {
                   const isSelected = selectedTopics.includes(category.id);
+                  const isB1 = selectedLevelId === 'B1';
+
+                  const LucideIconsMap: Record<string, any> = {
+                    Star, Compass, Rocket, Users, Globe, MessageCircle, Trophy, Target
+                  };
+                  const IconComponent = category.lucideIcon ? LucideIconsMap[category.lucideIcon] : null;
 
                   return (
                     <div
                       key={category.id}
-                      className={`relative flex flex-col items-center justify-center p-6 rounded-[2rem] border-4 transition-all cursor-pointer group hover:scale-[1.05] active:scale-[0.95] ${isSelected
-                        ? "border-primary bg-primary/10 shadow-xl shadow-primary/20"
-                        : "border-white/5 bg-background/40 hover:border-white/20"
+                      className={`relative flex flex-col items-center justify-center p-6 rounded-[2rem] border-4 transition-all cursor-pointer group hover:scale-[1.05] active:scale-[0.95] ${isB1
+                        ? (isSelected ? "border-slate-400 bg-[#0f172a]/90 shadow-2xl shadow-slate-500/30" : "border-white/5 bg-slate-950/40 hover:border-white/20")
+                        : (isSelected ? "border-primary bg-primary/10 shadow-xl shadow-primary/20" : "border-white/5 bg-background/40 hover:border-white/20")
                         }`}
                       onClick={() => handleTopicToggle(category.id)}
                     >
                       {isSelected && (
-                        <div className="absolute top-3 right-3 bg-primary rounded-full p-1.5 shadow-lg border-2 border-background animate-in zoom-in duration-300">
+                        <div className={`absolute top-3 right-3 rounded-full p-1.5 shadow-lg border-2 border-background animate-in zoom-in duration-300 ${isB1 ? 'bg-slate-400' : 'bg-primary'}`}>
                           <Crown className="w-3 h-3 text-white" />
                         </div>
                       )}
-                      <div className={`text-6xl mb-4 transition-transform duration-500 group-hover:rotate-12 ${isSelected ? 'scale-110' : 'opacity-80'}`}>
-                        {category.icon}
+                      <div className={`transition-transform duration-500 group-hover:rotate-12 ${isSelected ? 'scale-110' : 'opacity-80'} ${isB1 ? 'mb-4' : 'text-6xl mb-4'}`}>
+                        {isB1 && IconComponent ? (
+                          <IconComponent className={`w-12 h-12 ${isSelected ? 'text-white' : 'text-slate-400'}`} strokeWidth={1.5} />
+                        ) : (
+                          category.icon
+                        )}
                       </div>
-                      <span className={`font-black text-center text-sm sm:text-base leading-tight ${isSelected ? 'text-primary' : 'text-foreground/70'}`}>
+                      <span className={`font-black text-center text-sm sm:text-base leading-tight ${isB1
+                        ? (isSelected ? 'text-white font-bold' : 'text-slate-400')
+                        : (isSelected ? 'text-primary' : 'text-foreground/70')
+                        }`}>
                         {isEnglishUI ? category.labelEn : category.labelHe}
                       </span>
                     </div>

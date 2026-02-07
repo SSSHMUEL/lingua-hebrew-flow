@@ -10,7 +10,7 @@ import { useAuth } from '@/components/AuthProvider';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Settings, Target, Crown, Languages, User, Shield, Trash2, KeyRound, LogOut, CheckCircle2 } from 'lucide-react';
+import { Settings, Target, Crown, Languages, User, Users, Shield, Trash2, KeyRound, LogOut, CheckCircle2, Star, Compass, Rocket, Globe, MessageCircle, Trophy } from 'lucide-react';
 import { PayPalCheckout } from '@/components/PayPalCheckout';
 import { useSubscription } from '@/components/SubscriptionGuard';
 import { Input } from '@/components/ui/input';
@@ -60,6 +60,13 @@ const Profile: React.FC = () => {
           icon: "📚",
           description: isHebrew ? "מילים בסיסיות" : "Basic words",
           categories: ["התחביבים והחוגים שלי", "מטיילים בעולם הגדול", "השף הצעיר במטבח", "הכוח הסודי שלי", "הטכנולוגיה סביבנו", "המקצועות של הגדולים", "השכונה והסביבה שלי", "סיפורים ודמיון"]
+        },
+        {
+          id: "B1",
+          label: isHebrew ? "מומחי האנגלית (B1)" : "Experts (B1)",
+          icon: "🌟",
+          description: isHebrew ? "רמה גבוהה" : "High level",
+          categories: ["החלומות והעתיד שלי", "מסביב לעולם ב-80 מילים", "חדשות ומדע מקרוב", "חברים ודילמות חברתיות", "עולם הדיגיטל והרשת", "סודות השפה והסלנג", "ספורט, אתגרים וניצחונות", "השפעה ושינוי בעולם"]
         }
       ]
     },
@@ -107,7 +114,7 @@ const Profile: React.FC = () => {
     },
   ];
 
-  const categoryMetadata: Record<string, { label: string, icon: string }> = {
+  const categoryMetadata: Record<string, { label: string, icon: string, lucideIcon?: string }> = {
     "בסיסי": { label: isHebrew ? "בסיסי" : "Basic", icon: "⭐" },
     "החברים והמשפחה שלי": { label: isHebrew ? "החברים והמשפחה שלי" : "Family & Friends", icon: "🏠" },
     "מה יש לי בצלחת?": { label: isHebrew ? "מה יש לי בצלחת?" : "On My Plate", icon: "🍎" },
@@ -125,6 +132,14 @@ const Profile: React.FC = () => {
     "המקצועות של הגדולים": { label: isHebrew ? "המקצועות של הגדולים" : "Grown-up Jobs", icon: "👷" },
     "השכונה והסביבה שלי": { label: isHebrew ? "השכונה והסביבה שלי" : "My Neighborhood", icon: "🌳" },
     "סיפורים ודמיון": { label: isHebrew ? "סיפורים ודמיון" : "Stories & Imagination", icon: "🏰" },
+    "החלומות והעתיד שלי": { label: isHebrew ? "החלומות והעתיד שלי" : "Dreams & Future", icon: "🌟", lucideIcon: "Star" },
+    "מסביב לעולם ב-80 מילים": { label: isHebrew ? "מסביב לעולם ב-80 מילים" : "Around the World", icon: "🧭", lucideIcon: "Compass" },
+    "חדשות ומדע מקרוב": { label: isHebrew ? "חדשות ומדע מקרוב" : "News & Science", icon: "🚀", lucideIcon: "Rocket" },
+    "חברים ודילמות חברתיות": { label: isHebrew ? "חברים ודילמות חברתיות" : "Friends & Society", icon: "🤝", lucideIcon: "Users" },
+    "עולם הדיגיטל והרשת": { label: isHebrew ? "עולם הדיגיטל והרשת" : "Digital World", icon: "🌐", lucideIcon: "Globe" },
+    "סודות השפה והסלנג": { label: isHebrew ? "סודות השפה והסלנג" : "Language & Slang", icon: "💬", lucideIcon: "MessageCircle" },
+    "ספורט, אתגרים וניצחונות": { label: isHebrew ? "ספורט, אתגרים וניצחונות" : "Sports & Victory", icon: "🏆", lucideIcon: "Trophy" },
+    "השפעה ושינוי בעולם": { label: isHebrew ? "השפעה ושינוי בעולם" : "Impact & Change", icon: "🌍", lucideIcon: "Target" },
     "חיים יומיומיים": { label: isHebrew ? "בית ומשפחה" : "Home & Family", icon: "🏠" },
     "טבע": { label: isHebrew ? "בעלי חיים" : "Animals", icon: "🐾" },
     "בידור": { label: isHebrew ? "פנאי ומשחקים" : "Leisure & Games", icon: "🎮" },
@@ -198,7 +213,8 @@ const Profile: React.FC = () => {
     try {
       // Save to profiles table (new array column)
       await supabase.from('profiles').update({
-        interest_topics: selectedTopics
+        interest_topics: selectedTopics,
+        interests: selectedTopics // Sync with interests field
       } as any).eq('user_id', user.id);
 
       // Also keep user_topic_preferences in sync for compatibility
@@ -503,28 +519,43 @@ const Profile: React.FC = () => {
 
             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-6">
               {availableCategoriesForLevel.map(topicId => {
-                const metadata = categoryMetadata[topicId] || { label: topicId, icon: "⭐" };
+                const metadata = categoryMetadata[topicId] || { label: topicId, icon: "⭐" } as any;
                 const isSelected = selectedTopics.includes(topicId);
+                const isB1 = englishLevel === 'B1';
+
+                const LucideIconsMap: Record<string, any> = {
+                  Star, Compass, Rocket, Users, Globe, MessageCircle, Trophy, Target
+                };
+                const IconComponent = (metadata as any).lucideIcon ? LucideIconsMap[(metadata as any).lucideIcon] : null;
+
                 return (
                   <div
                     key={topicId}
                     onClick={() => handleTopicToggle(topicId)}
-                    className={`relative p-8 rounded-[2.5rem] border-4 transition-all cursor-pointer group hover:scale-[1.05] active:scale-[0.95] ${isSelected ? 'border-primary bg-primary/10 shadow-2xl shadow-primary/20' : 'border-white/5 bg-white/5 hover:border-white/20'}`}
+                    className={`relative p-8 rounded-[2.5rem] border-4 transition-all cursor-pointer group hover:scale-[1.05] active:scale-[0.95] ${isB1
+                        ? (isSelected ? "border-slate-400 bg-[#0f172a]/90 shadow-2xl shadow-slate-500/30" : "border-white/5 bg-slate-950/40 hover:border-white/20")
+                        : (isSelected ? "border-primary bg-primary/10 shadow-2xl shadow-primary/20" : "border-white/5 bg-white/5 hover:border-white/20")
+                      }`}
                   >
                     {isSelected && (
-                      <div className="absolute top-4 right-4 bg-primary rounded-full p-1.5 border-2 border-background shadow-lg animate-in zoom-in duration-300">
+                      <div className={`absolute top-4 right-4 rounded-full p-1.5 border-2 border-background shadow-lg animate-in zoom-in duration-300 ${isB1 ? 'bg-slate-400' : 'bg-primary'}`}>
                         <CheckCircle2 className="h-3 w-3 text-white" />
                       </div>
                     )}
                     <div className="flex flex-col items-center text-center gap-4">
-                      <div className={`text-6xl mb-2 transition-transform duration-500 group-hover:rotate-12 ${isSelected ? 'scale-110' : 'opacity-40'}`}>
-                        {metadata.icon}
+                      <div className={`transition-transform duration-500 group-hover:rotate-12 ${isSelected ? 'scale-110' : 'opacity-40'} ${isB1 ? 'mb-2' : 'text-6xl mb-2'}`}>
+                        {isB1 && IconComponent ? (
+                          <IconComponent className={`w-16 h-16 ${isSelected ? 'text-white' : 'text-slate-400'}`} strokeWidth={1.5} />
+                        ) : (
+                          <span className={isB1 ? 'text-6xl' : ''}>{metadata.icon}</span>
+                        )}
                       </div>
-                      <div>
-                        <h4 className={`text-sm sm:text-lg font-black tracking-tight italic ${isSelected ? 'text-primary' : 'text-muted-foreground'}`}>
-                          {metadata.label}
-                        </h4>
-                      </div>
+                      <span className={`font-black tracking-tight leading-tight ${isB1
+                        ? (isSelected ? 'text-white' : 'text-slate-400')
+                        : (isSelected ? 'text-primary' : 'text-foreground/70')
+                        }`}>
+                        {metadata.label}
+                      </span>
                     </div>
                   </div>
                 );
