@@ -36,6 +36,15 @@ const Practice: React.FC = () => {
       premium: true
     },
     {
+      id: 'flexi-word',
+      title: isRTL ? 'FlexiWord (הטיות)' : 'FlexiWord (Inflections)',
+      description: isRTL ? 'אימון מותאם אישית על הטיות המילים שאספת בזמן הגלישה.' : 'Personalized practice on inflections of words you collected while browsing.',
+      icon: Sparkles,
+      color: 'from-indigo-600 to-violet-600',
+      path: '/flexi-word',
+      premium: true
+    },
+    {
       id: 'flashcards',
       title: isRTL ? 'כרטיסיות אוצר מילים' : 'Vocabulary Flashcards',
       description: isRTL ? 'תרגול קלאסי של זיכרון מהיר אנגלית-עברית.' : 'Classic English-Hebrew memory practice.',
