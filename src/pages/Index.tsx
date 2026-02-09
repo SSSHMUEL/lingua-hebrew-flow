@@ -15,6 +15,7 @@ import {
 import { useDailyLimit } from '@/hooks/use-daily-limit';
 import { Logo } from '@/components/Logo';
 import { LandingPage } from '@/pages/LandingPage';
+import { KidsDashboard } from '@/components/KidsDashboard';
 
 const Index = () => {
   const { user } = useAuth();
@@ -27,10 +28,12 @@ const Index = () => {
     learnedWords: 0,
     totalWords: 0
   });
+  const [audienceType, setAudienceType] = useState<string | null>(null);
 
   useEffect(() => {
     if (user) {
       loadUserStats();
+      loadAudienceType();
     }
   }, [user]);
 
@@ -55,8 +58,25 @@ const Index = () => {
     }
   };
 
+  const loadAudienceType = async () => {
+    try {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('audience_type')
+        .eq('user_id', user!.id)
+        .single();
+      setAudienceType(profile?.audience_type || null);
+    } catch (error) {
+      console.error('Error loading audience type:', error);
+    }
+  };
+
   if (!user) {
     return <LandingPage />;
+  }
+
+  if (audienceType === 'kids') {
+    return <KidsDashboard user={user} />;
   }
 
   const todayProgress = isPremium ? 100 : Math.min(100, (wordsLearnedToday / dailyLimit) * 100);

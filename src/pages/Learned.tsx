@@ -78,7 +78,7 @@ export const Learned: React.FC = () => {
 
       // Also get learned letters from learned_words (legacy support for letters if they aren't in user_words)
       // Note: If letters are not in vocabulary_words, we stick to learned_words for them.
-      const { data: learnedLetters, error: learnedLettersError } = await supabase
+      const { data: learnedLetters, error: learnedLettersError } = await (supabase as any)
         .from('learned_words')
         .select('id, vocabulary_word_id, word_pair, learned_at')
         .eq('user_id', user!.id);
@@ -167,7 +167,7 @@ export const Learned: React.FC = () => {
         error = updateError;
       } else {
         // Legacy: delete from learned_words
-        const { error: deleteError } = await supabase
+        const { error: deleteError } = await (supabase as any)
           .from('learned_words')
           .delete()
           .eq('id', itemId);
