@@ -115,16 +115,16 @@ export const useTranslations = () => {
   };
 
   const fetchLearnedPairs = async (userId: string): Promise<Set<string>> => {
-    const { data } = await supabase
+    const { data } = await (supabase as any)
       .from('user_learned_words')
       .select('translation_pair_id')
       .eq('user_id', userId);
 
-    return new Set(data?.map(item => item.translation_pair_id) || []);
+    return new Set(data?.map((item: any) => item.translation_pair_id) || []);
   };
 
   const markAsLearned = async (userId: string, translationPairId: string) => {
-    const { error } = await supabase
+    const { error } = await (supabase as any)
       .from('user_learned_words')
       .insert({
         user_id: userId,
@@ -137,7 +137,7 @@ export const useTranslations = () => {
   };
 
   const unmarkAsLearned = async (userId: string, translationPairId: string) => {
-    const { error } = await supabase
+    const { error } = await (supabase as any)
       .from('user_learned_words')
       .delete()
       .eq('user_id', userId)
@@ -164,7 +164,7 @@ export const useTranslations = () => {
     if (!sourceLangId || !targetLangId) return {};
 
     // Fetch user's learned words with translations
-    const { data: learnedData } = await supabase
+    const { data: learnedData } = await (supabase as any)
       .from('user_learned_words')
       .select(`
         translation_pair_id,

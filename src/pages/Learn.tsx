@@ -156,11 +156,11 @@ export const Learn: React.FC = () => {
     try {
       const { data: profile } = await supabase
         .from('profiles')
-        .select('english_level, interest_topics, interests')
+        .select('english_level, interests')
         .eq('user_id', user.id)
         .single();
       const userLevel = profile?.english_level || 'beginner';
-      const userInterests = (profile as any)?.interest_topics || (profile as any)?.interests || [];
+      const userInterests = profile?.interests || [];
       const userCategory = Array.isArray(userInterests) ? userInterests.join(',') : userInterests;
 
       const { error: refillError } = await (supabase as any).rpc('maintain_minimum_words', {

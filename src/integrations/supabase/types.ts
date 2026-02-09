@@ -41,33 +41,6 @@ export type Database = {
         }
         Relationships: []
       }
-      learned_words: {
-        Row: {
-          created_at: string
-          id: string
-          learned_at: string
-          user_id: string
-          vocabulary_word_id: string
-          word_pair: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          learned_at?: string
-          user_id: string
-          vocabulary_word_id: string
-          word_pair: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          learned_at?: string
-          user_id?: string
-          vocabulary_word_id?: string
-          word_pair?: string
-        }
-        Relationships: []
-      }
       letters: {
         Row: {
           created_at: string
@@ -138,8 +111,11 @@ export type Database = {
           display_name: string | null
           english_level: string | null
           id: string
+          interest_topics: string[] | null
           interests: string[] | null
           onboarding_completed: boolean | null
+          segment_type: string | null
+          skill_level: string | null
           source_language: string | null
           target_language: string | null
           updated_at: string
@@ -151,8 +127,11 @@ export type Database = {
           display_name?: string | null
           english_level?: string | null
           id?: string
+          interest_topics?: string[] | null
           interests?: string[] | null
           onboarding_completed?: boolean | null
+          segment_type?: string | null
+          skill_level?: string | null
           source_language?: string | null
           target_language?: string | null
           updated_at?: string
@@ -164,48 +143,15 @@ export type Database = {
           display_name?: string | null
           english_level?: string | null
           id?: string
+          interest_topics?: string[] | null
           interests?: string[] | null
           onboarding_completed?: boolean | null
+          segment_type?: string | null
+          skill_level?: string | null
           source_language?: string | null
           target_language?: string | null
           updated_at?: string
           user_id?: string
-        }
-        Relationships: []
-      }
-      profiles_backup_today: {
-        Row: {
-          created_at: string | null
-          display_name: string | null
-          english_level: string | null
-          id: string | null
-          onboarding_completed: boolean | null
-          source_language: string | null
-          target_language: string | null
-          updated_at: string | null
-          user_id: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          display_name?: string | null
-          english_level?: string | null
-          id?: string | null
-          onboarding_completed?: boolean | null
-          source_language?: string | null
-          target_language?: string | null
-          updated_at?: string | null
-          user_id?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          display_name?: string | null
-          english_level?: string | null
-          id?: string | null
-          onboarding_completed?: boolean | null
-          source_language?: string | null
-          target_language?: string | null
-          updated_at?: string | null
-          user_id?: string | null
         }
         Relationships: []
       }
@@ -257,74 +203,6 @@ export type Database = {
         }
         Relationships: []
       }
-      transcription_usage: {
-        Row: {
-          created_at: string
-          id: string
-          updated_at: string
-          usage_count: number
-          usage_date: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          updated_at?: string
-          usage_count?: number
-          usage_date?: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          updated_at?: string
-          usage_count?: number
-          usage_date?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
-      user_learned_words: {
-        Row: {
-          created_at: string
-          id: string
-          last_reviewed_at: string | null
-          learned_at: string
-          next_review_at: string | null
-          strength_score: number
-          translation_pair_id: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          last_reviewed_at?: string | null
-          learned_at?: string
-          next_review_at?: string | null
-          strength_score?: number
-          translation_pair_id: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          last_reviewed_at?: string | null
-          learned_at?: string
-          next_review_at?: string | null
-          strength_score?: number
-          translation_pair_id?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "user_learned_words_translation_pair_id_fkey"
-            columns: ["translation_pair_id"]
-            isOneToOne: false
-            referencedRelation: "word_translations"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       user_topic_preferences: {
         Row: {
           created_at: string | null
@@ -352,9 +230,13 @@ export type Database = {
       user_words: {
         Row: {
           created_at: string
+          flexi_correct_count: number | null
+          flexi_practiced_at: string | null
           id: string
+          is_flexi_learned: boolean | null
+          last_practiced_at: string | null
           last_seen: string | null
-          status: Database["public"]["Enums"]["word_status"]
+          status: string | null
           updated_at: string
           user_id: string
           view_count: number
@@ -362,9 +244,13 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          flexi_correct_count?: number | null
+          flexi_practiced_at?: string | null
           id?: string
+          is_flexi_learned?: boolean | null
+          last_practiced_at?: string | null
           last_seen?: string | null
-          status?: Database["public"]["Enums"]["word_status"]
+          status?: string | null
           updated_at?: string
           user_id: string
           view_count?: number
@@ -372,15 +258,40 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          flexi_correct_count?: number | null
+          flexi_practiced_at?: string | null
           id?: string
+          is_flexi_learned?: boolean | null
+          last_practiced_at?: string | null
           last_seen?: string | null
-          status?: Database["public"]["Enums"]["word_status"]
+          status?: string | null
           updated_at?: string
           user_id?: string
           view_count?: number
           word_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "fk_user_words_to_vocabulary"
+            columns: ["word_id"]
+            isOneToOne: false
+            referencedRelation: "v_user_inflections"
+            referencedColumns: ["word_id"]
+          },
+          {
+            foreignKeyName: "fk_user_words_to_vocabulary"
+            columns: ["word_id"]
+            isOneToOne: false
+            referencedRelation: "vocabulary_words"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_words_word_id_fkey"
+            columns: ["word_id"]
+            isOneToOne: false
+            referencedRelation: "v_user_inflections"
+            referencedColumns: ["word_id"]
+          },
           {
             foreignKeyName: "user_words_word_id_fkey"
             columns: ["word_id"]
@@ -394,12 +305,15 @@ export type Database = {
         Row: {
           audience_levels: string[] | null
           category: string
+          context_type: string | null
           created_at: string
           english_word: string
           example_sentence: string | null
           hebrew_translation: string
           id: string
+          learning_level: string | null
           level: string | null
+          priority: number | null
           pronunciation: string | null
           updated_at: string
           word_pair: string | null
@@ -407,12 +321,15 @@ export type Database = {
         Insert: {
           audience_levels?: string[] | null
           category: string
+          context_type?: string | null
           created_at?: string
           english_word: string
           example_sentence?: string | null
           hebrew_translation: string
           id?: string
+          learning_level?: string | null
           level?: string | null
+          priority?: number | null
           pronunciation?: string | null
           updated_at?: string
           word_pair?: string | null
@@ -420,17 +337,59 @@ export type Database = {
         Update: {
           audience_levels?: string[] | null
           category?: string
+          context_type?: string | null
           created_at?: string
           english_word?: string
           example_sentence?: string | null
           hebrew_translation?: string
           id?: string
+          learning_level?: string | null
           level?: string | null
+          priority?: number | null
           pronunciation?: string | null
           updated_at?: string
           word_pair?: string | null
         }
         Relationships: []
+      }
+      word_inflections: {
+        Row: {
+          created_at: string | null
+          grammar_note: string | null
+          inflected_translation: string
+          inflected_word: string
+          root_word: string
+        }
+        Insert: {
+          created_at?: string | null
+          grammar_note?: string | null
+          inflected_translation: string
+          inflected_word: string
+          root_word: string
+        }
+        Update: {
+          created_at?: string | null
+          grammar_note?: string | null
+          inflected_translation?: string
+          inflected_word?: string
+          root_word?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "word_inflections_root_word_fkey"
+            columns: ["root_word"]
+            isOneToOne: false
+            referencedRelation: "v_user_inflections"
+            referencedColumns: ["root_word"]
+          },
+          {
+            foreignKeyName: "word_inflections_root_word_fkey"
+            columns: ["root_word"]
+            isOneToOne: false
+            referencedRelation: "vocabulary_words"
+            referencedColumns: ["english_word"]
+          },
+        ]
       }
       word_translations: {
         Row: {
@@ -509,36 +468,52 @@ export type Database = {
           },
         ]
       }
-      words_backup_today: {
+    }
+    Views: {
+      v_user_inflections: {
         Row: {
-          created_at: string | null
-          id: string | null
-          language_id: string | null
-          pronunciation: string | null
-          word_text: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          id?: string | null
-          language_id?: string | null
-          pronunciation?: string | null
-          word_text?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          id?: string | null
-          language_id?: string | null
-          pronunciation?: string | null
-          word_text?: string | null
+          example_sentence: string | null
+          flexi_practiced_at: string | null
+          grammar_note: string | null
+          inflected_translation: string | null
+          inflected_word: string | null
+          root_translation: string | null
+          root_word: string | null
+          status: string | null
+          user_id: string | null
+          user_word_id: string | null
+          word_id: string | null
         }
         Relationships: []
       }
     }
-    Views: {
-      [_ in never]: never
-    }
     Functions: {
-      [_ in never]: never
+      auto_refill_words: {
+        Args: {
+          p_category: string
+          p_level: string
+          p_limit?: number
+          p_user_id: string
+        }
+        Returns: undefined
+      }
+      maintain_minimum_words: {
+        Args: {
+          p_category: string
+          p_level: string
+          p_min_count?: number
+          p_user_id: string
+        }
+        Returns: undefined
+      }
+      refill_user_words: {
+        Args: {
+          target_user_id: string
+          user_category: string
+          user_level: string
+        }
+        Returns: undefined
+      }
     }
     Enums: {
       audience_type: "kids" | "students" | "business"
