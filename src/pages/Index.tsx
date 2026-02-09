@@ -62,10 +62,19 @@ const Index = () => {
     try {
       const { data: profile } = await supabase
         .from('profiles')
-        .select('audience_type')
+        .select('audience_type, english_level')
         .eq('user_id', user!.id)
         .single();
-      setAudienceType(profile?.audience_type || null);
+      
+      // Show kids dashboard if audience_type is kids OR english_level is A1/A2 (beginner levels)
+      const englishLevel = profile?.english_level?.toLowerCase();
+      const isKidsLevel = englishLevel === 'a1' || englishLevel === 'a2' || englishLevel === 'letters' || englishLevel === 'beginner' || englishLevel === 'elementary';
+      
+      if (profile?.audience_type === 'kids' || isKidsLevel) {
+        setAudienceType('kids');
+      } else {
+        setAudienceType(profile?.audience_type || null);
+      }
     } catch (error) {
       console.error('Error loading audience type:', error);
     }
