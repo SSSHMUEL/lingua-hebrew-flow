@@ -94,12 +94,6 @@ const ONBOARDING_DATA = {
           { id: "קניות", labelEn: "Shopping", labelHe: "קניות", icon: "🛍️" },
           { id: "בידור", labelEn: "Leisure Activities", labelHe: "פעילויות פנאי", icon: "🎬" },
           { id: "בריאות", labelEn: "Health", labelHe: "בריאות", icon: "🏥" },
-          { id: "אנגלית להייטק ולשוק העבודה", labelEn: "English for Hi-Tech & Job Market", labelHe: "אנגלית להייטק ולשוק העבודה", icon: "💻", lucideIcon: "Code" },
-          { id: "קריאת מאמרים אקדמיים", labelEn: "Reading Academic Articles", labelHe: "קריאת מאמרים אקדמיים", icon: "📖", lucideIcon: "BookOpen" },
-          { id: "הכנה למבחני אמיר/אמירם", labelEn: "AMIR/AMIRAM Test Prep", labelHe: "הכנה למבחני אמיר/אמי\"רם", icon: "🎓", lucideIcon: "GraduationCap" },
-          { id: "הגשת מועמדות וראיונות עבודה", labelEn: "Job Applications & Interviews", labelHe: "הגשת מועמדות וראיונות עבודה", icon: "✅", lucideIcon: "UserCheck" },
-          { id: "ניהול זמן ופרודוקטיביות", labelEn: "Time Management & Productivity", labelHe: "ניהול זמן ופרודוקטיביות", icon: "⏰", lucideIcon: "Clock" },
-          { id: "אנגלית עסקית ומשא ומתן", labelEn: "Business English & Negotiation", labelHe: "אנגלית עסקית ומשא ומתן", icon: "💼", lucideIcon: "Briefcase" },
         ]
       },
       {

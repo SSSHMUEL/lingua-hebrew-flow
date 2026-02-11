@@ -80,7 +80,7 @@ const Profile: React.FC = () => {
           label: isHebrew ? "בינוני (B1)" : "Intermediate (B1)",
           icon: "💬",
           description: isHebrew ? "שיחות פשוטות" : "Simple conversations",
-          categories: ["נסיעות", "קניות", "בידור", "בריאות", "אנגלית להייטק ולשוק העבודה", "קריאת מאמרים אקדמיים", "הכנה למבחני אמיר/אמירם", "הגשת מועמדות וראיונות עבודה", "ניהול זמן ופרודוקטיביות", "אנגלית עסקית ומשא ומתן"]
+          categories: ["נסיעות", "קניות", "בידור", "בריאות"]
         },
         {
           id: "B2",
