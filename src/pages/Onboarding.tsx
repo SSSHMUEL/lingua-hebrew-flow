@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
-import { ArrowLeft, ArrowRight, Users, GraduationCap, Briefcase, Sparkles, Loader2, BookOpen, Crown, Star, Compass, Rocket, Globe, MessageCircle, Trophy, Target, Leaf, Gavel, Brain, Cpu, Palette, TrendingUp, Stethoscope } from "lucide-react";
+import { ArrowLeft, ArrowRight, Users, GraduationCap, Briefcase, Sparkles, Loader2, BookOpen, Crown, Star, Compass, Rocket, Globe, MessageCircle, Trophy, Target, Leaf, Gavel, Brain, Cpu, Palette, TrendingUp, Stethoscope, Code, Laptop, UserCheck, Clock } from "lucide-react";
 import { useLanguage, LanguageCode } from "@/contexts/LanguageContext";
 
 // New Onboarding Data Structure
@@ -94,6 +94,12 @@ const ONBOARDING_DATA = {
           { id: "קניות", labelEn: "Shopping", labelHe: "קניות", icon: "🛍️" },
           { id: "בידור", labelEn: "Leisure Activities", labelHe: "פעילויות פנאי", icon: "🎬" },
           { id: "בריאות", labelEn: "Health", labelHe: "בריאות", icon: "🏥" },
+          { id: "אנגלית להייטק ולשוק העבודה", labelEn: "English for Hi-Tech & Job Market", labelHe: "אנגלית להייטק ולשוק העבודה", icon: "💻", lucideIcon: "Code" },
+          { id: "קריאת מאמרים אקדמיים", labelEn: "Reading Academic Articles", labelHe: "קריאת מאמרים אקדמיים", icon: "📖", lucideIcon: "BookOpen" },
+          { id: "הכנה למבחני אמיר/אמירם", labelEn: "AMIR/AMIRAM Test Prep", labelHe: "הכנה למבחני אמיר/אמי\"רם", icon: "🎓", lucideIcon: "GraduationCap" },
+          { id: "הגשת מועמדות וראיונות עבודה", labelEn: "Job Applications & Interviews", labelHe: "הגשת מועמדות וראיונות עבודה", icon: "✅", lucideIcon: "UserCheck" },
+          { id: "ניהול זמן ופרודוקטיביות", labelEn: "Time Management & Productivity", labelHe: "ניהול זמן ופרודוקטיביות", icon: "⏰", lucideIcon: "Clock" },
+          { id: "אנגלית עסקית ומשא ומתן", labelEn: "Business English & Negotiation", labelHe: "אנגלית עסקית ומשא ומתן", icon: "💼", lucideIcon: "Briefcase" },
         ]
       },
       {
@@ -109,6 +115,12 @@ const ONBOARDING_DATA = {
           { id: "תרבות, אמנות ותקשורת", labelEn: "Culture, Art & Media", labelHe: "תרבות, אמנות ותקשורת", icon: "🎨", lucideIcon: "Palette" },
           { id: "כלכלה, כסף והשקעות", labelEn: "Economy & Investments", labelHe: "כלכלה, כסף והשקעות", icon: "📈", lucideIcon: "TrendingUp" },
           { id: "בריאות, מדע ורפואה", labelEn: "Health & Science", labelHe: "בריאות, מדע ורפואה", icon: "🧪", lucideIcon: "Stethoscope" },
+          { id: "אנגלית להייטק ולשוק העבודה", labelEn: "English for Hi-Tech & Job Market", labelHe: "אנגלית להייטק ולשוק העבודה", icon: "💻", lucideIcon: "Code" },
+          { id: "קריאת מאמרים אקדמיים", labelEn: "Reading Academic Articles", labelHe: "קריאת מאמרים אקדמיים", icon: "📖", lucideIcon: "BookOpen" },
+          { id: "הכנה למבחני אמיר/אמירם", labelEn: "AMIR/AMIRAM Test Prep", labelHe: "הכנה למבחני אמיר/אמי\"רם", icon: "🎓", lucideIcon: "GraduationCap" },
+          { id: "הגשת מועמדות וראיונות עבודה", labelEn: "Job Applications & Interviews", labelHe: "הגשת מועמדות וראיונות עבודה", icon: "✅", lucideIcon: "UserCheck" },
+          { id: "ניהול זמן ופרודוקטיביות", labelEn: "Time Management & Productivity", labelHe: "ניהול זמן ופרודוקטיביות", icon: "⏰", lucideIcon: "Clock" },
+          { id: "אנגלית עסקית ומשא ומתן", labelEn: "Business English & Negotiation", labelHe: "אנגלית עסקית ומשא ומתן", icon: "💼", lucideIcon: "Briefcase" },
         ]
       }
     ]

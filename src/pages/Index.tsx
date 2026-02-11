@@ -62,16 +62,19 @@ const Index = () => {
     try {
       const { data: profile } = await supabase
         .from('profiles')
-        .select('audience_type, english_level')
+        .select('audience_type, english_level, segment_type')
         .eq('user_id', user!.id)
         .single();
       
       // Show kids dashboard if audience_type is kids OR english_level is A1/A2 (beginner levels)
       const englishLevel = profile?.english_level?.toLowerCase();
       const isKidsLevel = englishLevel === 'a1' || englishLevel === 'a2' || englishLevel === 'letters' || englishLevel === 'beginner' || englishLevel === 'elementary';
+      const segmentType = profile?.segment_type;
       
-      if (profile?.audience_type === 'kids' || isKidsLevel) {
+      if (profile?.audience_type === 'kids' || (isKidsLevel && segmentType === 'kids')) {
         setAudienceType('kids');
+      } else if (segmentType === 'students' || profile?.audience_type === 'students') {
+        setAudienceType('students');
       } else {
         setAudienceType(profile?.audience_type || null);
       }
@@ -212,7 +215,7 @@ const Index = () => {
 
               <CardContent className="p-8 relative z-10">
                 <div className="flex justify-between items-center mb-6">
-                  <p className="text-[10px] font-black tracking-widest text-accent/80 uppercase italic">{isHebrew ? 'התקדמות יומית' : 'DAILY PERFORMANCE'}</p>
+                  <p className="text-[10px] font-black tracking-widest text-accent/80 uppercase italic">{isHebrew ? (audienceType === 'students' ? 'מוכנות למבחן/ראיון' : 'התקדמות יומית') : (audienceType === 'students' ? 'TEST/INTERVIEW READINESS' : 'DAILY PERFORMANCE')}</p>
                   <Trophy className="h-5 w-5 text-accent opacity-40 group-hover:scale-110 group-hover:opacity-100 transition-all" />
                 </div>
                 <div className="text-5xl font-black italic text-white mb-4 tracking-tighter group-hover:scale-105 transition-transform origin-right">
