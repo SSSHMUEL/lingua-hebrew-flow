@@ -49,7 +49,7 @@ const plans = [
     id: "monthly",
     name: "חודשי",
     nameEn: "Monthly",
-    price: "₪9.90",
+    price: "₪29.90",
     period: "לחודש",
     periodEn: "/month",
     features: [
@@ -69,7 +69,7 @@ const plans = [
     id: "yearly",
     name: "שנתי",
     nameEn: "Yearly",
-    price: "₪99.90",
+    price: "₪299.90",
     period: "לשנה",
     periodEn: "/year",
     popular: true,
