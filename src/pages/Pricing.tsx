@@ -53,7 +53,7 @@ const Pricing = () => {
           </div>
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <CheckCircle className="h-5 w-5 text-primary" />
-            {isHebrew ? '7 ימי ניסיון חינם' : '7 Days Free Trial'}
+            {isHebrew ? 'חודשי ₪29.90 | שנתי ₪299.90' : 'Monthly ₪29.90 | Yearly ₪299.90'}
           </div>
         </div>
 
