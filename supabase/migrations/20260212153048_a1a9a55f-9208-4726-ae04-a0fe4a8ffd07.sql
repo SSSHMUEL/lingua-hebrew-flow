@@ -1,0 +1,2 @@
+INSERT INTO public.subscriptions (user_id, status, plan, current_period_start, current_period_end)
+VALUES ('782e91a6-7173-4407-b873-826a92217da8', 'active', 'yearly', now(), now() + interval '1 year');
